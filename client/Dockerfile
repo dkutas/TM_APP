@@ -1,0 +1,25 @@
+# ---- Dev ----
+FROM node:20-alpine AS dev
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 5173
+# CMD a compose-ban van
+
+# ---- Build ----
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+ARG VITE_API_BASE
+ENV VITE_API_BASE=$VITE_API_BASE
+COPY . .
+# "build": "vite build"
+RUN npm run build
+
+# ---- Prod ----
+FROM nginx:alpine AS prod
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
