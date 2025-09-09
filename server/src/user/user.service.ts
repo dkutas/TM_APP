@@ -38,14 +38,14 @@ export class UserService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} user`;
+    return this.repo.findOne({ where: { id } });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+    return this.repo.update(id, updateUserDto);
   }
 
   remove(id: number) {
-    return `This action removes a #${id} user`;
+    return this.repo.delete(id);
   }
 }
