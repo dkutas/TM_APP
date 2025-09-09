@@ -1,5 +1,5 @@
 # ---- Dev ----
-FROM node:20-alpine AS dev
+FROM node:latest AS dev
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -8,7 +8,7 @@ EXPOSE 5173
 # CMD a compose-ban van
 
 # ---- Build ----
-FROM node:20-alpine AS build
+FROM node:latest AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -19,7 +19,7 @@ COPY . .
 RUN npm run build
 
 # ---- Prod ----
-FROM nginx:alpine AS prod
+FROM nginx:latest AS prod
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80

@@ -1,10 +1,11 @@
 # ---- Base ----
-FROM node:20-alpine AS base
+FROM node:latest AS base
 WORKDIR /app
 COPY package*.json ./
 
 # ---- Dev ----
 FROM base AS dev
+COPY package*.json ./
 RUN npm install
 # Feltételezve NestJS: start:dev = nest start --watch
 CMD ["npm", "run", "start:dev"]
@@ -17,7 +18,7 @@ COPY . .
 RUN npm run build
 
 # ---- Prod ----
-FROM node:20-alpine AS prod
+FROM node:latest AS prod
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/package*.json ./
