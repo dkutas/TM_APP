@@ -1,8 +1,12 @@
 // src/auth/auth.controller.ts
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService, JwtPayload } from './auth.service';
 import { JwtAuthGuard } from './jwt.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+
+interface AuthenticatedRequest extends Request {
+  user: JwtPayload; // Adjust the type according to your user object structure
+}
 
 @Controller('auth')
 export class AuthController {
@@ -34,7 +38,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('me')
-  me(@Req() req: any) {
+  me(@Req() req: AuthenticatedRequest) {
     return req.user;
   }
 }
