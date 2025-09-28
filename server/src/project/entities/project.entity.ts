@@ -8,9 +8,11 @@ import {
 
 @Entity('project')
 export class Project {
-  @PrimaryGeneratedColumn() id: number;
+  @PrimaryGeneratedColumn('uuid') id: string;
 
   @Column({ length: 100 }) name: string;
+
+  @Column({ length: 20, unique: true }) key: string;
 
   @Column({ length: 255, nullable: true }) description: string;
 

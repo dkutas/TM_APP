@@ -15,7 +15,7 @@ export type SystemRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
 
 @Entity('user')
 export class User {
-  @PrimaryGeneratedColumn() id: number;
+  @PrimaryGeneratedColumn('uuid') id: string;
 
   @Column({ length: 100 }) name: string;
 

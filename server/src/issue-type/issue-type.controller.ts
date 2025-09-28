@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { IssueTypeService } from './issue-type.service';
 import { CreateIssueTypeDto } from './dto/create-issue-type.dto';
 import { UpdateIssueTypeDto } from './dto/update-issue-type.dto';
@@ -19,16 +27,19 @@ export class IssueTypeController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.issueTypeService.findOne(+id);
+    return this.issueTypeService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateIssueTypeDto: UpdateIssueTypeDto) {
-    return this.issueTypeService.update(+id, updateIssueTypeDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateIssueTypeDto: UpdateIssueTypeDto,
+  ) {
+    return this.issueTypeService.update(id, updateIssueTypeDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.issueTypeService.remove(+id);
+    return this.issueTypeService.remove(id);
   }
 }

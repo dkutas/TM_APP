@@ -10,7 +10,7 @@ import { User } from '../../user/entities/user.entity';
 
 @Entity({ name: 'refresh_tokens' })
 export class RefreshToken {
-  @PrimaryGeneratedColumn() id: number;
+  @PrimaryGeneratedColumn('uuid') id: string;
 
   @ManyToOne(() => User, (user) => user.refreshTokens, { onDelete: 'CASCADE' })
   @Index()

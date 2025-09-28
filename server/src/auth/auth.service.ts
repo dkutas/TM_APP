@@ -15,7 +15,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 export interface JwtPayload {
-  sub: number;
+  sub: string;
   email: string;
   role: SystemRole;
 }
@@ -75,7 +75,7 @@ export class AuthService {
     };
   }
 
-  async logout(userId: number) {
+  async logout(userId: string) {
     const tokens = await this.refreshTokens.find({
       where: { user: { id: userId } },
     });

@@ -10,6 +10,30 @@ import { User } from './user/entities/user.entity';
 import { Project } from './project/entities/project.entity';
 import { IssueTypeModule } from './issue-type/issue-type.module';
 import { RefreshToken } from './auth/entities/refresh-token.entity';
+import { IssueModule } from './issue/issue.module';
+import { LinkTypeModule } from './link-type/link-type.module';
+import { PriorityModule } from './priority/priority.module';
+import { WorkflowModule } from './workflow/workflow.module';
+import { AttachmentModule } from './attachment/attachment.module';
+import { CommentModule } from './comment/comment.module';
+import { IssueFieldValueModule } from './issue-field-value/issue-field-value.module';
+import { FieldDefinitionModule } from './field-definition/field-definition.module';
+import { FieldOptionModule } from './field-option/field-option.module';
+import { FieldContextModule } from './field-context/field-context.module';
+import { Workflow } from './workflow/entities/workflow.entity';
+import { WorkflowStatus } from './workflow/entities/workflowStatus.entity';
+import { WorkflowTransition } from './workflow/entities/workflowTransition.entity';
+import { ProjectIssueType } from './project/entities/projectIssueType.entity';
+import { Priority } from './priority/entities/priority.entity';
+import { LinkType } from './link-type/entities/link-type.entity';
+import { IssueType } from './issue-type/entities/issue-type.entity';
+import { IssueFieldValue } from './issue-field-value/entities/issue-field-value.entity';
+import { Issue } from './issue/entities/issue.entity';
+import { FieldOption } from './field-option/entities/field-option.entity';
+import { FieldDefinition } from './field-definition/entities/field-definition.entity';
+import { FieldContext } from './field-context/entities/field-context.entity';
+import { Comment } from './comment/entities/comment.entity';
+import { Attachment } from './attachment/entities/attachment.entity';
 
 @Module({
   imports: [
@@ -21,13 +45,41 @@ import { RefreshToken } from './auth/entities/refresh-token.entity';
       username: process.env.DB_USER || 'app',
       password: process.env.DB_PASS || 'app_pw',
       database: process.env.DB_NAME || 'app_db',
-      entities: [User, Project, RefreshToken],
+      entities: [
+        User,
+        Project,
+        RefreshToken,
+        Workflow,
+        WorkflowStatus,
+        WorkflowTransition,
+        ProjectIssueType,
+        Priority,
+        LinkType,
+        IssueType,
+        IssueFieldValue,
+        Issue,
+        FieldOption,
+        FieldDefinition,
+        FieldContext,
+        Comment,
+        Attachment,
+      ],
       synchronize: true,
     }),
     UserModule,
     AuthModule,
     ProjectModule,
     IssueTypeModule,
+    IssueModule,
+    LinkTypeModule,
+    PriorityModule,
+    WorkflowModule,
+    AttachmentModule,
+    CommentModule,
+    IssueFieldValueModule,
+    FieldDefinitionModule,
+    FieldOptionModule,
+    FieldContextModule,
   ],
   controllers: [AppController],
   providers: [AppService],
