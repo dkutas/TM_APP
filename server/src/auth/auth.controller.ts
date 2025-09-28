@@ -11,7 +11,22 @@ export class AuthController {
   @Post('login') login(@Body() body: { email: string; password: string }) {
     return this.auth.login(body.email, body.password);
   }
-
+  @Post('register') register(
+    @Body()
+    body: {
+      email: string;
+      password: string;
+      name: string;
+      admin?: boolean;
+    },
+  ) {
+    return this.auth.register(
+      body.email,
+      body.password,
+      body.name,
+      !!body.admin,
+    );
+  }
   @Post('refresh') refresh(@Body() body: { refreshToken: string }) {
     return this.auth.refresh(body.refreshToken);
   }

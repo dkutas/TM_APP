@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { writeFileSync } from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -14,6 +15,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+  writeFileSync('./openapi.json', JSON.stringify(document, null, 2));
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN?.split(',').filter(Boolean).length
