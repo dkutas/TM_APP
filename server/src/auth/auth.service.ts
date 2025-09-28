@@ -1,20 +1,33 @@
 // src/auth/auth.service.ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
-import { SystemRole } from '../user/entities/user.entity';
+import { SystemRole, User } from '../user/entities/user.entity';
 import * as process from 'node:process';
+import * as crypto from 'node:crypto';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 export interface JwtPayload {
-  sub: number; // vagy string, attól függ, hogy tárolod az id-t
+  sub: number;
   email: string;
   role: SystemRole;
+}
+function sha256(input: string) {
+  return crypto.createHash('sha256').update(input).digest('hex');
 }
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(RefreshToken)
+    private refreshTokens: Repository<RefreshToken>,
     private users: UserService,
     private jwt: JwtService,
   ) {}
@@ -46,11 +59,9 @@ export class AuthService {
 
   async login(email: string, password: string) {
     const user = await this.validateUser(email, password);
-    const payload = { sub: user.id, email: user.email, role: user.systemRole };
-    const accessToken = await this.jwt.signAsync(payload, {
-      expiresIn: process.env.TOKEN_EXPIRATION || '1h',
-    });
-    const refreshToken = await this.jwt.signAsync(payload, { expiresIn: '7d' });
+    const accessToken = this.signAccessToken(user);
+    const { token: refreshToken, expiresAt } =
+      await this.issueRefreshToken(user);
     return {
       accessToken,
       refreshToken,
@@ -60,21 +71,75 @@ export class AuthService {
         name: user.name,
         role: user.systemRole,
       },
+      refreshTokenExpiresAt: expiresAt,
     };
   }
 
-  async refresh(token: string) {
-    const decoded = await this.jwt.verifyAsync<JwtPayload>(token, {
-      secret: process.env.JWT_SECRET ?? 'dev_secret',
+  async logout(userId: number) {
+    const tokens = await this.refreshTokens.find({
+      where: { user: { id: userId } },
     });
-    const payload = {
-      sub: decoded.sub,
-      email: decoded.email,
-      role: decoded.role,
+    for (const t of tokens) {
+      if (!t.revokedAt) {
+        t.revokedAt = new Date();
+      }
+    }
+    await this.refreshTokens.save(tokens);
+    return { success: true };
+  }
+
+  async refresh(refreshToken: string) {
+    const tokenHash = sha256(refreshToken);
+    const rt = await this.refreshTokens.findOne({
+      where: { tokenHash },
+      relations: ['user'],
+    });
+    if (!rt) throw new UnauthorizedException('Invalid refresh token');
+    if (rt.revokedAt) throw new ForbiddenException('Refresh token revoked');
+    if (rt.expiresAt.getTime() < Date.now())
+      throw new UnauthorizedException('Refresh token expired');
+
+    rt.revokedAt = new Date();
+    const newIssue = await this.issueRefreshToken(rt.user);
+    rt.replacedByTokenHash = sha256(newIssue.token);
+    await this.refreshTokens.save(rt);
+
+    const accessToken = await this.signAccessToken(rt.user);
+    return {
+      accessToken,
+      refreshToken: newIssue.token,
+      refreshTokenExpiresAt: newIssue.expiresAt,
     };
-    const accessToken = await this.jwt.signAsync(payload, {
-      expiresIn: process.env.TOKEN_EXPIRATION || '1h',
+  }
+
+  async revokeRefreshToken(refreshToken: string) {
+    const tokenHash = sha256(refreshToken);
+    const rt = await this.refreshTokens.findOne({ where: { tokenHash } });
+    if (rt) {
+      rt.revokedAt = new Date();
+      await this.refreshTokens.save(rt);
+    }
+    return { success: true };
+  }
+
+  private async signAccessToken(user: User) {
+    const payload = { sub: user.id, email: user.email, role: user.systemRole };
+    return await this.jwt.signAsync(payload, {
+      expiresIn: process.env.TOKEN_EXPIRATION || '15m',
     });
-    return { accessToken };
+  }
+
+  private async issueRefreshToken(user: User) {
+    const token = crypto.randomBytes(48).toString('hex'); // kliens ezt kapja
+    const tokenHash = sha256(token);
+    const expires = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 nap
+
+    const rt = this.refreshTokens.create({
+      user,
+      tokenHash,
+      expiresAt: expires,
+    });
+    await this.refreshTokens.save(rt);
+    return { token, expiresAt: expires };
   }
 }

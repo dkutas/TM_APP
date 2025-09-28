@@ -1,20 +1,6 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api": {
-      "get": {
-        "operationId": "AppController_getHello",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "App"
-        ]
-      }
-    },
     "/user": {
       "post": {
         "operationId": "UserController_create",
@@ -135,6 +121,25 @@
             "description": ""
           }
         },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "tags": [
           "Auth"
         ]
@@ -297,6 +302,117 @@
           "Project"
         ]
       }
+    },
+    "/issue-type": {
+      "post": {
+        "operationId": "IssueTypeController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIssueTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "IssueType"
+        ]
+      },
+      "get": {
+        "operationId": "IssueTypeController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "IssueType"
+        ]
+      }
+    },
+    "/issue-type/{id}": {
+      "get": {
+        "operationId": "IssueTypeController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "IssueType"
+        ]
+      },
+      "patch": {
+        "operationId": "IssueTypeController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIssueTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "IssueType"
+        ]
+      },
+      "delete": {
+        "operationId": "IssueTypeController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "IssueType"
+        ]
+      }
     }
   },
   "info": {
@@ -329,6 +445,14 @@
         "properties": {}
       },
       "UpdateProjectDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateIssueTypeDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateIssueTypeDto": {
         "type": "object",
         "properties": {}
       }

@@ -15,6 +15,14 @@ export class AuthController {
   @Post('login') login(@Body() body: { email: string; password: string }) {
     return this.auth.login(body.email, body.password);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('logout')
+  logout(@Req() req: AuthenticatedRequest) {
+    return this.auth.logout(req.user.sub);
+  }
+
   @Post('register') register(
     @Body()
     body: {

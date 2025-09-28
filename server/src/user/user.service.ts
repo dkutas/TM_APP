@@ -21,10 +21,6 @@ export class UserService {
     return this.repo.save(user);
   }
 
-  findById(id: number) {
-    return this.repo.findOne({ where: { id } });
-  }
-
   findByEmail(email: string) {
     return this.repo.findOne({ where: { email } });
   }
@@ -34,7 +30,7 @@ export class UserService {
   }
 
   findAll() {
-    return this.repo.find();
+    return this.repo.find({ relations: ['projects'] });
   }
 
   findOne(id: number) {

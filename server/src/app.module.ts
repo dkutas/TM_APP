@@ -8,6 +8,8 @@ import { UserModule } from './user/user.module';
 import { ProjectModule } from './project/project.module';
 import { User } from './user/entities/user.entity';
 import { Project } from './project/entities/project.entity';
+import { IssueTypeModule } from './issue-type/issue-type.module';
+import { RefreshToken } from './auth/entities/refresh-token.entity';
 
 @Module({
   imports: [
@@ -19,12 +21,13 @@ import { Project } from './project/entities/project.entity';
       username: process.env.DB_USER || 'app',
       password: process.env.DB_PASS || 'app_pw',
       database: process.env.DB_NAME || 'app_db',
-      entities: [User, Project],
+      entities: [User, Project, RefreshToken],
       synchronize: true,
     }),
     UserModule,
     AuthModule,
     ProjectModule,
+    IssueTypeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

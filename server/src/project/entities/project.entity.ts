@@ -14,6 +14,7 @@ export class Project {
 
   @Column({ length: 255, nullable: true }) description: string;
 
-  @CreateDateColumn() createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;
 }
