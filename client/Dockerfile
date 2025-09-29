@@ -11,7 +11,7 @@ EXPOSE 5173
 FROM node:latest AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm i
 ARG VITE_API_BASE
 ENV VITE_API_BASE=$VITE_API_BASE
 COPY . .
