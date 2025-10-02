@@ -1,0 +1,89 @@
+@startuml
+left to right direction
+skinparam defaultFontName "Inter"
+skinparam PackageStyle rectangle
+skinparam usecase {
+  BackgroundColor #f7f9fc
+  BorderColor #aab3c5
+}
+
+actor "Guest" as G
+actor "User"  as U
+actor "Admin" as A
+
+' Admin örökli a User-t (mindent tud, amit a User)
+A --|> U
+
+rectangle "AUTH" as AUTH {
+  usecase "Login" as UC_LOGIN
+  usecase "Register" as UC_REGISTER
+}
+
+rectangle "PROJECTS" as PROJ {
+  usecase "View Project\n(Description, Users)" as UC_PROJ_VIEW
+  ' Admin-only use-cases:
+  usecase "Create Project\n(Name, Key, Description)" as UC_PROJ_CREATE
+  usecase "Add/Remove user\nto/from Project" as UC_PROJ_MEMBERS
+  usecase "Configure Project IssueTypes\n+ Workflow mapping\n(+ CF preview)" as UC_PROJ_CFG
+}
+
+rectangle "ISSUES" as ISS {
+  usecase "List Issues\n(Filter, Sort, Pagination)" as UC_ISS_LIST
+  usecase "View Issue\n(System+Custom Fields,\nAttachments, Comments, Links)" as UC_ISS_VIEW
+  usecase "Create Issue\n(+ Set Values)" as UC_ISS_CREATE
+  usecase "Edit Issue\n(+ Set Values)" as UC_ISS_EDIT
+  usecase "Transition Issue\n(+ Set Values)" as UC_ISS_TRANS
+  usecase "Link Issues\n(Create IssueLink)" as UC_ISS_LINK_CREATE
+  usecase "Delete Link\n(Remove IssueLink)" as UC_ISS_LINK_DELETE
+  usecase "Add Comment" as UC_ISS_COMMENT
+  usecase "Add Attachment" as UC_ISS_ATTACH
+  usecase "View Change History\n(per Issue)" as UC_ISS_HISTORY
+}
+
+rectangle "ADMIN SETTINGS" as ADM {
+  usecase "Manage IssueTypes\n(Name, Description)" as UC_IT_MGMT
+  usecase "Manage Workflows\n(Statuses + Transitions)" as UC_WF_MGMT
+  usecase "Manage Custom Fields\n(Definitions + Contexts)" as UC_CF_MGMT
+}
+
+rectangle "AUDIT / CI" as AUD {
+  usecase "Track ChangeItem\n(CI) entries" as UC_CI
+  usecase "Profile: Last 10 CIs" as UC_PROFILE_CI
+}
+
+' Guest jogok
+G --> UC_LOGIN
+G --> UC_REGISTER
+
+' User jogok
+U --> UC_PROJ_VIEW
+U --> UC_ISS_LIST
+U --> UC_ISS_VIEW
+U --> UC_ISS_CREATE
+U --> UC_ISS_EDIT
+U --> UC_ISS_TRANS
+U --> UC_ISS_LINK_CREATE
+U --> UC_ISS_LINK_DELETE
+U --> UC_ISS_COMMENT
+U --> UC_ISS_ATTACH
+U --> UC_ISS_HISTORY
+U --> UC_PROFILE_CI
+
+' Admin-only (Usertől örökölt use-case-eket nem kell újrakötni)
+A --> UC_PROJ_CREATE
+A --> UC_PROJ_MEMBERS
+A --> UC_PROJ_CFG
+A --> UC_IT_MGMT
+A --> UC_WF_MGMT
+A --> UC_CF_MGMT
+
+' CI include-k
+UC_ISS_CREATE --> UC_CI : <<include>>
+UC_ISS_EDIT   --> UC_CI : <<include>>
+UC_ISS_TRANS  --> UC_CI : <<include>>
+UC_ISS_LINK_CREATE --> UC_CI : <<include>>
+UC_ISS_LINK_DELETE --> UC_CI : <<include>>
+UC_ISS_COMMENT --> UC_CI : <<include>>
+UC_ISS_ATTACH  --> UC_CI : <<include>>
+
+@enduml

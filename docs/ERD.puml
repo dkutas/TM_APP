@@ -1,0 +1,286 @@
+@startuml
+' ===== Visual settings
+hide circle
+skinparam defaultFontName "Inter"
+skinparam linetype polyline
+skinparam RectangleBorderColor #7a869a
+skinparam ArrowColor #7a869a
+
+' ===== Tables
+
+entity "User" as User {
+  * id: uuid <<PK>>
+  --
+  email: text <<UQ>>
+  name: text
+  password_hash: text
+  is_admin: boolean
+  active: boolean
+  created_at: timestamptz
+}
+
+entity Project {
+  * id: uuid <<PK>>
+  --
+  key: text <<UQ>>
+  name: text
+  description: text?
+  created_at: timestamptz
+  archived: boolean
+}
+
+entity ProjectMembership {
+  * id: uuid <<PK>>
+  --
+  project_id: uuid <<FK Project.id>>
+  user_id: uuid <<FK User.id>>
+  role: text ' pl. MEMBER, OWNER (MVP)
+  -- UQ(project_id, user_id)
+}
+
+entity IssueType {
+  * id: uuid <<PK>>
+  --
+  key: text <<UQ>>
+  name: text
+  description: text?
+}
+
+entity Workflow {
+  * id: uuid <<PK>>
+  --
+  name: text
+  description: text?
+  is_active: boolean
+}
+
+entity WorkflowStatus {
+  * id: uuid <<PK>>
+  --
+  workflow_id: uuid <<FK Workflow.id>>
+  key: text
+  name: text
+  color: text?  ' UI szín
+  is_terminal: boolean
+  -- UQ(workflow_id, key)
+}
+
+entity WorkflowTransition {
+  * id: uuid <<PK>>
+  --
+  workflow_id: uuid <<FK Workflow.id>>
+  from_status_id: uuid <<FK WorkflowStatus.id>>
+  to_status_id: uuid <<FK WorkflowStatus.id>>
+  name: text
+  -- IX(workflow_id, from_status_id)
+}
+
+entity ProjectIssueType {
+  * id: uuid <<PK>>
+  --
+  project_id: uuid <<FK Project.id>>
+  issue_type_id: uuid <<FK IssueType.id>>
+  workflow_id: uuid <<FK Workflow.id>>
+  key_prefix: text
+  active: boolean
+  -- UQ(project_id, issue_type_id)
+}
+
+entity Issue {
+  * id: uuid <<PK>>
+  --
+  project_id: uuid <<FK Project.id>>
+  project_issue_type_id: uuid <<FK ProjectIssueType.id>>
+  issue_type_id: uuid <<FK IssueType.id>>
+  key: text <<UQ>>
+  summary: text
+  description: text?
+  status_id: uuid <<FK WorkflowStatus.id>>
+  reporter_id: uuid <<FK User.id>>
+  assignee_id: uuid? <<FK User.id>>
+  due_date: date?
+  created_at: timestamptz
+  updated_at: timestamptz
+  -- IX(project_id, status_id)
+  -- IX(assignee_id)
+}
+
+entity LinkType {
+  * id: uuid <<PK>>
+  --
+  name: text <<UQ>>
+  category: text   ' HIERARCHY/RELATES/BLOCKS/...
+  directed: boolean
+  inward_label: text
+  outward_label: text
+  allows_cycles: boolean
+}
+
+entity IssueLink {
+  * id: uuid <<PK>>
+  --
+  link_type_id: uuid <<FK LinkType.id>>
+  src_issue_id: uuid <<FK Issue.id>>
+  dst_issue_id: uuid <<FK Issue.id>>
+  created_at: timestamptz
+  -- IX(src_issue_id), IX(dst_issue_id)
+  -- CHECK src_issue_id <> dst_issue_id
+}
+
+entity Comment {
+  * id: uuid <<PK>>
+  --
+  issue_id: uuid <<FK Issue.id>>
+  author_id: uuid <<FK User.id>>
+  body: text
+  created_at: timestamptz
+  -- IX(issue_id)
+}
+
+entity Attachment {
+  * id: uuid <<PK>>
+  --
+  issue_id: uuid <<FK Issue.id>>
+  uploader_id: uuid <<FK User.id>>
+  file_name: text
+  mime_type: text
+  size: bigint
+  url: text
+  created_at: timestamptz
+  -- IX(issue_id)
+}
+
+entity ChangeLog {
+  * id: uuid <<PK>>
+  --
+  issue_id: uuid <<FK Issue.id>>
+  actor_id: uuid <<FK User.id>>
+  created_at: timestamptz
+  -- IX(issue_id, created_at)
+}
+
+entity ChangeItem {
+  * id: uuid <<PK>>
+  --
+  changelog_id: uuid <<FK ChangeLog.id>>
+  field_key: text        ' pl. summary/status/link/comment/attachment/custom:FIELD_KEY
+  from_display: text?
+  to_display: text?
+  from_id: uuid?
+  to_id: uuid?
+}
+
+entity FieldDefinition {
+  * id: uuid <<PK>>
+  --
+  key: text <<UQ>>
+  name: text
+  description: text?
+  data_type: text  ' TEXT/NUMBER/BOOL/DATE/OPTION/MULTI_OPTION/LINK
+  is_system: boolean
+  created_at: timestamptz
+}
+
+entity FieldOption {
+  * id: uuid <<PK>>
+  --
+  field_def_id: uuid <<FK FieldDefinition.id>>
+  key: text
+  value: text
+  "order": int
+  -- UQ(field_def_id, key)
+}
+
+entity FieldContext {
+  * id: uuid <<PK>>
+  --
+  field_def_id: uuid <<FK FieldDefinition.id>>
+  project_id: uuid? <<FK Project.id>>
+  issue_type_id: uuid? <<FK IssueType.id>>
+  required: boolean
+  visible: boolean
+  editable: boolean
+  "order": int
+  default_option_id: uuid?
+  min: numeric?
+  max: numeric?
+  regex: text?
+  -- IX(field_def_id, project_id, issue_type_id)
+}
+
+entity IssueFieldValue {
+  * id: uuid <<PK>>
+  --
+  issue_id: uuid <<FK Issue.id>>
+  field_def_id: uuid <<FK FieldDefinition.id>>
+  value_text: text?
+  value_number: numeric?
+  value_bool: boolean?
+  value_date: date?
+  value_datetime: timestamptz?
+  value_user_id: uuid?
+  value_json: jsonb?
+  updated_at: timestamptz
+  -- UQ(issue_id, field_def_id)
+}
+
+entity IssueFieldValueOption {
+  * id: uuid <<PK>>
+  --
+  issue_field_value_id: uuid <<FK IssueFieldValue.id>>
+  option_id: uuid <<FK FieldOption.id>>
+  -- UQ(issue_field_value_id, option_id)
+}
+
+' ===== Relationships (crow’s foot)
+
+' Users & Projects
+User ||--o{ ProjectMembership
+Project ||--o{ ProjectMembership
+
+' Projects & IssueTypes/Workflows
+Project ||--o{ ProjectIssueType
+IssueType ||--o{ ProjectIssueType
+Workflow ||--o{ ProjectIssueType
+
+' Workflow structure
+Workflow ||--o{ WorkflowStatus
+Workflow ||--o{ WorkflowTransition
+WorkflowStatus ||--o{ WorkflowTransition : from
+WorkflowStatus ||--o{ WorkflowTransition : to
+
+' Issues core
+Project ||--o{ Issue
+IssueType ||--o{ Issue
+ProjectIssueType ||--o{ Issue
+WorkflowStatus ||--o{ Issue : status
+User ||--o{ Issue : reporter
+User ||--o{ Issue : assignee
+
+' Links
+LinkType ||--o{ IssueLink
+Issue ||--o{ IssueLink : src
+Issue ||--o{ IssueLink : dst
+
+' Collaboration
+Issue ||--o{ Comment
+User ||--o{ Comment : author
+Issue ||--o{ Attachment
+User ||--o{ Attachment : uploader
+
+' Audit (CI)
+Issue ||--o{ ChangeLog
+User ||--o{ ChangeLog : actor
+ChangeLog ||--o{ ChangeItem
+
+' Fields (EAV + Context)
+FieldDefinition ||--o{ FieldOption
+FieldDefinition ||--o{ FieldContext
+Project ||--o{ FieldContext
+IssueType ||--o{ FieldContext
+
+FieldDefinition ||--o{ IssueFieldValue
+Issue ||--o{ IssueFieldValue
+IssueFieldValue ||--o{ IssueFieldValueOption
+FieldOption ||--o{ IssueFieldValueOption
+@enduml

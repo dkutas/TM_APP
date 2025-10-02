@@ -1,0 +1,424 @@
+@startuml
+' ===== Beállítások
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam defaultFontName "Inter"
+
+' ===== Enums (változatlan)
+enum FieldScope {
+CORE
+CUSTOM
+}
+enum DataType {
+TEXT
+NUMBER
+BOOL
+DATE
+DATETIME
+USER
+OPTION
+MULTI_OPTION
+LINK
+}
+enum LinkCategory {
+HIERARCHY
+RELATES
+BLOCKS
+DUPLICATES
+}
+
+' ===== Core domain (mezők + MÓDSZEREK)
+class Project {
+  +id: UUID
+  +key: string <<unique>>
+  +name: string
+  +description: text?
+  +created_at: datetime
+  +archived: bool
+  --
+  +rename(newName: string)
+  +archive()
+  +restore()
+  +allowsIssueType(issueTypeId: UUID): bool
+}
+
+class IssueType {
+  +id: UUID
+  +key: string <<unique>>
+  +name: string
+  +description: text?
+  --
+  +rename(name: string)
+}
+
+class Workflow {
+  +id: UUID
+  +name: string
+  +description: text?
+  +is_active: bool
+  --
+  +activate()
+  +deactivate()
+  +findStatusByKey(key: string): WorkflowStatus
+  +findTransitionsFrom(statusId: UUID): List<WorkflowTransition>
+}
+
+class WorkflowStatus {
+  +id: UUID
+  +workflow_id: UUID
+  +key: string
+  +name: string
+  +is_terminal: bool
+  +category: string?
+  --
+  +markTerminal()
+}
+
+class WorkflowTransition {
+  +id: UUID
+  +workflow_id: UUID
+  +from_status_id: UUID
+  +to_status_id: UUID
+  +name: string
+  +guard: text?
+  --
+  +isAllowed(context: Map<string, any>): bool
+}
+
+class ProjectIssueType {
+  +id: UUID
+  +project_id: UUID
+  +issue_type_id: UUID
+  +workflow_id: UUID
+  +key_prefix: string
+  +active: bool
+  --
+  +enable()
+  +disable()
+  +nextKey(seqProvider): string  ' pl. "PROJ-123"
+}
+
+class Priority {
+  +id: UUID
+  +name: string
+  +rank: int
+  --
+  +raise()
+  +lower()
+}
+
+class Issue {
+  +id: UUID
+  +project_id: UUID
+  +project_issue_type_id: UUID
+  +issue_type_id: UUID
+  +key: string <<unique>>
+  +summary: string
+  +description: text?
+  +status_id: UUID
+  +priority_id: UUID?
+  +reporter_id: UUID
+  +assignee_id: UUID?
+  +created_at: datetime
+  +updated_at: datetime
+  +due_date: date?
+  --
+  +rename(summary: string)
+  +describe(description: text?)
+  +assign(userId: UUID)
+  +unassign()
+  +setPriority(priorityId: UUID?)
+  +setDueDate(d: date?)
+  +transition(toStatusId: UUID, actorId: UUID, engine: WorkflowEngine)
+  +addComment(authorId: UUID, body: text): Comment
+  +attach(uploaderId: UUID, fileName: string, mime: string, size: long, url: string): Attachment
+  +linkTo(dstIssueId: UUID, linkTypeId: UUID): IssueLink
+  +unlink(linkId: UUID)
+  +setFieldValue(fieldDefId: UUID, value: any, fieldService: FieldService)
+}
+
+' ===== Linking & hierarchy
+class LinkType {
+  +id: UUID
+  +name: string
+  +category: LinkCategory
+  +directed: bool
+  +inward_label: string
+  +outward_label: string
+  +allows_cycles: bool
+  --
+  +isHierarchy(): bool
+}
+
+class IssueLink {
+  +id: UUID
+  +link_type_id: UUID
+  +src_issue_id: UUID
+  +dst_issue_id: UUID
+  +created_at: datetime
+  --
+  +otherEnd(issueId: UUID): UUID
+}
+
+class ProjectHierarchyRule {
+  +id: UUID
+  +project_id: UUID
+  +parent_issue_type_id: UUID
+  +child_issue_type_id: UUID
+  +link_type_id: UUID
+  +min_children: int = 0
+  +max_children: int?
+  +enforce_single_parent: bool
+  --
+  +allows(parentTypeId: UUID, childTypeId: UUID): bool
+  +validateParentChild(parentId: UUID, childId: UUID): bool
+}
+
+' ===== Fields (definíciók + MÓDSZEREK)
+class FieldDefinition {
+  +id: UUID
+  +key: string <<unique>>
+  +name: string
+  +scope: FieldScope
+  +data_type: DataType
+  +is_system: bool
+  +description: text?
+  +created_at: datetime
+  --
+  +rename(n: string)
+  +isCore(): bool
+}
+
+class FieldOption {
+  +id: UUID
+  +field_def_id: UUID
+  +key: string
+  +value: string
+  +order: int
+  --
+  +reorder(newOrder: int)
+}
+
+class FieldContext {
+  +id: UUID
+  +field_def_id: UUID
+  +project_id: UUID?
+  +issue_type_id: UUID?
+  +required: bool
+  +visible: bool
+  +editable: bool
+  +order: int
+  +default_option_id: UUID?
+  +min: decimal?
+  +max: decimal?
+  +regex: string?
+  --
+  +appliesTo(projectId: UUID, issueTypeId: UUID): bool
+  +isValid(value: any): bool
+}
+
+class IssueFieldValue {
+  +id: UUID
+  +issue_id: UUID
+  +field_def_id: UUID
+  +value_text: text?
+  +value_number: decimal?
+  +value_bool: bool?
+  +value_date: date?
+  +value_datetime: datetime?
+  +value_user_id: UUID?
+  +value_json: jsonb?
+  +updated_at: datetime
+  --
+  +set(value: any, fieldDef: FieldDefinition, ctx: FieldContext)
+  +get(): any
+}
+
+class IssueFieldValueOption {
+  +issue_field_value_id: UUID
+  +option_id: UUID
+}
+
+' ===== Users & permissions (MVP-ben egyszerűsítve)
+class User {
+  +id: UUID
+  +email: string <<unique>>
+  +name: string
+  +active: bool
+  +created_at: datetime
+  --
+  +activate()
+  +deactivate()
+}
+
+class ProjectMembership {
+  +id: UUID
+  +project_id: UUID
+  +user_id: UUID
+  +role_id: UUID
+  --
+  +isMemberOf(projectId: UUID): bool
+}
+
+class Role {
+  +id: UUID
+  +name: string
+  +scope: string
+}
+
+class Permission {
+  +id: UUID
+  +key: string <<unique>>
+  +description: text?
+}
+
+class RolePermission {
+  +role_id: UUID
+  +permission_id: UUID
+}
+
+' ===== Collaboration & audit
+class Comment {
+  +id: UUID
+  +issue_id: UUID
+  +author_id: UUID
+  +body: text
+  +created_at: datetime
+  --
+  +edit(body: text)
+  +canEdit(userId: UUID): bool
+}
+
+class Attachment {
+  +id: UUID
+  +issue_id: UUID
+  +uploader_id: UUID
+  +file_name: string
+  +mime_type: string
+  +size: bigint
+  +url: string
+  +created_at: datetime
+  --
+  +rename(newName: string)
+}
+
+class ChangeLog {
+  +id: UUID
+  +issue_id: UUID
+  +actor_id: UUID
+  +created_at: datetime
+  --
+  +addItem(fieldKey: string, fromDisp: string?, toDisp: string?, fromId: UUID?, toId: UUID?): ChangeItem
+}
+
+class ChangeItem {
+  +id: UUID
+  +changelog_id: UUID
+  +field_key: string
+  +from_display: string?
+  +to_display: string?
+  +from_id: UUID?
+  +to_id: UUID?
+}
+
+' ===== Application Services (MVP)
+class AuthService {
+  +login(email: string, password: string): TokenPair
+  +refresh(refreshToken: string): TokenPair
+  +me(userId: UUID): User
+}
+
+class ProjectService {
+  +createProject(dto): Project
+  +assignIssueType(projectId: UUID, issueTypeId: UUID, workflowId: UUID, keyPrefix: string): ProjectIssueType
+  +listProjects(): List<Project>
+}
+
+class WorkflowEngine {
+  +canTransition(issue: Issue, toStatus: UUID, actorId: UUID): bool
+  +performTransition(issue: Issue, toStatus: UUID, actorId: UUID): ChangeLog
+}
+
+class IssueService {
+  +createIssue(projectId: UUID, pitId: UUID, reporterId: UUID, payload): Issue
+  +updateIssue(issueId: UUID, patch): Issue
+  +get(issueId: UUID): Issue
+  +list(projectId: UUID, filters): Page<Issue>
+}
+
+class FieldService {
+  +setValue(issueId: UUID, fieldDefId: UUID, value: any): IssueFieldValue
+  +getValue(issueId: UUID, fieldDefId: UUID): any
+  +validate(fieldDefId: UUID, context: FieldContext, value: any): bool
+}
+
+class LinkService {
+  +link(srcId: UUID, dstId: UUID, linkTypeId: UUID): IssueLink
+  +unlink(linkId: UUID)
+  +listLinks(issueId: UUID): List<IssueLink>
+}
+
+class AttachmentService {
+  +upload(issueId: UUID, fileMeta): Attachment
+  +remove(attachmentId: UUID)
+}
+
+class ChangeLogService {
+  +history(issueId: UUID): List<ChangeLog>
+}
+
+' ===== Kapcsolatok (mint az előző UML2-ben)
+Project "1" o-- "*" Issue
+Project "1" o-- "*" ProjectIssueType
+IssueType "1" o-- "*" ProjectIssueType
+ProjectIssueType "*" --> "1" Workflow
+Workflow "1" o-- "*" WorkflowStatus
+Workflow "1" o-- "*" WorkflowTransition
+WorkflowStatus "1" <-- "*" WorkflowTransition : to
+WorkflowStatus "1" --> "*" WorkflowTransition : from
+
+Issue "*" --> "1" Project
+Issue "*" --> "1" IssueType
+Issue "*" --> "1" ProjectIssueType
+Issue "*" --> "0..1" Priority
+Issue "*" --> "1" WorkflowStatus : status
+
+LinkType "1" o-- "*" IssueLink
+Issue "1" <-- "*" IssueLink : src
+Issue "1" <-- "*" IssueLink : dst
+
+Project "1" o-- "*" ProjectHierarchyRule
+IssueType "1" <-- "*" ProjectHierarchyRule : parent
+IssueType "1" <-- "*" ProjectHierarchyRule : child
+LinkType "1" <-- "*" ProjectHierarchyRule
+
+FieldDefinition "1" o-- "*" FieldOption
+FieldDefinition "1" o-- "*" FieldContext
+FieldDefinition "1" o-- "*" IssueFieldValue
+Issue "1" o-- "*" IssueFieldValue
+IssueFieldValue "1" o-- "*" IssueFieldValueOption
+FieldOption "1" <-- "*" IssueFieldValueOption
+
+User "1" o-- "*" ProjectMembership
+Project "1" o-- "*" ProjectMembership
+Role "1" o-- "*" ProjectMembership
+Role "1" o-- "*" RolePermission
+Permission "1" o-- "*" RolePermission
+
+Issue "1" o-- "*" Comment
+User "1" o-- "*" Comment : author
+Issue "1" o-- "*" Attachment
+User "1" o-- "*" Attachment : uploader
+
+Issue "1" o-- "*" ChangeLog
+ChangeLog "1" o-- "*" ChangeItem
+User "1" o-- "*" ChangeLog : actor
+
+' ===== Jegyzetek (rövidítve az előzőből)
+note right of Issue
+transition() a WorkflowEngine-t használja
+(invariánsok: helyes workflow, státuszváltás logolása).
+end note
+
+@enduml
