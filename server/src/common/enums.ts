@@ -1,0 +1,23 @@
+export enum FieldScope {
+  CORE = 'CORE',
+  CUSTOM = 'CUSTOM',
+}
+
+export enum DataType {
+  TEXT = 'TEXT',
+  NUMBER = 'NUMBER',
+  BOOL = 'BOOL',
+  DATE = 'DATE',
+  DATETIME = 'DATETIME',
+  USER = 'USER',
+  OPTION = 'OPTION',
+  MULTI_OPTION = 'MULTI_OPTION',
+  LINK = 'LINK',
+}
+
+export enum LinkCategory {
+  HIERARCHY = 'HIERARCHY',
+  RELATES = 'RELATES',
+  BLOCKS = 'BLOCKS',
+  DUPLICATES = 'DUPLICATES',
+}

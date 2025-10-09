@@ -1,14 +1,25 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+// src/projects/project-issue-type.entity.ts
+import { Project } from './project.entity';
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { IssueType } from '../../issue-type/entities/issue-type.entity';
+import { Workflow } from '../../workflow/entities/workflow.entity';
 
-@Entity('projectIssueType')
+@Entity('project_issue_types')
+@Index(['project', 'issueType'], { unique: true })
 export class ProjectIssueType {
   @PrimaryGeneratedColumn('uuid') id: string;
 
-  @Column('uuid') project_id: string;
+  @ManyToOne(() => Project, (p) => p.projectIssueTypes, { onDelete: 'CASCADE' })
+  project: Project;
+  @ManyToOne(() => IssueType, { onDelete: 'CASCADE' }) issueType: IssueType;
+  @ManyToOne(() => Workflow, { onDelete: 'RESTRICT' }) workflow: Workflow;
 
-  @Column('uuid') issue_type_id: string;
-
-  @Column('uuid') workflow_id: string;
-
-  @Column() key_prefix: string;
+  @Column({ length: 20 }) keyPrefix: string; // PROJ
+  @Column({ default: true }) active: boolean;
 }

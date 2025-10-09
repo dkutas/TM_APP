@@ -1,8 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+// src/issues/priority.entity.ts
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('priority')
+@Entity('priorities')
+@Index(['rank'], { unique: true })
 export class Priority {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @Column() name: string;
-  @Column() rank: number;
+  @Column({ length: 50 }) name: string;
+  @Column({ type: 'int' }) rank: number;
 }

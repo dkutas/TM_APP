@@ -1,35 +1,29 @@
+// src/fields/field-definition.entity.ts
 import {
   Column,
-  CreateDateColumn,
   Entity,
+  Index,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { DataType, FieldScope } from '../../common/enums';
+import { FieldOption } from '../../field-option/entities/field-option.entity';
+import { FieldContext } from '../../field-context/entities/field-context.entity';
 
-export enum FieldScope {
-  SYSTEM = 'system',
-  CUSTOM = 'custom',
-}
-export enum DataType {
-  TEXT = 'text',
-  NUMBER = 'number',
-  BOOL = 'bool',
-  DATE = 'date',
-  DATETIME = 'datetime',
-  USER = 'user',
-  OPTION = 'option',
-  MULTI_OPTION = 'multi_option',
-  LINK = 'link',
-}
-
-@Entity('fieldDefinition')
+@Entity('field_definitions')
+@Index(['key'], { unique: true }) // pl. system.summary, custom.foo
 export class FieldDefinition {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ length: 50 }) key: string;
-  @Column({ length: 255 }) name: string;
-  @Column('enum', { enum: FieldScope }) scope: FieldScope;
-  @Column('boolean', { default: false }) is_system: boolean;
-  @Column('text', { nullable: true })
-  description: string | null;
-  @Column('enum', { enum: DataType }) data_type: DataType;
-  @CreateDateColumn() created_at: Date;
+  @Column({ length: 120 }) key: string;
+  @Column({ length: 120 }) name: string;
+
+  @Column({ type: 'enum', enum: FieldScope }) scope: FieldScope;
+  @Column({ type: 'enum', enum: DataType }) dataType: DataType;
+  @Column({ default: false }) isSystem: boolean;
+
+  @Column({ type: 'text', nullable: true }) description?: string;
+  @Column({ type: 'timestamptz', default: () => 'now()' }) createdAt: Date;
+
+  @OneToMany(() => FieldOption, (o) => o.fieldDef) options: FieldOption[];
+  @OneToMany(() => FieldContext, (c) => c.fieldDef) contexts: FieldContext[];
 }

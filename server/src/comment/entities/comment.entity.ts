@@ -1,11 +1,20 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+// src/collab/comment.entity.ts
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Issue } from '../../issue/entities/issue.entity';
+import { User } from '../../user/entities/user.entity';
 
-@Entity('comment')
+@Entity('comments')
+@Index(['issue', 'createdAt'])
 export class Comment {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @Column('uuid') issue_id: string;
-  @Column('uuid') author_id: string;
-  @Column('text') content: string;
-  @Column('timestamp') created_at: Date;
-  @Column('timestamp') updated_at: Date;
+  @ManyToOne(() => Issue, { onDelete: 'CASCADE' }) issue: Issue;
+  @ManyToOne(() => User, { onDelete: 'RESTRICT' }) author: User;
+  @Column({ type: 'text' }) body: string;
+  @Column({ type: 'timestamptz', default: () => 'now()' }) createdAt: Date;
 }

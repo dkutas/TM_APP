@@ -1,0 +1,74 @@
+@startuml
+' ===== Beállítások
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam defaultFontName "Inter"
+enum FieldScope {
+CORE
+CUSTOM
+}
+enum DataType {
+TEXT
+NUMBER
+BOOL
+DATE
+DATETIME
+USER
+OPTION
+MULTI_OPTION
+LINK
+}
+enum LinkCategory {
+HIERARCHY
+RELATES
+BLOCKS
+DUPLICATES
+}
+
+class AuthService {
+  +login(email: string, password: string): TokenPair
+  +refresh(refreshToken: string): TokenPair
+  +me(userId: UUID): User
+}
+
+class ProjectService {
+  +createProject(dto): Project
+  +assignIssueType(projectId: UUID, issueTypeId: UUID, workflowId: UUID, keyPrefix: string): ProjectIssueType
+  +listProjects(): List<Project>
+}
+
+class WorkflowEngine {
+  +canTransition(issue: Issue, toStatus: UUID, actorId: UUID): bool
+  +performTransition(issue: Issue, toStatus: UUID, actorId: UUID): ChangeLog
+}
+
+class IssueService {
+  +createIssue(projectId: UUID, pitId: UUID, reporterId: UUID, payload): Issue
+  +updateIssue(issueId: UUID, patch): Issue
+  +get(issueId: UUID): Issue
+  +list(projectId: UUID, filters): Page<Issue>
+}
+
+class FieldService {
+  +setValue(issueId: UUID, fieldDefId: UUID, value: any): IssueFieldValue
+  +getValue(issueId: UUID, fieldDefId: UUID): any
+  +validate(fieldDefId: UUID, context: FieldContext, value: any): bool
+}
+
+class LinkService {
+  +link(srcId: UUID, dstId: UUID, linkTypeId: UUID): IssueLink
+  +unlink(linkId: UUID)
+  +listLinks(issueId: UUID): List<IssueLink>
+}
+
+class AttachmentService {
+  +upload(issueId: UUID, fileMeta): Attachment
+  +remove(attachmentId: UUID)
+}
+
+class ChangeLogService {
+  +history(issueId: UUID): List<ChangeLog>
+}
+
+@enduml

@@ -1,9 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+// src/issues/issue-type.entity.ts
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('issueType')
+@Entity('issue_types')
+@Index(['key'], { unique: true })
 export class IssueType {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @Column() name: string;
-  @Column() key: string;
-  @Column({ length: 255, nullable: true }) description: string;
+  @Column({ length: 50 }) key: string;
+  @Column({ length: 100 }) name: string;
+  @Column({ type: 'text', nullable: true }) description?: string;
 }

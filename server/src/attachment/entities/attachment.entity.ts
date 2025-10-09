@@ -1,13 +1,24 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+// src/collab/attachment.entity.ts
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Issue } from '../../issue/entities/issue.entity';
+import { User } from '../../user/entities/user.entity';
 
-@Entity('attachment')
+@Entity('attachments')
+@Index(['issue', 'createdAt'])
 export class Attachment {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @Column('uuid') issue_id: string;
-  @Column('uuid') uploader_id: string;
-  @Column('varchar', { length: 255 }) filename: string;
-  @Column('varchar', { length: 100 }) mime_type: string;
-  @Column('bigint') size: number;
-  @Column('varchar', { length: 500 }) url: string;
-  @Column('timestamp') uploaded_at: Date;
+  @ManyToOne(() => Issue, { onDelete: 'CASCADE' }) issue: Issue;
+  @ManyToOne(() => User, { onDelete: 'RESTRICT' }) uploader: User;
+
+  @Column({ length: 255 }) fileName: string;
+  @Column({ length: 120 }) mimeType: string;
+  @Column({ type: 'bigint' }) size: string;
+  @Column({ type: 'text' }) url: string;
+  @Column({ type: 'timestamptz', default: () => 'now()' }) createdAt: Date;
 }

@@ -1,19 +1,38 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { FieldDefinition } from '../../field-definition/entities/field-definition.entity';
+import { Project } from '../../project/entities/project.entity';
+import { IssueType } from '../../issue-type/entities/issue-type.entity';
+import { FieldOption } from '../../field-option/entities/field-option.entity';
 
-@Entity('fieldContext')
+// src/fields/field-context.entity.ts
+@Entity('field_contexts')
+@Index(['fieldDef', 'project', 'issueType'], { unique: true })
 export class FieldContext {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @Column('uuid') field_def_id: string;
-  @Column('uuid', { nullable: true }) project_id: string | null;
-  @Column('uuid', { nullable: true }) issue_type_id: string | null;
+  @ManyToOne(() => FieldDefinition, (fd) => fd.contexts, {
+    onDelete: 'CASCADE',
+  })
+  fieldDef: FieldDefinition;
+  @ManyToOne(() => Project, { onDelete: 'CASCADE', nullable: true })
+  project?: Project | null;
+  @ManyToOne(() => IssueType, { onDelete: 'CASCADE', nullable: true })
+  issueType?: IssueType | null;
 
-  @Column('boolean', { default: false }) required: boolean;
-  @Column('boolean', { default: true }) visible: boolean;
-  @Column('boolean', { default: true }) editable: boolean;
-  @Column('int') order: number;
+  @Column({ default: true }) visible: boolean;
+  @Column({ default: false }) required: boolean;
+  @Column({ default: true }) editable: boolean;
+  @Column({ type: 'int', default: 0 }) order: number;
 
-  @Column('uuid', { nullable: true }) default_option_id: string | null;
-  @Column('decimal', { nullable: true }) min: number | null;
-  @Column('decimal', { nullable: true }) max: number | null;
-  @Column('varchar', { nullable: true, length: 255 }) regex: string | null;
+  @ManyToOne(() => FieldOption, { onDelete: 'SET NULL', nullable: true })
+  defaultOption?: FieldOption;
+
+  @Column({ type: 'numeric', nullable: true }) min?: string;
+  @Column({ type: 'numeric', nullable: true }) max?: string;
+  @Column({ type: 'varchar', length: 200, nullable: true }) regex?: string;
 }

@@ -1523,6 +1523,339 @@
           "FieldContext"
         ]
       }
+    },
+    "/project-hierarchy-rule": {
+      "post": {
+        "operationId": "ProjectHierarchyRuleController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectHierarchyRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProjectHierarchyRule"
+        ]
+      },
+      "get": {
+        "operationId": "ProjectHierarchyRuleController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProjectHierarchyRule"
+        ]
+      }
+    },
+    "/project-hierarchy-rule/{id}": {
+      "get": {
+        "operationId": "ProjectHierarchyRuleController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProjectHierarchyRule"
+        ]
+      },
+      "patch": {
+        "operationId": "ProjectHierarchyRuleController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectHierarchyRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProjectHierarchyRule"
+        ]
+      },
+      "delete": {
+        "operationId": "ProjectHierarchyRuleController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ProjectHierarchyRule"
+        ]
+      }
+    },
+    "/role": {
+      "post": {
+        "operationId": "RoleController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Role"
+        ]
+      },
+      "get": {
+        "operationId": "RoleController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Role"
+        ]
+      }
+    },
+    "/role/{id}": {
+      "get": {
+        "operationId": "RoleController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Role"
+        ]
+      },
+      "patch": {
+        "operationId": "RoleController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Role"
+        ]
+      },
+      "delete": {
+        "operationId": "RoleController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Role"
+        ]
+      }
+    },
+    "/change-log": {
+      "post": {
+        "operationId": "ChangeLogController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChangeLogDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ChangeLog"
+        ]
+      },
+      "get": {
+        "operationId": "ChangeLogController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ChangeLog"
+        ]
+      }
+    },
+    "/change-log/{id}": {
+      "get": {
+        "operationId": "ChangeLogController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ChangeLog"
+        ]
+      },
+      "patch": {
+        "operationId": "ChangeLogController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateChangeLogDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ChangeLog"
+        ]
+      },
+      "delete": {
+        "operationId": "ChangeLogController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ChangeLog"
+        ]
+      }
     }
   },
   "info": {
@@ -1643,6 +1976,30 @@
         "properties": {}
       },
       "UpdateFieldContextDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateProjectHierarchyRuleDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateProjectHierarchyRuleDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateRoleDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateRoleDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateChangeLogDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateChangeLogDto": {
         "type": "object",
         "properties": {}
       }

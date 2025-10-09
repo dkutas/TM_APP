@@ -1,36 +1,45 @@
+// src/issues/issue.entity.ts
+import { Project } from '../../project/entities/project.entity';
+import { ProjectIssueType } from '../../project/entities/projectIssueType.entity';
 import {
   Column,
-  CreateDateColumn,
   Entity,
+  Index,
+  ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('issue')
+import { IssueType } from '../../issue-type/entities/issue-type.entity';
+import { WorkflowStatus } from '../../workflow/entities/workflow.entity';
+import { Priority } from '../../priority/entities/priority.entity';
+import { User } from '../../user/entities/user.entity';
+
+@Entity('issues')
+@Index(['key'], { unique: true })
+@Index(['project', 'createdAt'])
 export class Issue {
   @PrimaryGeneratedColumn('uuid') id: string;
 
-  @Column('uuid') project_id: string;
+  @ManyToOne(() => Project, (p) => p.issues, { onDelete: 'CASCADE' })
+  project: Project;
+  @ManyToOne(() => ProjectIssueType, { onDelete: 'RESTRICT' })
+  projectIssueType: ProjectIssueType;
+  @ManyToOne(() => IssueType, { onDelete: 'RESTRICT' }) issueType: IssueType;
 
-  @Column('uuid') project_issue_type_id: string;
+  @Column({ length: 30 }) key: string; // PROJ-123
+  @Column({ length: 255 }) summary: string;
+  @Column({ type: 'text', nullable: true }) description?: string;
 
-  @Column('uuid') issue_type_id: string;
+  @ManyToOne(() => WorkflowStatus, { onDelete: 'RESTRICT' })
+  status: WorkflowStatus;
+  @ManyToOne(() => Priority, { onDelete: 'SET NULL', nullable: true })
+  priority?: Priority;
 
-  @Column({ unique: true }) key: string;
+  @ManyToOne(() => User, { onDelete: 'RESTRICT' }) reporter: User;
+  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
+  assignee?: User;
 
-  @Column({ length: 100 }) summary: string;
-
-  @Column({ length: 255, nullable: true }) description: string;
-  @Column({ length: 50, nullable: true }) status: string;
-
-  @Column({ length: 50, nullable: true }) priority: string;
-  @Column({ length: 50, nullable: true }) resolution: string;
-
-  @Column('uuid', { nullable: true }) assignee_id: string;
-  @Column('uuid', { nullable: true }) reporter_id: string;
-
-  @Column('jsonb', { nullable: true }) due_date: Date;
-
-  @CreateDateColumn() created_at: Date;
-  @UpdateDateColumn() updated_at: Date;
+  @Column({ type: 'timestamptz', default: () => 'now()' }) createdAt: Date;
+  @Column({ type: 'timestamptz', default: () => 'now()' }) updatedAt: Date;
+  @Column({ type: 'date', nullable: true }) dueDate?: string;
 }

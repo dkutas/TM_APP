@@ -6,10 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ProjectModule } from './project/project.module';
-import { User } from './user/entities/user.entity';
-import { Project } from './project/entities/project.entity';
 import { IssueTypeModule } from './issue-type/issue-type.module';
-import { RefreshToken } from './auth/entities/refresh-token.entity';
 import { IssueModule } from './issue/issue.module';
 import { LinkTypeModule } from './link-type/link-type.module';
 import { PriorityModule } from './priority/priority.module';
@@ -20,20 +17,31 @@ import { IssueFieldValueModule } from './issue-field-value/issue-field-value.mod
 import { FieldDefinitionModule } from './field-definition/field-definition.module';
 import { FieldOptionModule } from './field-option/field-option.module';
 import { FieldContextModule } from './field-context/field-context.module';
-import { Workflow } from './workflow/entities/workflow.entity';
-import { WorkflowStatus } from './workflow/entities/workflowStatus.entity';
-import { WorkflowTransition } from './workflow/entities/workflowTransition.entity';
+import { User } from './user/entities/user.entity';
+import { Project } from './project/entities/project.entity';
+import { RefreshToken } from './auth/entities/refresh-token.entity';
+import {
+  Workflow,
+  WorkflowStatus,
+  WorkflowTransition,
+} from './workflow/entities/workflow.entity';
 import { ProjectIssueType } from './project/entities/projectIssueType.entity';
 import { Priority } from './priority/entities/priority.entity';
 import { LinkType } from './link-type/entities/link-type.entity';
 import { IssueType } from './issue-type/entities/issue-type.entity';
-import { IssueFieldValue } from './issue-field-value/entities/issue-field-value.entity';
+import {
+  IssueFieldValue,
+  IssueFieldValueOption,
+} from './issue-field-value/entities/issue-field-value.entity';
 import { Issue } from './issue/entities/issue.entity';
 import { FieldOption } from './field-option/entities/field-option.entity';
 import { FieldDefinition } from './field-definition/entities/field-definition.entity';
 import { FieldContext } from './field-context/entities/field-context.entity';
-import { Comment } from './comment/entities/comment.entity';
 import { Attachment } from './attachment/entities/attachment.entity';
+import { Comment } from './comment/entities/comment.entity';
+import { ProjectHierarchyRuleModule } from './project-hierarchy-rule/project-hierarchy-rule.module';
+import { ChangeLogModule } from './change-log/change-log.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
   imports: [
@@ -63,6 +71,7 @@ import { Attachment } from './attachment/entities/attachment.entity';
         FieldContext,
         Comment,
         Attachment,
+        IssueFieldValueOption,
       ],
       synchronize: true,
     }),
@@ -80,6 +89,9 @@ import { Attachment } from './attachment/entities/attachment.entity';
     FieldDefinitionModule,
     FieldOptionModule,
     FieldContextModule,
+    ProjectHierarchyRuleModule,
+    RoleModule,
+    ChangeLogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

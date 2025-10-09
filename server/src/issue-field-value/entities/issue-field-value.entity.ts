@@ -1,21 +1,51 @@
 import {
   Column,
   Entity,
+  Index,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
+import { Issue } from '../../issue/entities/issue.entity';
+import { FieldDefinition } from '../../field-definition/entities/field-definition.entity';
+import { FieldOption } from '../../field-option/entities/field-option.entity';
 
-@Entity('issueFieldValue')
+// src/fields/issue-field-value.entity.ts
+@Entity('issue_field_values')
+@Index(['issue', 'fieldDef'], { unique: true })
 export class IssueFieldValue {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @Column('uuid') issue_id: string; // uuid
-  @Column('uuid') field_def_id: string; // uuid
-  @Column({ type: 'text', nullable: true }) value_text: string;
-  @Column({ type: 'decimal', nullable: true }) value_number: number;
-  @Column({ type: 'boolean', nullable: true }) value_bool: boolean;
-  @Column({ type: 'date', nullable: true }) value_date: Date;
-  @Column({ type: 'date', nullable: true }) value_datetime: Date;
-  @Column({ type: 'uuid', nullable: true }) value_user_id: string;
-  @Column({ type: 'jsonb', nullable: true }) value_json: object;
-  @UpdateDateColumn({ type: 'timestamp' }) updated_at: Date;
+
+  @ManyToOne(() => Issue, { onDelete: 'CASCADE' }) issue: Issue;
+  @ManyToOne(() => FieldDefinition, { onDelete: 'CASCADE' })
+  fieldDef: FieldDefinition;
+
+  // típusfüggő oszlopok (csak egyet használunk ténylegesen)
+  @Column({ type: 'text', nullable: true }) valueText?: string;
+  @Column({ type: 'numeric', nullable: true }) valueNumber?: string; // decimal
+  @Column({ type: 'boolean', nullable: true }) valueBool?: boolean;
+  @Column({ type: 'date', nullable: true }) valueDate?: string;
+  @Column({ type: 'timestamptz', nullable: true }) valueDatetime?: Date;
+  @Column({ type: 'uuid', nullable: true }) valueUserId?: string; // User FK-t migrációval adhatod
+  @Column({ type: 'jsonb', nullable: true }) valueJson?: any; // multi-option vagy komplex
+
+  @Column({ type: 'timestamptz', default: () => 'now()' }) updatedAt: Date;
+
+  @OneToMany(() => IssueFieldValueOption, (m) => m.issueFieldValue, {
+    cascade: true,
+  })
+  options: IssueFieldValueOption[];
+}
+
+@Entity('issue_field_value_options')
+@Index(['issueFieldValue', 'option'], { unique: true })
+export class IssueFieldValueOption {
+  @PrimaryGeneratedColumn('uuid') id: string;
+  @ManyToOne(() => IssueFieldValue, (v) => v.options, {
+    onDelete: 'CASCADE',
+  })
+  issueFieldValue: IssueFieldValue;
+
+  @ManyToOne(() => FieldOption, { onDelete: 'CASCADE' })
+  option: FieldOption;
 }

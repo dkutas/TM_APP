@@ -1,22 +1,26 @@
+// src/projects/project.entity.ts
 import {
   Column,
-  CreateDateColumn,
   Entity,
+  Index,
+  OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
+import { ProjectIssueType } from './projectIssueType.entity';
+import { Issue } from '../../issue/entities/issue.entity';
 
-@Entity('project')
+@Entity('projects')
+@Index(['key'], { unique: true })
 export class Project {
   @PrimaryGeneratedColumn('uuid') id: string;
 
-  @Column({ length: 100 }) name: string;
+  @Column({ type: 'varchar', length: 20 }) key: string;
+  @Column({ type: 'varchar', length: 255 }) name: string;
+  @Column({ type: 'text', nullable: true }) description?: string;
+  @Column({ type: 'timestamptz', default: () => 'now()' }) createdAt: Date;
+  @Column({ type: 'boolean', default: false }) archived: boolean;
 
-  @Column({ length: 20, unique: true }) key: string;
-
-  @Column({ length: 255, nullable: true }) description: string;
-
-  @CreateDateColumn()
-  createdAt: Date;
-  @UpdateDateColumn() updatedAt: Date;
+  @OneToMany(() => ProjectIssueType, (pit) => pit.project)
+  projectIssueTypes: ProjectIssueType[];
+  @OneToMany(() => Issue, (i) => i.project) issues: Issue[];
 }
