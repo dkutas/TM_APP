@@ -1,8 +1,8 @@
-import { SystemRole } from '../entities/user.entity';
+import { RoleEnum } from '../../common/enums';
 
 export class CreateUserDto {
   name: string;
   email: string;
   password: string;
-  systemRole: SystemRole;
+  systemRole: RoleEnum;
 }

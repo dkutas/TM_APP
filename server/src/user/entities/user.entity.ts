@@ -7,8 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { RefreshToken } from '../../auth/entities/refresh-token.entity';
-
-export type SystemRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+import { RoleEnum } from '../../common/enums';
 
 @Entity('users')
 export class User {
@@ -21,7 +20,7 @@ export class User {
   @Column({ name: 'password' }) password: string;
 
   @Column({ name: 'system_role', type: 'varchar', default: 'USER' })
-  systemRole: SystemRole;
+  systemRole: RoleEnum;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

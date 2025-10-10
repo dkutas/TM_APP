@@ -7,17 +7,19 @@ import {
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
-import { SystemRole, User } from '../user/entities/user.entity';
+import { User } from '../user/entities/user.entity';
 import * as process from 'node:process';
 import * as crypto from 'node:crypto';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Role } from '../role/entities/role.entity';
+import { RoleEnum } from '../common/enums';
 
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: SystemRole;
+  role: Role;
 }
 
 function sha256(input: string) {
@@ -53,7 +55,7 @@ export class AuthService {
       email,
       password,
       name,
-      systemRole: admin ? 'SUPER_ADMIN' : 'USER',
+      systemRole: admin ? RoleEnum.SUPER_ADMIN : RoleEnum.USER,
     });
     return this.login(email, password);
   }
@@ -61,7 +63,7 @@ export class AuthService {
   async login(email: string, password: string) {
     console.log(email, password);
     const user = await this.validateUser(email, password);
-    const accessToken = this.signAccessToken(user);
+    const accessToken = await this.signAccessToken(user);
     const { token: refreshToken, expiresAt } =
       await this.issueRefreshToken(user);
     return {

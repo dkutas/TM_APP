@@ -8,11 +8,13 @@ import {
 } from 'typeorm';
 import { Project } from '../../project/entities/project.entity';
 import { User } from '../../user/entities/user.entity';
+import { RoleEnum } from '../../common/enums';
 
 @Entity('roles')
 export class Role {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ length: 80 }) name: string; // pl. PROJECT_ADMIN
+  @Column({ type: 'enum', enum: RoleEnum })
+  name: RoleEnum; // pl. PROJECT_ADMIN
   @Column({ length: 40 }) scope: string; // 'project' | 'global'
 }
 

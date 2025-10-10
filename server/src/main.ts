@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
+import * as process from 'node:process';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -9,6 +10,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Task Management API')
     .setDescription('Szakdolgozat backend API dokumentáció')
+    .setBasePath('localhost:' + process.env.API_PORT || '3000')
     .setVersion('1.0')
     .addBearerAuth() // JWT support
     .build();

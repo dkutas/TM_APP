@@ -3,6 +3,12 @@ export enum FieldScope {
   CUSTOM = 'CUSTOM',
 }
 
+export enum RoleEnum {
+  ADMIN = 'ADMIN',
+  USER = 'USER',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+}
+
 export enum DataType {
   TEXT = 'TEXT',
   NUMBER = 'NUMBER',

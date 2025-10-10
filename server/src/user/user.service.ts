@@ -30,7 +30,9 @@ export class UserService {
   }
 
   findAll() {
-    return this.repo.find({ relations: ['projects'] });
+    return this.repo.find({
+      select: ['id', 'name', 'email', 'systemRole', 'createdAt'],
+    });
   }
 
   findOne(id: string) {
