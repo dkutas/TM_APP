@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
 import { Repository } from 'typeorm';
@@ -18,14 +17,6 @@ export class CommentService {
 
   findAll() {
     return this.commentRepository.find();
-  }
-
-  findOne(id: string) {
-    return this.commentRepository.findOne({ where: { id } });
-  }
-
-  update(id: string, updateCommentDto: UpdateCommentDto) {
-    return this.commentRepository.update(id, updateCommentDto);
   }
 
   remove(id: string) {

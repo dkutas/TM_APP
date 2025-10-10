@@ -27,6 +27,7 @@ export class Permission {
 @Entity('role_permissions')
 @Index(['role', 'permission'], { unique: true })
 export class RolePermission {
+  @PrimaryGeneratedColumn('uuid') id: string;
   @ManyToOne(() => Role, { onDelete: 'CASCADE' }) role: Role;
   @ManyToOne(() => Permission, { onDelete: 'CASCADE' })
   permission: Permission;

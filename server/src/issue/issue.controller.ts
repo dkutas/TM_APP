@@ -25,6 +25,11 @@ export class IssueController {
     return this.issueService.findAll();
   }
 
+  @Get(':id/comments')
+  getComments(@Param('id') id: string) {
+    return this.issueService.getComments(id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.issueService.findOne(id);
@@ -38,5 +43,22 @@ export class IssueController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.issueService.remove(id);
+  }
+
+  @Post(':id/transition')
+  transition(@Param('id') id: string, @Body('statusId') toStatusId: string) {
+    // Implement the logic to transition the issue to a new status
+    return this.issueService.transition(id, toStatusId);
+  }
+
+  //Todo
+  @Post(':id/fields')
+  setValue(
+    @Param('id') id: string,
+    @Body() body: { fieldKey: string; value: any },
+  ) {
+    // const { fieldKey, value } = body;
+    // // Implement the logic to set a specific field value of the issue
+    // return this.issueService.update(id, fieldKey, value);
   }
 }

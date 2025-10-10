@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
-import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 import { Repository } from 'typeorm';
 import { Attachment } from './entities/attachment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,10 +21,6 @@ export class AttachmentService {
 
   findOne(id: string) {
     return this.attachmentRepository.findOne({ where: { id } });
-  }
-
-  update(id: string, updateAttachmentDto: UpdateAttachmentDto) {
-    return this.attachmentRepository.update(id, updateAttachmentDto);
   }
 
   remove(id: string) {

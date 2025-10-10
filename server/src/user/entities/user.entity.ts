@@ -2,18 +2,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Project } from '../../project/entities/project.entity';
 import { RefreshToken } from '../../auth/entities/refresh-token.entity';
 
 export type SystemRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
 
-@Entity('user')
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid') id: string;
 
@@ -25,10 +22,6 @@ export class User {
 
   @Column({ name: 'system_role', type: 'varchar', default: 'USER' })
   systemRole: SystemRole;
-
-  @ManyToOne(() => User, { cascade: true })
-  @JoinTable()
-  projects: Project[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

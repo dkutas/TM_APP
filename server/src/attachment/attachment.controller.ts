@@ -1,15 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AttachmentService } from './attachment.service';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
-import { UpdateAttachmentDto } from './dto/update-attachment.dto';
 
 @Controller('attachment')
 export class AttachmentController {
@@ -28,14 +19,6 @@ export class AttachmentController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.attachmentService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateAttachmentDto: UpdateAttachmentDto,
-  ) {
-    return this.attachmentService.update(id, updateAttachmentDto);
   }
 
   @Delete(':id')

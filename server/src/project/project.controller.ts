@@ -32,6 +32,11 @@ export class ProjectController {
     return this.projectService.findOne(id);
   }
 
+  @Get(':id/issues')
+  findIssues(@Param('id') id: string) {
+    return this.projectService.findIssues(id);
+  }
+
   @ApiBody({ type: UpdateProjectDto })
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {

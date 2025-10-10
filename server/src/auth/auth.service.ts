@@ -19,6 +19,7 @@ export interface JwtPayload {
   email: string;
   role: SystemRole;
 }
+
 function sha256(input: string) {
   return crypto.createHash('sha256').update(input).digest('hex');
 }
@@ -58,6 +59,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
+    console.log(email, password);
     const user = await this.validateUser(email, password);
     const accessToken = this.signAccessToken(user);
     const { token: refreshToken, expiresAt } =

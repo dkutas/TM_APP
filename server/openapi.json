@@ -303,6 +303,29 @@
         ]
       }
     },
+    "/project/{id}/issues": {
+      "get": {
+        "operationId": "ProjectController_findIssues",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
     "/issue-type": {
       "post": {
         "operationId": "IssueTypeController_create",
@@ -450,6 +473,29 @@
         ]
       }
     },
+    "/issue/{id}/comments": {
+      "get": {
+        "operationId": "IssueController_getComments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
     "/issue/{id}": {
       "get": {
         "operationId": "IssueController_findOne",
@@ -517,6 +563,52 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/{id}/transition": {
+      "post": {
+        "operationId": "IssueController_transition",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/{id}/fields": {
+      "post": {
+        "operationId": "IssueController_setValue",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -783,6 +875,75 @@
         ]
       }
     },
+    "/workflow/{id}/statuses": {
+      "get": {
+        "operationId": "WorkflowController_getStatuses",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/workflow/{id}/transitions": {
+      "get": {
+        "operationId": "WorkflowController_getTransitions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/workflow/{id}/transitions-for-status": {
+      "post": {
+        "operationId": "WorkflowController_getTransitionsForStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
     "/workflow/{id}": {
       "get": {
         "operationId": "WorkflowController_findOne",
@@ -916,37 +1077,6 @@
           "Attachment"
         ]
       },
-      "patch": {
-        "operationId": "AttachmentController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateAttachmentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Attachment"
-        ]
-      },
       "delete": {
         "operationId": "AttachmentController_remove",
         "parameters": [
@@ -1006,58 +1136,6 @@
       }
     },
     "/comment/{id}": {
-      "get": {
-        "operationId": "CommentController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Comment"
-        ]
-      },
-      "patch": {
-        "operationId": "CommentController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCommentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Comment"
-        ]
-      },
       "delete": {
         "operationId": "CommentController_remove",
         "parameters": [
@@ -1935,15 +2013,7 @@
         "type": "object",
         "properties": {}
       },
-      "UpdateAttachmentDto": {
-        "type": "object",
-        "properties": {}
-      },
       "CreateCommentDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateCommentDto": {
         "type": "object",
         "properties": {}
       },

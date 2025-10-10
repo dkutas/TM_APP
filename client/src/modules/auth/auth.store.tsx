@@ -8,7 +8,14 @@ type AuthState = {
     clearSession: () => void;
 };
 
-const empty: Session = {user: null, accessToken: null, expiresAt: null};
+const empty: Session = {
+    user: {
+        id: "string",
+        email: "string",
+        name: "string",
+        roles: ["USER"]
+    }, accessToken: "asd", expiresAt: null
+};
 
 export const AuthContext = createContext<AuthState | null>(null);
 

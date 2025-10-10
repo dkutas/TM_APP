@@ -17,11 +17,16 @@ export class IssueService {
   }
 
   findAll() {
-    return this.issueRepository.find();
+    return this.issueRepository.find({
+      relations: ['status', 'assignee', 'reporter', 'project'],
+    });
   }
 
   findOne(id: string) {
-    return this.issueRepository.findOne({ where: { id: id } });
+    return this.issueRepository.findOne({
+      where: { id },
+      relations: ['status'],
+    });
   }
 
   update(id: string, updateIssueDto: UpdateIssueDto) {
@@ -30,5 +35,24 @@ export class IssueService {
 
   remove(id: string) {
     return this.issueRepository.delete(id);
+  }
+
+  transition(id: string, statusId: string) {
+    // Implement the logic to transition the issue to a new status
+    console.log(statusId);
+    return this.issueRepository.update(id, { status: { id: statusId } });
+  }
+
+  getComments(id: string) {
+    return this.issueRepository.find({
+      where: { id: id },
+      relations: ['comments'],
+    });
+  }
+
+  //Todo
+  setValue(id: string, fieldKey: string, value: any) {
+    // Implement the logic to set a specific field value of the issue
+    // return this.issueRepository.update(id, { [fieldKey]: value });
   }
 }

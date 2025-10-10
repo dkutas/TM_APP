@@ -31,4 +31,27 @@ export class WorkflowService {
   remove(id: string) {
     return this.workflowRepository.delete(id);
   }
+
+  getStatuses(id: string) {
+    return this.workflowRepository.findOne({
+      where: { id },
+      relations: ['statuses'],
+    });
+  }
+
+  getTransitions(id: string) {
+    return this.workflowRepository.findOne({
+      where: { id },
+      relations: ['transitions'],
+    });
+  }
+
+  getTransitionsForStatus(id: string, statusId: string) {
+    return this.workflowRepository
+      .createQueryBuilder('workflow')
+      .leftJoinAndSelect('workflow.transitions', 'transition')
+      .where('workflow.id = :id', { id })
+      .andWhere('transition.from_status_id = :statusId', { statusId })
+      .getOne();
+  }
 }

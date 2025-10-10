@@ -39,6 +39,7 @@ export class AuthController {
       !!body.admin,
     );
   }
+
   @Post('refresh') refresh(@Body() body: { refreshToken: string }) {
     return this.auth.refresh(body.refreshToken);
   }

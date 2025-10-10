@@ -25,6 +25,24 @@ export class WorkflowController {
     return this.workflowService.findAll();
   }
 
+  @Get(':id/statuses')
+  getStatuses(@Param('id') id: string) {
+    return this.workflowService.getStatuses(id);
+  }
+
+  @Get(':id/transitions')
+  getTransitions(@Param('id') id: string) {
+    return this.workflowService.getTransitions(id);
+  }
+
+  @Post(':id/transitions-for-status')
+  getTransitionsForStatus(
+    @Param('id') id: string,
+    @Body('statusId') statusId: string,
+  ) {
+    return this.workflowService.getTransitionsForStatus(id, statusId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.workflowService.findOne(id);

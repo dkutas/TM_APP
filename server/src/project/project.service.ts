@@ -28,4 +28,8 @@ export class ProjectService {
   remove(id: string) {
     return this.repo.delete(id);
   }
+
+  findIssues(id: string) {
+    return this.repo.findOne({ where: { id }, relations: ['issues'] });
+  }
 }
