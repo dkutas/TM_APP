@@ -7,7 +7,7 @@ down-dev:
 	docker compose --profile dev down -v
 
 up-prod:
-	docker compose up --build db pgadmin api web
+	docker compose up --build db api web
 
 down-prod:
 	docker compose down -v

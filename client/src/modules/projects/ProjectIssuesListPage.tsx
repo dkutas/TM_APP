@@ -3,6 +3,7 @@ import type {Issue} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import {
     Box,
+    Button,
     Divider,
     IconButton,
     List,
@@ -13,21 +14,22 @@ import {
     Typography
 } from "@mui/material";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import {useNavigate} from "react-router-dom";
+import {NavLink, useNavigate, useParams} from "react-router-dom";
 import {useUIStore} from "../../app/store";
 import {api} from "../../lib/apiClient.ts";
 
-export default function IssueListPage() {
+export default function ProjectIssuesListPage() {
     const [q, setQ] = useState('');
     const [items, setItems] = useState<Issue[]>([]);
     const {isDetailsOpen, selectedIssueId, selectIssue} = useUIStore();
     const navigate = useNavigate();
+    const {projectId} = useParams()
 
     useEffect(() => {
-        api.get<Issue[]>("issue").then(res => {
+        api.get<Issue[]>("issue/project/" + projectId).then(res => {
             setItems(res.data);
         });
-    }, []);
+    }, [projectId]);
 
     const filtered = useMemo(() => {
         const s = q.toLowerCase();
@@ -38,8 +40,14 @@ export default function IssueListPage() {
 
     return (
         <Grid container spacing={2}>
-            <Grid size={12}>
-                <Typography variant="h4">Issues</Typography>
+            <Grid size={12} spacing={2}>
+                <Grid size={6}>
+                    <Typography variant="h4">Project issues</Typography>
+                </Grid>
+                <Grid size={6}>
+                    <Button variant="outlined" component={NavLink}
+                            to={"/projects/" + projectId + "/settings"}>Manage</Button>
+                </Grid>
             </Grid>
             <Grid size={{xs: 12, md: isDetailsOpen ? 7 : 12}}>
                 <Paper sx={{p: 2}}>

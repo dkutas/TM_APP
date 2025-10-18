@@ -6,10 +6,15 @@ import {
   Param,
   Patch,
   Post,
+  Query,
+  UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { IssueService } from './issue.service';
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { UpdateIssueDto } from './dto/update-issue.dto';
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import { UserIssuesQueryDto } from './dto/user-issues-query.dto';
 
 @Controller('issue')
 export class IssueController {
@@ -60,5 +65,23 @@ export class IssueController {
     // const { fieldKey, value } = body;
     // // Implement the logic to set a specific field value of the issue
     // return this.issueService.update(id, fieldKey, value);
+  }
+
+  // 2) Per-user kényelmi endpoint
+  @UseGuards(JwtAuthGuard)
+  @Get('users/:id/issues')
+  async listUserIssues(
+    @Param('id') userId: string,
+    @Query(new ValidationPipe({ transform: true, whitelist: true }))
+    query: UserIssuesQueryDto,
+  ) {
+    return this.issueService.findByUser(userId, query);
+  }
+
+  // 2) Per-user kényelmi endpoint
+  @UseGuards(JwtAuthGuard)
+  @Get('project/:id/')
+  async listIssuesOfProject(@Param('id') projectId: string) {
+    return this.issueService.findByProject(projectId);
   }
 }

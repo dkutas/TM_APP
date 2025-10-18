@@ -13,26 +13,14 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 3s
       retries: 10
 
-  pgadmin:
-    image: dpage/pgadmin4:9
-    container_name: task_pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - "${PGADMIN_PORT}:80"
-    depends_on:
-      db:
-        condition: service_healthy
-
   # --- PROD-SZERŰ API ---
   api:
-    profiles: ["prod"]    
+    profiles: [ "prod" ]
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -57,7 +45,7 @@ services:
 
   # --- DEV API (watch) ---
   api-dev:
-    profiles: ["dev"]
+    profiles: [ "dev" ]
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -84,7 +72,7 @@ services:
 
   # --- PROD-SZERŰ WEB (nginx + buildelve) ---
   web:
-    profiles: ["prod"]    
+    profiles: [ "prod" ]
     build:
       context: ./client
       dockerfile: Dockerfile
@@ -99,7 +87,7 @@ services:
 
   # --- DEV WEB (Vite dev server) ---
   web-dev:
-    profiles: ["dev"]
+    profiles: [ "dev" ]
     build:
       context: ./client
       dockerfile: Dockerfile
@@ -110,7 +98,7 @@ services:
     volumes:
       - ./client:/app
       - /app/node_modules
-    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "${WEB_DEV_PORT}"]
+    command: [ "npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "${WEB_DEV_PORT}" ]
     ports:
       - "${WEB_DEV_PORT}:${WEB_DEV_PORT}"
     depends_on:

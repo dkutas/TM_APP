@@ -20,6 +20,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   role: Role;
+  name: string;
 }
 
 function sha256(input: string) {
@@ -127,7 +128,12 @@ export class AuthService {
   }
 
   private async signAccessToken(user: User) {
-    const payload = { sub: user.id, email: user.email, role: user.systemRole };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.systemRole,
+      name: user.name,
+    };
     return await this.jwt.signAsync(payload, {
       expiresIn: process.env.TOKEN_EXPIRATION || '15m',
     });

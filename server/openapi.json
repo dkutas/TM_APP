@@ -112,6 +112,29 @@
         ]
       }
     },
+    "/user/{id}/memberships": {
+      "get": {
+        "operationId": "UserController_listUserMemberships",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "AuthController_login",
@@ -609,6 +632,52 @@
         ],
         "responses": {
           "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/users/{id}/issues": {
+      "get": {
+        "operationId": "IssueController_listUserIssues",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/project/{id}": {
+      "get": {
+        "operationId": "IssueController_listIssuesOfProject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": ""
           }
         },

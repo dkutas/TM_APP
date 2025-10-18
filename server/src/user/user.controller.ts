@@ -13,10 +13,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { ApiBody } from '@nestjs/swagger';
+import { MembershipService } from './membership/membership.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly memberships: MembershipService,
+  ) {}
 
   @Post()
   @ApiBody({ type: CreateUserDto })
@@ -33,6 +37,17 @@ export class UserController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
+  }
+
+  @Get(':id/memberships')
+  async listUserMemberships(@Param('id') id: string) {
+    const memberships = await this.memberships.findByUser(id);
+    return memberships.map((m) => ({
+      projectId: m.project.id,
+      projectKey: m.project.key,
+      projectName: m.project.name,
+      role: m.role,
+    }));
   }
 
   @Patch(':id')
