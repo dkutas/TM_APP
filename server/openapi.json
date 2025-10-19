@@ -349,6 +349,29 @@
         ]
       }
     },
+    "/project/{id}/members": {
+      "get": {
+        "operationId": "ProjectController_findMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
     "/issue-type": {
       "post": {
         "operationId": "IssueTypeController_create",
@@ -496,29 +519,6 @@
         ]
       }
     },
-    "/issue/{id}/comments": {
-      "get": {
-        "operationId": "IssueController_getComments",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Issue"
-        ]
-      }
-    },
     "/issue/{id}": {
       "get": {
         "operationId": "IssueController_findOne",
@@ -617,29 +617,6 @@
         ]
       }
     },
-    "/issue/{id}/fields": {
-      "post": {
-        "operationId": "IssueController_setValue",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Issue"
-        ]
-      }
-    },
     "/issue/users/{id}/issues": {
       "get": {
         "operationId": "IssueController_listUserIssues",
@@ -678,6 +655,182 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/{id}/fields": {
+      "get": {
+        "operationId": "IssueController_getOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      },
+      "put": {
+        "operationId": "IssueController_upsertFields",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/{id}/comments": {
+      "get": {
+        "operationId": "IssueController_getComments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      },
+      "post": {
+        "operationId": "IssueController_addComment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/comments/{commentId}": {
+      "patch": {
+        "operationId": "IssueController_editComment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      },
+      "delete": {
+        "operationId": "IssueController_deleteComment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/{id}/attachments": {
+      "get": {
+        "operationId": "IssueController_getAttachments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Issue"
+        ]
+      },
+      "post": {
+        "operationId": "IssueController_addAttachment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },

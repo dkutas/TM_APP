@@ -27,7 +27,7 @@ import {
 } from './workflow/entities/workflow.entity';
 import { ProjectIssueType } from './project/entities/projectIssueType.entity';
 import { Priority } from './priority/entities/priority.entity';
-import { LinkType } from './link-type/entities/link-type.entity';
+import { IssueLink, LinkType } from './link-type/entities/link-type.entity';
 import { IssueType } from './issue-type/entities/issue-type.entity';
 import {
   IssueFieldValue,
@@ -72,6 +72,7 @@ import { ChangeItem, ChangeLog } from './change-log/entities/change-log.entity';
         Priority,
         LinkType,
         IssueType,
+        IssueLink,
         IssueFieldValue,
         Issue,
         FieldOption,

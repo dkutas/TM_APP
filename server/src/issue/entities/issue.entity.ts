@@ -28,7 +28,7 @@ export class Issue {
 
   @Column({ length: 30 }) key: string; // PROJ-123
   @Column({ length: 255 }) summary: string;
-  @Column({ type: 'text', nullable: true }) description?: string;
+  @Column({ type: 'text', nullable: true }) description: string;
 
   @ManyToOne(() => WorkflowStatus, { onDelete: 'RESTRICT' })
   status: WorkflowStatus;

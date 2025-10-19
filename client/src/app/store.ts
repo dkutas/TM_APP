@@ -8,11 +8,13 @@ type UIState = {
     selectIssue: (id?: string) => void;
     setSplitPane: (w: number) => void;
 }
-export const useUIStore = create<UIState>((set) => ({
-    isDetailsOpen: false,
-    selectedIssueId: undefined,
-    splitPaneSize: 420,
-    setDetailsOpen: (open) => set({isDetailsOpen: open}),
-    selectIssue: (id) => set({selectedIssueId: id, isDetailsOpen: !!id}),
-    setSplitPane: (w) => set({splitPaneSize: w}),
-}))
+export const useUIStore = create<UIState>(
+    (set => ({
+        isDetailsOpen: false,
+        selectedIssueId: undefined,
+        splitPaneSize: 420,
+        setDetailsOpen: (open) => set({isDetailsOpen: open}),
+        selectIssue: (id) => set({selectedIssueId: id}),
+        setSplitPane: (w) => set({splitPaneSize: w}),
+    }))
+)

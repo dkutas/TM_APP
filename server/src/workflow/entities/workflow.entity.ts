@@ -8,6 +8,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+const StatusCategory = ['DONE', 'INPROGRESS', 'TODO'];
+
 @Entity('workflows')
 export class Workflow {
   @PrimaryGeneratedColumn('uuid') id: string;
@@ -34,7 +36,7 @@ export class WorkflowStatus {
   @Column({ length: 40 }) key: string;
   @Column({ length: 80 }) name: string;
   @Column({ default: false }) isTerminal: boolean;
-  @Column({ length: 40, nullable: true }) category?: string; // TODO/INPROGRESS/DONE
+  @Column({ length: 40, nullable: true }) category: string; // TODO/INPROGRESS/DONE
 }
 
 @Entity('workflow_transitions')

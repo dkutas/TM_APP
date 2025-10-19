@@ -3,86 +3,270 @@ import type {Issue} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import {
     Box,
-    Divider,
+    Card,
+    CardContent,
     IconButton,
-    List,
-    ListItemButton,
-    ListItemText,
     Paper,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
     TextField,
-    Typography
+    ToggleButton,
+    ToggleButtonGroup,
+    Tooltip,
+    Typography,
 } from "@mui/material";
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import {useNavigate} from "react-router-dom";
-import {useUIStore} from "../../app/store";
 import {api} from "../../lib/apiClient.ts";
+import SearchIcon from "@mui/icons-material/Search";
+import TableRowsIcon from "@mui/icons-material/TableRows";
+import SplitscreenIcon from "@mui/icons-material/Splitscreen";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import {useUIStore} from "../../app/store.ts";
+
+const BASE_COLUMNS = ["Key", "Type", "Summary", "Assignee", "Status", "Estimate"] as const;
+
+type BaseCol = typeof BASE_COLUMNS[number];
+
+type Filters = {
+    Key: string;
+    Type: string;
+    Summary: string;
+    Assignee: string;
+    Status: string;
+};
 
 export default function IssueListPage() {
-    const [q, setQ] = useState('');
-    const [items, setItems] = useState<Issue[]>([]);
-    const {isDetailsOpen, selectedIssueId, selectIssue} = useUIStore();
+    const [issues, setIssues] = useState<Issue[]>([]);
+    const [filters, setFilters] = useState<Filters>({Key: "", Type: "", Summary: "", Assignee: "", Status: ""});
+    const {isDetailsOpen, selectedIssueId, selectIssue, setDetailsOpen} = useUIStore();
     const navigate = useNavigate();
 
     useEffect(() => {
-        api.get<Issue[]>("issue").then(res => {
-            setItems(res.data);
-        });
+        api
+            .get<Issue[]>("/issue")
+            .then((res) => setIssues(res.data))
+            .catch(() => setIssues([]));
     }, []);
 
-    const filtered = useMemo(() => {
-        const s = q.toLowerCase();
-        return items.filter(i => i.key.toLowerCase().includes(s) || i.summary.toLowerCase().includes(s));
-    }, [q, items]);
+    // infer up to 3 custom field keys
+    const customKeys = useMemo(() => {
+        const keys = new Set<string>();
+        for (const it of issues) {
+            const bag: Record<string, unknown> = (it as any).custom || (it as any).customValues || {};
+            Object.keys(bag).forEach((k) => keys.add(k));
+            if (keys.size >= 3) break;
+        }
+        return Array.from(keys).slice(0, 3);
+    }, [issues]);
 
-    const selected = useMemo(() => filtered.find(i => i.id === selectedIssueId), [filtered, selectedIssueId]);
+    const filtered = useMemo(() => {
+        const match = (val: unknown, needle: string) =>
+            !needle || String(val ?? "").toLowerCase().includes(needle.trim().toLowerCase());
+
+        return issues.filter((i) =>
+            match(i.key, filters.Key) &&
+            match(i.issueType?.name, filters.Type) &&
+            match(i.summary, filters.Summary) &&
+            match(i.assignee?.name || i.assignee?.email, filters.Assignee) &&
+            match(i.status?.name, filters.Status)
+        );
+    }, [issues, filters]);
+
+    const selected = useMemo(() => {
+        return filtered.find((i) => i.id === selectedIssueId) || filtered[0] || null;
+    }, [filtered, selectedIssueId]);
+
+    const onRowClick = (id: string) => {
+        if (isDetailsOpen) selectIssue(id);
+        else navigate(`/issues/${id}`);
+    };
+
+    const renderTable = (rows: Issue[]) => (
+        <TableContainer>
+            <Table size="small">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Key</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Summary</TableCell>
+                        <TableCell>Assignee</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Estimate</TableCell>
+                        {customKeys.map((ck) => (
+                            <TableCell key={ck}>{ck}</TableCell>
+                        ))}
+                        {isDetailsOpen ?
+                            <TableCell>Actions</TableCell>
+                            : null}
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {rows.map((i) => {
+                        const bag: Record<string, any> = (i as any).custom || (i as any).customValues || {};
+                        const active = isDetailsOpen && selected?.id === i.id;
+                        return (
+                            <TableRow
+                                key={i.id}
+                                hover
+                                selected={active}
+                                sx={{cursor: "pointer"}}
+                                onClick={() => onRowClick(i.id)}
+                            >
+                                <TableCell>{i.key}</TableCell>
+                                <TableCell>{i.issueType?.name || "—"}</TableCell>
+                                <TableCell>{i.summary}</TableCell>
+                                <TableCell>{i.assignee?.name || i.assignee?.email || "—"}</TableCell>
+                                <TableCell>{i.status?.name || "—"}</TableCell>
+                                <TableCell>{(i as any).estimate ?? "-"}</TableCell>
+                                {customKeys.map((ck) => (
+                                    <TableCell key={ck}>{bag?.[ck] ?? "—"}</TableCell>
+                                ))}
+                                {isDetailsOpen ?
+                                    <TableCell align="right">
+                                        <IconButton size="small" onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/issues/${i.id}`);
+                                        }}>
+                                            <OpenInNewIcon fontSize="small"/>
+                                        </IconButton>
+                                    </TableCell>
+                                    : null}
+                            </TableRow>
+                        );
+                    })}
+                    {rows.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={6 + customKeys.length}>
+                                <Box py={6} textAlign="center">
+                                    <Typography color="text.secondary">No issues found.</Typography>
+                                </Box>
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </TableContainer>
+    );
 
     return (
-        <Grid container spacing={2}>
-            <Grid size={12}>
-                <Typography variant="h4">Issues</Typography>
-            </Grid>
-            <Grid size={{xs: 12, md: isDetailsOpen ? 7 : 12}}>
-                <Paper sx={{p: 2}}>
-                    <TextField value={q} onChange={(e) => setQ(e.target.value)} fullWidth
-                               placeholder="Search issues by key or summary"/>
-                    <List>
-                        {filtered.map(i => (
-                            <ListItemButton key={i.id} selected={i.id === selectedIssueId}
-                                            onClick={() => selectIssue(i.id)}>
-                                <ListItemText primary={`${i.key} — ${i.summary}`}
-                                              secondary={`Status: ${i.status.name} • Priority: ${i.priority.name}`}/>
-                                <IconButton edge="end" onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/issues/${i.id}`)
-                                }}><OpenInNewIcon/></IconButton>
-                            </ListItemButton>
-                        ))}
-                    </List>
-                </Paper>
-            </Grid>
+        <Box>
+            <Grid container spacing={2}>
+                <Grid size={12} display="flex" alignItems="center" justifyContent="space-between">
+                    <Typography variant="h4">Issues</Typography>
+                    <ToggleButtonGroup
+                        value={isDetailsOpen}
+                        exclusive
+                        onChange={(_, v) => setDetailsOpen(v)}
+                        size="small"
+                    >
+                        <Tooltip title="Table view">
+                            <ToggleButton value={false} aria-label="table">
+                                <TableRowsIcon fontSize="small"/>
+                            </ToggleButton>
+                        </Tooltip>
+                        <Tooltip title="Split view">
+                            <ToggleButton value={true} aria-label="split">
+                                <SplitscreenIcon sx={{rotate: "90deg"}} fontSize="small"/>
+                            </ToggleButton>
+                        </Tooltip>
+                    </ToggleButtonGroup>
+                </Grid>
 
-            {isDetailsOpen && (
-                <Grid size={{xs: 12, md: 5}}>
-                    <Paper sx={{p: 2}}>
-                        {selected ? (
-                            <>
-                                <Typography variant="h6">{selected.key} — {selected.summary}</Typography>
-                                <Typography color="text.secondary">Status: {selected.status.name} •
-                                    Priority: {selected.priority.name}</Typography>
-                                <Divider sx={{my: 2}}/>
-                                <Typography variant="subtitle1" gutterBottom>Details</Typography>
-                                <Typography variant="body2">{selected.description || '—'}</Typography>
-                                <Box mt={2}>
-                                    <Typography variant="subtitle1">Actions</Typography>
-                                    <Box display="flex" gap={1} mt={1}>
-                                        <a href={`/issues/${selected.id}`}>Open full page</a>
-                                    </Box>
-                                </Box>
-                            </>
-                        ) : <Typography>Select an issue…</Typography>}
+                {/* Filter header */}
+                <Grid size={12}>
+                    <Paper sx={{p: 1.5, borderRadius: 4}}>
+                        <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                            {["Key", "Type", "Summary", "Assignee", "Status"].map((k) => (
+                                <TextField
+                                    key={k}
+                                    label={k as BaseCol}
+                                    size="small"
+                                    value={(filters as any)[k]}
+                                    onChange={(e) => setFilters((f) => ({...f, [k]: e.target.value}))}
+                                    slotProps={{input: {startAdornment: <SearchIcon fontSize="small"/>}}}
+                                />
+                            ))}
+                        </Stack>
                     </Paper>
                 </Grid>
-            )}
-        </Grid>
+
+                {!isDetailsOpen && (
+                    <Grid size={12}>
+                        <Paper sx={{p: 2, borderRadius: 4}}>{renderTable(filtered)}</Paper>
+                    </Grid>
+                )}
+
+                {isDetailsOpen && (
+                    <>
+                        <Grid size={{xs: 12, md: 6}}>
+                            <Paper sx={{p: 2, borderRadius: 4}}>{renderTable(filtered)}</Paper>
+                        </Grid>
+                        <Grid size={{xs: 12, md: 6}}>
+                            <Card sx={{borderRadius: 4}}>
+                                <CardContent>
+                                    {selected ? (
+                                        <Stack spacing={1.2}>
+                                            <Typography variant="h6">{selected.summary}</Typography>
+                                            <Stack direction="row" spacing={2}>
+                                                <Box>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Key
+                                                    </Typography>
+                                                    <Typography>{selected.key}</Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Type
+                                                    </Typography>
+                                                    <Typography>{selected.issueType?.name || "—"}</Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Status
+                                                    </Typography>
+                                                    <Typography>{selected.status?.name || "—"}</Typography>
+                                                </Box>
+                                            </Stack>
+                                            <Stack direction="row" spacing={2}>
+                                                <Box>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Assignee
+                                                    </Typography>
+                                                    <Typography>{selected.assignee?.name || selected.assignee?.email || "—"}</Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Estimate
+                                                    </Typography>
+                                                    <Typography>{(selected as any).estimate ?? "—"}</Typography>
+                                                </Box>
+                                            </Stack>
+                                            <Box>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Description
+                                                </Typography>
+                                                <Typography
+                                                    whiteSpace="pre-line">{(selected as any).description || "—"}</Typography>
+                                            </Box>
+                                        </Stack>
+                                    ) : (
+                                        <Box p={4} textAlign="center">
+                                            <Typography color="text.secondary">Select an issue to see
+                                                details.</Typography>
+                                        </Box>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </>
+                )}
+            </Grid>
+        </Box>
+
     );
 }

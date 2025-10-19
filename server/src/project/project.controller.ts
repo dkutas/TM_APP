@@ -37,6 +37,11 @@ export class ProjectController {
     return this.projectService.findIssues(id);
   }
 
+  @Get(':id/members')
+  findMembers(@Param('id') id: string) {
+    return this.projectService.findMembers(id);
+  }
+
   @ApiBody({ type: UpdateProjectDto })
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {

@@ -4,32 +4,50 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { Repository } from 'typeorm';
+import { ProjectMembership } from '../role/entities/role.entity';
 
 @Injectable()
 export class ProjectService {
-  constructor(@InjectRepository(Project) private repo: Repository<Project>) {}
+  constructor(
+    @InjectRepository(Project) private projectRepo: Repository<Project>,
+    @InjectRepository(ProjectMembership)
+    private memberShipRepo: Repository<ProjectMembership>,
+  ) {}
 
   create(createProjectDto: CreateProjectDto) {
-    return this.repo.save(createProjectDto);
+    return this.projectRepo.save(createProjectDto);
   }
 
   findAll() {
-    return this.repo.find();
+    return this.projectRepo.find();
   }
 
   findOne(id: string) {
-    return this.repo.findOne({ where: { id } });
+    return this.projectRepo.findOne({ where: { id } });
   }
 
   update(id: string, updateProjectDto: UpdateProjectDto) {
-    return this.repo.update(id, updateProjectDto);
+    return this.projectRepo.update(id, updateProjectDto);
   }
 
   remove(id: string) {
-    return this.repo.delete(id);
+    return this.projectRepo.delete(id);
   }
 
   findIssues(id: string) {
-    return this.repo.findOne({ where: { id }, relations: ['issues'] });
+    return this.projectRepo.findOne({
+      where: { id },
+      relations: ['issues'],
+      select: { issues: { issueType: true } },
+    });
+  }
+
+  findMembers(id: string) {
+    return this.memberShipRepo.find({
+      where: { project: { id } },
+      relations: { user: true },
+      select: { user: { id: true, name: true, email: true, createdAt: true } },
+      order: { user: { name: 'ASC' } },
+    });
   }
 }

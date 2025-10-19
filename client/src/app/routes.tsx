@@ -9,6 +9,7 @@ import LoginPage from "../auth/LoginPage.tsx";
 import RegisterPage from "../auth/RegisterPage.tsx";
 import ProtectedRoute from "../auth/ProtectedRoute.tsx";
 import WelcomePage from "../modules/welcome/WelcomePage.tsx";
+import ProjectPage from "../modules/projects/ProjectPage.tsx";
 import ProjectIssuesListPage from "../modules/projects/ProjectIssuesListPage.tsx";
 
 export const routes: RouteObject[] = [
@@ -22,7 +23,8 @@ export const routes: RouteObject[] = [
             {path: '/profile', element: <ProfilePage/>},
             {path: '/projects', element: <ProjectListPage/>},
             {path: '/issues', element: <IssueListPage/>},
-            {path: '/projects/:projectId', element: <ProjectIssuesListPage/>},
+            {path: '/projects/:projectId', element: <ProjectPage/>},
+            {path: '/projects/:projectId/issues', element: <ProjectIssuesListPage/>},
             {path: '/projects/:projectId/settings/*', element: <ProjectSettingsPage/>},
             // {path: '/projects/:projectId/board', element: <IssueBoardPage/>},
             {path: '/issues/:issueId', element: <IssueFullPage/>}

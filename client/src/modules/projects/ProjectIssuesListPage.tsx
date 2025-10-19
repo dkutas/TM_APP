@@ -3,7 +3,6 @@ import type {Issue} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import {
     Box,
-    Button,
     Divider,
     IconButton,
     List,
@@ -11,17 +10,22 @@ import {
     ListItemText,
     Paper,
     TextField,
+    ToggleButton,
+    ToggleButtonGroup,
+    Tooltip,
     Typography
 } from "@mui/material";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import {NavLink, useNavigate, useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useUIStore} from "../../app/store";
 import {api} from "../../lib/apiClient.ts";
+import TableRowsIcon from "@mui/icons-material/TableRows";
+import SplitscreenIcon from "@mui/icons-material/Splitscreen";
 
 export default function ProjectIssuesListPage() {
     const [q, setQ] = useState('');
     const [items, setItems] = useState<Issue[]>([]);
-    const {isDetailsOpen, selectedIssueId, selectIssue} = useUIStore();
+    const {isDetailsOpen, selectedIssueId, selectIssue, setDetailsOpen} = useUIStore();
     const navigate = useNavigate();
     const {projectId} = useParams()
 
@@ -41,12 +45,25 @@ export default function ProjectIssuesListPage() {
     return (
         <Grid container spacing={2}>
             <Grid size={12} spacing={2}>
-                <Grid size={6}>
+                <Grid size={12} display="flex" alignItems="center" justifyContent="space-between">
                     <Typography variant="h4">Project issues</Typography>
-                </Grid>
-                <Grid size={6}>
-                    <Button variant="outlined" component={NavLink}
-                            to={"/projects/" + projectId + "/settings"}>Manage</Button>
+                    <ToggleButtonGroup
+                        value={isDetailsOpen}
+                        exclusive
+                        onChange={(_, v) => setDetailsOpen(v)}
+                        size="small"
+                    >
+                        <Tooltip title="Table view">
+                            <ToggleButton value={false} aria-label="table">
+                                <TableRowsIcon fontSize="small"/>
+                            </ToggleButton>
+                        </Tooltip>
+                        <Tooltip title="Split view">
+                            <ToggleButton value={true} aria-label="split">
+                                <SplitscreenIcon sx={{rotate: "90deg"}} fontSize="small"/>
+                            </ToggleButton>
+                        </Tooltip>
+                    </ToggleButtonGroup>
                 </Grid>
             </Grid>
             <Grid size={{xs: 12, md: isDetailsOpen ? 7 : 12}}>

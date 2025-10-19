@@ -77,10 +77,16 @@ function App() {
                     </Stack>
                 </Toolbar>
             </AppBar>
+            {/* Fixed sidebar */}
             <Box sx={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: 220,
                 borderRight: 1,
-                borderColor: 'black',
+                borderColor: 'divider',
                 height: '100vh',
+                bgcolor: 'background.paper'
             }}>
                 <Toolbar/>
                 <List sx={{gap: 2}}>
@@ -89,13 +95,19 @@ function App() {
                             <ListItemIcon>
                                 {it.Icon}
                             </ListItemIcon>
-                            {<ListItemText primary={it.label}/>}
+                            <ListItemText primary={it.label}/>
                         </ListItemButton>
                     ))}
                 </List>
             </Box>
 
-            <Box component="main" sx={{flexGrow: 1, p: 3, justifyContent: 'space-between'}}>
+            <Box component="main" sx={{
+                flexGrow: 1,
+                p: 3,
+                ml: "220px",
+                justifyContent: 'space-between',
+                pb: (t) => `calc(${(t.mixins.toolbar).minHeight || 56}px + ${t.spacing(1)})`
+            }}>
                 <Toolbar/>
                 <Container maxWidth="xl">
                     {page}
