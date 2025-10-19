@@ -10,7 +10,7 @@ type UIState = {
 }
 export const useUIStore = create<UIState>(
     (set => ({
-        isDetailsOpen: false,
+        isDetailsOpen: true,
         selectedIssueId: undefined,
         splitPaneSize: 420,
         setDetailsOpen: (open) => set({isDetailsOpen: open}),

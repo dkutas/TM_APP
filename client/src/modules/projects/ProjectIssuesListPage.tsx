@@ -2,7 +2,6 @@ import {useEffect, useMemo, useState} from "react";
 import type {Issue} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import {
-    Box,
     Divider,
     IconButton,
     List,
@@ -97,12 +96,6 @@ export default function ProjectIssuesListPage() {
                                 <Divider sx={{my: 2}}/>
                                 <Typography variant="subtitle1" gutterBottom>Details</Typography>
                                 <Typography variant="body2">{selected.description || '—'}</Typography>
-                                <Box mt={2}>
-                                    <Typography variant="subtitle1">Actions</Typography>
-                                    <Box display="flex" gap={1} mt={1}>
-                                        <a href={`/issues/${selected.id}`}>Open full page</a>
-                                    </Box>
-                                </Box>
                             </>
                         ) : <Typography>Select an issue…</Typography>}
                     </Paper>

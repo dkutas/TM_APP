@@ -1,6 +1,6 @@
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {NavLink, useParams} from "react-router-dom";
-import type {Issue} from "../../lib/types";
+import type {Issue, IssueLink} from "../../lib/types";
 import {
     Box,
     Button,
@@ -23,11 +23,24 @@ const StatusCategoryColorMap: { [key: string]: ChipOwnProps['color'] } = {
     "DONE": "success"
 }
 
+function capitalizeFirstLetter(string: string) {
+    return string.replace(/^./, string[0].toUpperCase())
+}
+
 
 export default function IssueFullPage() {
     const [issue, setIssue] = useState<Issue | null>(null);
     const [tab, setTab] = useState(0);
     const {issueId} = useParams();
+
+    const getLinkName = useCallback((link: IssueLink) => {
+        const {direction, linkType} = link
+        if (direction === "IN") {
+            return capitalizeFirstLetter(linkType.inward)
+        } else {
+            return capitalizeFirstLetter(linkType.outward)
+        }
+    }, [])
 
     useEffect(() => {
         if (issueId) api.get(`issue/${issueId}/fields`).then((res) => setIssue(res.data));
@@ -89,7 +102,7 @@ export default function IssueFullPage() {
                                     <Typography sx={{textDecoration: "none, "}} fontWeight={500} component={NavLink}
                                                 to={`/issues/${link.otherIssue?.id}`}>{link.otherIssue?.key}</Typography>
                                     <Typography color="text.secondary" noWrap>
-                                        {link.otherIssue?.summary}
+                                        {getLinkName(link)} {link.otherIssue?.summary}
                                     </Typography>
                                 </Box>
                                 <Chip label={link.otherIssue?.status?.name}
