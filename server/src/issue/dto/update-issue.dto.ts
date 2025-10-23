@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateIssueDto } from './create-issue.dto';
-
-export class UpdateIssueDto extends PartialType(CreateIssueDto) {}
+export class UpdateIssueDto {
+  updates: Array<{ fieldDefId: string; value: any }>;
+  systemUpdates?: {
+    assignee: string | null;
+    summary?: string;
+    description?: string;
+    priority?: string;
+    dueDate?: string | null;
+    reporter?: string;
+  };
+}

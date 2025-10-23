@@ -4,7 +4,7 @@ import { AuthService, JwtPayload } from './auth.service';
 import { JwtAuthGuard } from './jwt.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   user: JwtPayload; // Adjust the type according to your user object structure
 }
 

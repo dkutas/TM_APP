@@ -8,6 +8,20 @@ export type User = {
     email: string;
 };
 
+/**
+ * DataType enum kept in sync with backend (see UML2.md).
+ */
+export enum DataType {
+    TEXT = 'TEXT',
+    NUMBER = 'NUMBER',
+    BOOL = 'BOOL',
+    DATE = 'DATE',
+    DATETIME = 'DATETIME',
+    USER = 'USER',
+    OPTION = 'OPTION',
+    MULTI_OPTION = 'MULTI_OPTION',
+}
+
 export type UserProject = {
     projectId: ID;
     projectKey: string;
@@ -68,13 +82,74 @@ export type IssueLink = {
     };
 }
 
+export type CustomFieldOption = {
+    id: string;
+    key: string;
+    value: string;
+    order: number;
+}
+
+type CustomFieldBase = {
+    id: string;
+    key: string;
+    name: string;
+    required: boolean;
+    visible: boolean;
+    editable: boolean;
+    order: number;
+    options?: CustomFieldOption[] | null;
+}
+
+export type IssueCustomField =
+    | (CustomFieldBase & { dataType: 'TEXT'; value: string | null })
+    | (CustomFieldBase & { dataType: 'NUMBER'; value: number | null })
+    | (CustomFieldBase & { dataType: 'BOOL'; value: boolean | null })
+    | (CustomFieldBase & { dataType: 'DATE'; value: string | null })
+    | (CustomFieldBase & { dataType: 'DATETIME'; value: string | null })
+    | (CustomFieldBase & { dataType: 'USER'; value: string | null })
+    | (CustomFieldBase & { dataType: 'OPTION'; value: string | null })
+    | (CustomFieldBase & { dataType: 'MULTI_OPTION'; value: string[] });
+
+export type IssueSystemFields = {
+    summary: string;
+    description?: string;
+    assignee?: ID;
+    reporter: ID;
+    priority: ID;
+    dueDate?: string;
+}
+
+export type IssueCustomFieldDefs =
+    | (CustomFieldBase & { dataType: DataType.TEXT })
+    | (CustomFieldBase & { dataType: DataType.NUMBER })
+    | (CustomFieldBase & { dataType: DataType.BOOL })
+    | (CustomFieldBase & { dataType: DataType.DATE })
+    | (CustomFieldBase & { dataType: DataType.DATETIME })
+    | (CustomFieldBase & { dataType: DataType.USER })
+    | (CustomFieldBase & { dataType: DataType.OPTION })
+    | (CustomFieldBase & { dataType: DataType.MULTI_OPTION });
+
+export type NormalizedFieldValue = { label: string, value: string | number | boolean | null | string[] }
+
+export type IssueTransition = {
+    id: string;
+    name: string;
+    from: {
+        id: string; name: string; key: string
+        category: IssueStatus["category"]
+    };
+    to: {
+        id: string; name: string; key: string;
+        category: IssueStatus["category"]
+    };
+}
 
 export type Issue = {
     id: ID;
     key: string;
     projectId: ID;
     summary: string;
-    description?: string;
+    description: string;
     project: Project;
     status: IssueStatus;
     priority: IssuePriority;
@@ -86,7 +161,8 @@ export type Issue = {
     updatedAt: string;
     dueDate?: string;
     attachments: Array<Attachment>
-    comments: Array<Comment>
+    comments: Array<Comment>;
+    fields: Array<IssueCustomField>
 };
 
 export type QueryParams = {

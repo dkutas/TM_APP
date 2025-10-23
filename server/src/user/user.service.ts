@@ -36,7 +36,10 @@ export class UserService {
   }
 
   findOne(id: string) {
-    return this.repo.findOne({ where: { id } });
+    return this.repo.findOne({
+      where: { id },
+      select: { name: true, email: true, id: true, systemRole: true },
+    });
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {

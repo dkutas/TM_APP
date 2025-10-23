@@ -2,6 +2,8 @@
 
 import { User } from '../../user/entities/user.entity';
 import { Issue } from '../entities/issue.entity';
+import { DataType } from '../../common/enums';
+import { WorkflowStatus } from '../../workflow/entities/workflow.entity';
 
 export class FieldOptionDto {
   id: string;
@@ -23,26 +25,30 @@ export interface FieldDtoBase {
 
 // Diszkriminált unió beágyazva
 export type FieldDto =
-  | (FieldDtoBase & { dataType: 'TEXT'; value: string | null })
-  | (FieldDtoBase & { dataType: 'NUMBER'; value: number | null })
-  | (FieldDtoBase & { dataType: 'BOOL'; value: boolean | null })
-  | (FieldDtoBase & { dataType: 'DATE'; value: string | null })
-  | (FieldDtoBase & { dataType: 'DATETIME'; value: string | null })
-  | (FieldDtoBase & { dataType: 'USER'; value: string | null })
-  | (FieldDtoBase & { dataType: 'OPTION'; value: string | null })
-  | (FieldDtoBase & { dataType: 'MULTI_OPTION'; value: string[] })
-  | (FieldDtoBase & {
-      dataType: 'LINK';
-      value: { issueId: string; linkTypeId: string } | null;
-    });
+  | (FieldDtoBase & { dataType: DataType.TEXT; value: string | null })
+  | (FieldDtoBase & { dataType: DataType.NUMBER; value: number | null })
+  | (FieldDtoBase & { dataType: DataType.BOOL; value: boolean | null })
+  | (FieldDtoBase & { dataType: DataType.DATE; value: string | null })
+  | (FieldDtoBase & { dataType: DataType.DATETIME; value: string | null })
+  | (FieldDtoBase & { dataType: DataType.USER; value: string | null })
+  | (FieldDtoBase & { dataType: DataType.OPTION; value: string | null })
+  | (FieldDtoBase & { dataType: DataType.MULTI_OPTION; value: string[] });
+
+export type FieldDefsDTO =
+  | (FieldDtoBase & { dataType: DataType.TEXT })
+  | (FieldDtoBase & { dataType: DataType.NUMBER })
+  | (FieldDtoBase & { dataType: DataType.BOOL })
+  | (FieldDtoBase & { dataType: DataType.DATE })
+  | (FieldDtoBase & { dataType: DataType.DATETIME })
+  | (FieldDtoBase & { dataType: DataType.USER })
+  | (FieldDtoBase & { dataType: DataType.OPTION })
+  | (FieldDtoBase & { dataType: DataType.MULTI_OPTION });
 
 // dto/issue-with-fields.dto.ts
 export interface IssueWithFieldsDto extends Issue {
   id: string;
   key: string;
   summary: string;
-  projectId: string;
-  issueTypeId: string;
   links: IssueLinkDto[] | null;
   comments: IssueCommentDto[] | null;
   attachments: IssueAttachmentDto[] | null;
@@ -87,4 +93,21 @@ export interface IssueAttachmentDto {
   uploadedBy: string;
   createdAt: string; // ISO
   url: string; // signed/relative
+}
+
+export interface IssueTransitionDto {
+  id: string;
+  name: string;
+  from: {
+    id: string;
+    name: string;
+    key: string;
+    category: WorkflowStatus['category'];
+  };
+  to: {
+    id: string;
+    name: string;
+    key: string;
+    category: WorkflowStatus['category'];
+  };
 }

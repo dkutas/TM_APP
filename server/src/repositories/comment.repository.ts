@@ -15,18 +15,8 @@ export class CommentRepository extends Repository<Comment> {
       .leftJoinAndSelect('c.author', 'author')
       .leftJoinAndSelect('c.issue', 'issue')
       .where('i.id = :issueId', { issueId })
-      .orderBy('c.createdAt', 'ASC')
+      .orderBy('c.createdAt', 'DESC')
       .getMany();
-  }
-
-  add(issueId: string, authorId: string, body: string) {
-    return this.save(
-      this.create({
-        issue: { id: issueId },
-        author: { id: authorId },
-        body,
-      }),
-    );
   }
 
   updateBody(commentId: string, body: string) {

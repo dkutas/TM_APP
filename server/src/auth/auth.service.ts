@@ -18,6 +18,7 @@ import { RoleEnum } from '../common/enums';
 
 export interface JwtPayload {
   sub: string;
+  id: string;
   email: string;
   role: Role;
   name: string;

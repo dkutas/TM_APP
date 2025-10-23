@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -17,10 +18,14 @@ import { UpdateIssueDto } from './dto/update-issue.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { UserIssuesQueryDto } from './dto/user-issues-query.dto';
 import {
+  FieldDefsDTO,
   IssueAttachmentDto,
   IssueCommentDto,
+  IssueTransitionDto,
   IssueWithFieldsDto,
 } from './dto/field.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AuthenticatedRequest } from '../auth/auth.controller';
 
 @Controller('issue')
 export class IssueController {
@@ -46,20 +51,18 @@ export class IssueController {
     return this.issueService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateIssueDto: UpdateIssueDto) {
-    return this.issueService.update(id, updateIssueDto);
-  }
-
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.issueService.remove(id);
   }
 
   @Post(':id/transition')
-  transition(@Param('id') id: string, @Body('statusId') toStatusId: string) {
+  transition(
+    @Param('id') id: string,
+    @Body('transitionId') transitionId: string,
+  ) {
     // Implement the logic to transition the issue to a new status
-    return this.issueService.transition(id, toStatusId);
+    return this.issueService.transition(id, transitionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -84,11 +87,12 @@ export class IssueController {
   }
 
   @Put(':id/fields')
-  upsertFields(
-    @Param('id') id: string,
-    @Body() body: { updates: Array<{ fieldDefId: string; value: any }> },
-  ) {
-    return this.issueService.upsertIssueFields(id, body?.updates ?? []);
+  upsertFields(@Param('id') id: string, @Body() body: UpdateIssueDto) {
+    return this.issueService.upsertIssueFields(
+      id,
+      body.updates,
+      body.systemUpdates,
+    );
   }
 
   @Get(':id/comments')
@@ -96,12 +100,15 @@ export class IssueController {
     return this.issueService.getIssueComments(id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post(':id/comments')
   addComment(
     @Param('id') id: string,
-    @Body() body: { authorId: string; body: string },
+    @Body() body: { body: string },
+    @Req() req: AuthenticatedRequest,
   ) {
-    return this.issueService.addIssueComment(id, body.authorId, body.body);
+    return this.issueService.addIssueComment(id, req.user.id, body.body);
   }
 
   @Patch('comments/:commentId')
@@ -154,6 +161,18 @@ export class IssueController {
       size: body.size,
       storageKey: body.storageKey,
     });
+  }
+
+  @Get(':id/field-definitions')
+  getFieldDefinitions(@Param('id') id: string): Promise<FieldDefsDTO[]> {
+    return this.issueService.getIssueFieldDefinitions(id);
+  }
+
+  @Get(':id/transitions')
+  getAvailableTransitions(
+    @Param('id') id: string,
+  ): Promise<IssueTransitionDto[]> {
+    return this.issueService.getAvailableTransitions(id);
   }
 
   // @Delete('attachments/:attachmentId')

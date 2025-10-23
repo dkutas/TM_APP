@@ -1,3 +1,4 @@
+// issue.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { UpdateIssueDto } from './dto/update-issue.dto';
@@ -9,11 +10,14 @@ import { IssueRepository } from '../repositories/issue.repository';
 import { FieldContextRepository } from '../repositories/field-context.repository';
 import { IssueFieldValueRepository } from '../repositories/issue-field-value.repository';
 import { FieldDefinition } from '../field-definition/entities/field-definition.entity';
+// ... other imports
 import {
+  FieldDefsDTO,
   FieldDto,
   IssueAttachmentDto,
   IssueCommentDto,
   IssueLinkDto,
+  IssueTransitionDto,
   IssueWithFieldsDto,
 } from './dto/field.dto';
 import {
@@ -25,20 +29,19 @@ import { AttachmentRepository } from '../repositories/attachment.repository';
 import { IssueLinkRepository } from '../repositories/issue-link.repository';
 import { CommentRepository } from '../repositories/comment.repository';
 import { ChangeLogRepository } from '../repositories/change-log.repository';
+import { ProjectIssueTypeRepository } from '../repositories/project-issue-type.repository';
+import { WorkflowTransitionRepository } from '../repositories/workflow-transition.repository';
+import { User } from '../user/entities/user.entity';
 
 type OptionJson = { optionId: string };
-type LinkJson = { issueId: string; linkTypeId: string };
+type UserJson = { userId: string };
 
 const isOptionJson = (x: unknown): x is OptionJson =>
   typeof x === 'object' &&
   x !== null &&
   typeof (x as any).optionId === 'string';
-
-const isLinkJson = (x: unknown): x is LinkJson =>
-  typeof x === 'object' &&
-  x !== null &&
-  typeof (x as any).issueId === 'string' &&
-  typeof (x as any).linkTypeId === 'string';
+const isUserJson = (x: unknown): x is UserJson =>
+  typeof x === 'object' && x !== null && typeof (x as any).userId === 'string';
 
 const toStringOrNull = (x: unknown): string | null =>
   x == null ? null : typeof x === 'string' ? x : String(x);
@@ -65,12 +68,6 @@ const toDateOrNull = (x: unknown): Date | null => {
   return null;
 };
 
-const isUUID = (x: unknown): x is string =>
-  typeof x === 'string' &&
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    x,
-  );
-
 type SortSpec = { [prop: string]: 'ASC' | 'DESC' };
 
 @Injectable()
@@ -86,6 +83,10 @@ export class IssueService {
     private readonly commentRepo: CommentRepository,
     private readonly historyRepo: ChangeLogRepository,
     private readonly attachRepo: AttachmentRepository,
+    private readonly pitRepo: ProjectIssueTypeRepository,
+    private readonly transRepo: WorkflowTransitionRepository,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   create(createIssueDto: CreateIssueDto) {
@@ -108,21 +109,39 @@ export class IssueService {
   findOne(id: string) {
     return this.issueRepository.findOne({
       where: { id },
-      relations: ['status', 'assignee', 'reporter', 'project', 'priority'],
+      relations: [
+        'status',
+        'assignee',
+        'reporter',
+        'project',
+        'priority',
+        'issueType',
+      ],
     });
-  }
-
-  update(id: string, updateIssueDto: UpdateIssueDto) {
-    return this.issueRepository.update(id, updateIssueDto);
   }
 
   remove(id: string) {
     return this.issueRepository.delete(id);
   }
 
-  transition(id: string, statusId: string) {
-    // Implement the logic to transition the issue to a new status
-    return this.issueRepository.update(id, { status: { id: statusId } });
+  async transition(id: string, transitionId: string) {
+    if (!transitionId) {
+      throw new NotFoundException('Status ID is required for transition');
+    }
+    const transition = await this.transRepo
+      .findOne({
+        where: { id: transitionId },
+        relations: ['fromStatus', 'toStatus'],
+      })
+      .then((t) => {
+        if (!t) {
+          throw new NotFoundException('Status ID is required for transition');
+        }
+        return t;
+      });
+    return this.issueRepository.update(id, {
+      status: { id: transition.toStatus.id },
+    });
   }
 
   getComments(id: string) {
@@ -201,12 +220,12 @@ export class IssueService {
             }))
         : null;
 
-      let value: any = null;
+      let value: string | null | number | object | boolean | Date;
       switch (dataType) {
         case DataType.TEXT:
           value = v?.valueText ?? null;
           break;
-        case DataType.NUMBER: // valueNumber string (decimal) → FE-nek number (ha egész/szabályozott)
+        case DataType.NUMBER:
           value = v?.valueNumber != null ? Number(v.valueNumber) : null;
           break;
         case DataType.BOOL:
@@ -218,34 +237,31 @@ export class IssueService {
         case DataType.DATETIME:
           value = v?.valueDatetime ?? null;
           break;
-        case DataType.USER:
-          value = v?.valueUserId ?? null;
+        case DataType.USER: {
+          const json = v?.valueJson as object;
+          value = isUserJson(json)
+            ? json.userId
+            : (ctx.defaultOption?.id ?? null);
           break;
+        }
         case DataType.OPTION: {
-          const json = v?.valueJson as unknown;
+          const json = v?.valueJson as object;
           value = isOptionJson(json)
             ? json.optionId
             : (ctx.defaultOption?.id ?? null);
           break;
         }
         case DataType.MULTI_OPTION:
-          // a v.options elemei IssueFieldValueOption-ok, bennük eager `option`
           value = v?.options?.map((o) => o.option.id) ?? [];
           break;
-        case DataType.LINK: {
-          const json = v?.valueJson as unknown;
-          value = isLinkJson(json) ? json : null;
-          break;
-        }
         default: {
-          // Unknown/other JSON payloads: pass through as-is or null
-          const json = v?.valueJson as unknown;
+          const json = v?.valueJson as object;
           value = json ?? null;
           break;
         }
       }
 
-      return {
+      const dto = {
         id: fd.id,
         key: fd.key,
         name: fd.name,
@@ -257,6 +273,7 @@ export class IssueService {
         options,
         value,
       };
+      return dto as FieldDto;
     });
 
     return {
@@ -271,8 +288,6 @@ export class IssueService {
       reporter: issue.reporter,
       createdAt: issue.createdAt,
       updatedAt: issue.updatedAt,
-      projectId,
-      issueTypeId,
       links,
       comments,
       attachments,
@@ -284,6 +299,12 @@ export class IssueService {
 
   // ---------- UPSERT ------------------------------------------------------
 
+  async getUserExists(userId: string): Promise<boolean> {
+    return this.userRepository
+      .findOne({ where: { id: userId } })
+      .then((user) => !!user);
+  }
+
   /**
    * updates: [{ fieldDefId, value }]
    *
@@ -294,15 +315,25 @@ export class IssueService {
   async upsertIssueFields(
     issueId: string,
     updates: Array<{ fieldDefId: string; value: unknown }>,
+    systemUpdates: UpdateIssueDto['systemUpdates'],
   ) {
     return this.ds.transaction(async (trx) => {
       const valueRepo = trx.getRepository(IssueFieldValue);
       const valueOptRepo = trx.getRepository(IssueFieldValueOption);
       const fieldDefRepo = trx.getRepository(FieldDefinition);
-      const issueRepo = trx.getRepository(Issue);
 
-      const issue = await issueRepo.findOne({ where: { id: issueId } });
+      const issue = await this.issueRepository.findOne({
+        where: { id: issueId },
+      });
+
       if (!issue) throw new NotFoundException('Issue not found');
+
+      // rendszermezők frissítése
+      if (systemUpdates) {
+        for (const [key, values] of Object.entries(systemUpdates)) {
+          await this.issueRepository.update(issue.id, { [key]: values });
+        }
+      }
 
       for (const { fieldDefId, value } of updates) {
         const fd = await fieldDefRepo.findOne({ where: { id: fieldDefId } });
@@ -339,7 +370,7 @@ export class IssueService {
           await valueOptRepo
             .createQueryBuilder()
             .delete()
-            .where('issueFieldValueId = :id', { id: v.id })
+            .where('issue_field_value_id = :id', { id: v.id })
             .execute();
 
           if (Array.isArray(value) && value.length) {
@@ -367,8 +398,8 @@ export class IssueService {
           case DataType.TEXT:
             patch.valueText = toStringOrNull(value);
             break;
-          case DataType.NUMBER: // !!! decimal → string !!!
-            patch.valueNumber = value == null ? null : String(value);
+          case DataType.NUMBER:
+            patch.valueNumber = value == null ? null : String(value as number);
             break;
           case DataType.BOOL:
             patch.valueBool = toBoolOrNull(value);
@@ -379,15 +410,15 @@ export class IssueService {
           case DataType.DATETIME:
             patch.valueDatetime = toDateOrNull(value);
             break;
-          case DataType.USER:
-            patch.valueUserId = isUUID(value) ? value : null;
+          case DataType.USER: {
+            patch.valueJson = (await this.getUserExists(value as string))
+              ? { userId: value as string }
+              : null;
             break;
+          }
           case DataType.OPTION:
             patch.valueJson =
               typeof value === 'string' && value ? { optionId: value } : null;
-            break;
-          case DataType.LINK:
-            patch.valueJson = isLinkJson(value) ? value : null;
             break;
           default:
             patch.valueJson = value ?? null;
@@ -544,15 +575,18 @@ export class IssueService {
     });
   }
 
-  async addIssueComment(issueId: string, authorId: string, body: string) {
-    const c = await this.commentRepo.add(issueId, authorId, body);
-    // opcionális: history bejegyzés
-    await this.historyRepo.add({
-      issueId,
-      actorId: authorId,
-      items: [{ fieldKey: 'comment', from: null, to: 'added' }],
+  addIssueComment(issueId: string, authorId: string, body: string) {
+    // await this.historyRepo.add({
+    //   issueId,
+    //   actorId: authorId,
+    //   items: [{ fieldKey: 'comment', from: null, to: 'added' }],
+    // });
+
+    return this.commentRepo.save({
+      author: { id: authorId },
+      issue: { id: issueId },
+      body: body,
     });
-    return c;
   }
 
   async editIssueComment(commentId: string, authorId: string, body: string) {
@@ -654,6 +688,86 @@ export class IssueService {
 
   // ---- HISTORY -----------------------------------------------------------
 
+  async getIssueFieldDefinitions(issueId: string): Promise<FieldDefsDTO[]> {
+    const issue = await this.issues.findOneWithCore(issueId);
+    if (!issue) throw new NotFoundException('Issue not found');
+    const projectId = issue.project.id;
+    const issueTypeId = issue.issueType.id;
+    const contexts = await this.fieldCtxRepo.findApplicable(
+      projectId,
+      issueTypeId,
+    );
+
+    const defs: FieldDefsDTO[] = contexts.map((ctx) => {
+      const fd = ctx.fieldDef;
+      const options = fd.options?.length
+        ? fd.options
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((o) => ({
+              id: o.id,
+              key: o.key,
+              value: o.value,
+              order: o.order ?? 0,
+            }))
+        : null;
+      return {
+        id: fd.id,
+        key: fd.key,
+        name: fd.name,
+        dataType: fd.dataType,
+        required: ctx.required,
+        visible: ctx.visible,
+        editable: ctx.editable,
+        order: ctx.order,
+        options,
+      };
+    });
+    return defs;
+  }
+
+  // ---- ATTACHMENTS -------------------------------------------------------
+
+  async getAvailableTransitions(
+    issueId: string,
+  ): Promise<IssueTransitionDto[]> {
+    const issue = await this.issues.findOneWithCore(issueId);
+    if (!issue) throw new NotFoundException('Issue not found');
+
+    const projectId = issue.project.id;
+    const issueTypeId = issue.issueType.id;
+    const fromStatusId = issue.status.id;
+
+    // 1) projekt + issueType → workflow
+    const mapping = await this.pitRepo.findWorkflow(projectId, issueTypeId);
+    if (!mapping?.workflow) return []; // nincs workflow map-elve
+
+    // 2) ebből a workflow-ból a current státuszból induló transition-ök
+    const list = await this.transRepo.findForWorkflowAndFromStatus(
+      mapping.workflow.id,
+      fromStatusId,
+    );
+
+    // (Ha vannak szabályaid, itt tudsz szűrni: roles, conditions stb.)
+
+    return list.map((t) => ({
+      id: t.id,
+      name: t.name,
+      from: {
+        id: t.fromStatus.id,
+        key: t.fromStatus.key,
+        name: t.fromStatus.name,
+        category: t.fromStatus.category,
+      },
+      to: {
+        id: t.toStatus.id,
+        key: t.toStatus.key,
+        name: t.toStatus.name,
+        category: t.toStatus.category,
+      },
+    }));
+  }
+
   private applyUserRoleFilter(
     qb: SelectQueryBuilder<Issue>,
     role: UserIssueRole,
@@ -662,7 +776,7 @@ export class IssueService {
     if (role === 'assignee') {
       qb.andWhere('i.assigneeId = :userId', { userId });
     } else if (role === 'reporter') {
-      qb.andWhere('i.reporterId = :userId', { userId });
+      qb.andWhere('i.reporter_id = :userId', { userId });
     } else if (role === 'watcher') {
       // watchers: issue_watchers(issue_id, user_id) kapcsolótábla
       qb.innerJoin(
@@ -673,8 +787,6 @@ export class IssueService {
       );
     }
   }
-
-  // ---- ATTACHMENTS -------------------------------------------------------
 
   private applyFilters(
     qb: SelectQueryBuilder<Issue>,

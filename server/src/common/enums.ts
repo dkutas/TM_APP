@@ -18,7 +18,6 @@ export enum DataType {
   USER = 'USER',
   OPTION = 'OPTION',
   MULTI_OPTION = 'MULTI_OPTION',
-  LINK = 'LINK',
 }
 
 export enum LinkCategory {

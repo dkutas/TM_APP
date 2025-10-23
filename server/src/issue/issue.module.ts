@@ -25,6 +25,9 @@ import {
   ChangeItem,
   ChangeLog,
 } from '../change-log/entities/change-log.entity';
+import { ProjectIssueTypeRepository } from '../repositories/project-issue-type.repository';
+import { WorkflowTransitionRepository } from '../repositories/workflow-transition.repository';
+import { User } from '../user/entities/user.entity';
 
 @Module({
   imports: [
@@ -40,6 +43,7 @@ import {
       IssueLink,
       ChangeLog,
       ChangeItem,
+      User,
     ]),
   ],
   controllers: [IssueController],
@@ -53,6 +57,8 @@ import {
     CommentRepository,
     ChangeLogRepository,
     IssueLinkRepository,
+    ProjectIssueTypeRepository,
+    WorkflowTransitionRepository,
   ],
 })
 export class IssueModule {}
