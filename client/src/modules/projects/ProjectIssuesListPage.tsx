@@ -2,6 +2,8 @@ import {useEffect, useMemo, useState} from "react";
 import type {Issue} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import {
+    Box,
+    Button,
     Divider,
     IconButton,
     List,
@@ -20,12 +22,14 @@ import {useUIStore} from "../../app/store";
 import {api} from "../../lib/apiClient.ts";
 import TableRowsIcon from "@mui/icons-material/TableRows";
 import SplitscreenIcon from "@mui/icons-material/Splitscreen";
+import IssueCreateModal from "../issues/IssueCreateModal.tsx";
 
 export default function ProjectIssuesListPage() {
     const [q, setQ] = useState('');
     const [items, setItems] = useState<Issue[]>([]);
     const {isDetailsOpen, selectedIssueId, selectIssue, setDetailsOpen} = useUIStore();
     const navigate = useNavigate();
+    const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const {projectId} = useParams()
 
     useEffect(() => {
@@ -46,23 +50,28 @@ export default function ProjectIssuesListPage() {
             <Grid size={12} spacing={2}>
                 <Grid size={12} display="flex" alignItems="center" justifyContent="space-between">
                     <Typography variant="h4">Project issues</Typography>
-                    <ToggleButtonGroup
-                        value={isDetailsOpen}
-                        exclusive
-                        onChange={(_, v) => setDetailsOpen(v)}
-                        size="small"
-                    >
-                        <Tooltip title="Table view">
-                            <ToggleButton value={false} aria-label="table">
-                                <TableRowsIcon fontSize="small"/>
-                            </ToggleButton>
-                        </Tooltip>
-                        <Tooltip title="Split view">
-                            <ToggleButton value={true} aria-label="split">
-                                <SplitscreenIcon sx={{rotate: "90deg"}} fontSize="small"/>
-                            </ToggleButton>
-                        </Tooltip>
-                    </ToggleButtonGroup>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" gap={2}>
+                        <Button variant="contained" onClick={() => {
+                            setCreateModalOpen(true)
+                        }}>Create Issue</Button>
+                        <ToggleButtonGroup
+                            value={isDetailsOpen}
+                            exclusive
+                            onChange={(_, v) => setDetailsOpen(v)}
+                            size="small"
+                        >
+                            <Tooltip title="Table view">
+                                <ToggleButton value={false} aria-label="table">
+                                    <TableRowsIcon fontSize="small"/>
+                                </ToggleButton>
+                            </Tooltip>
+                            <Tooltip title="Split view">
+                                <ToggleButton value={true} aria-label="split">
+                                    <SplitscreenIcon sx={{rotate: "90deg"}} fontSize="small"/>
+                                </ToggleButton>
+                            </Tooltip>
+                        </ToggleButtonGroup>
+                    </Box>
                 </Grid>
             </Grid>
             <Grid size={{xs: 12, md: isDetailsOpen ? 7 : 12}}>
@@ -84,6 +93,8 @@ export default function ProjectIssuesListPage() {
                     </List>
                 </Paper>
             </Grid>
+            <IssueCreateModal open={isCreateModalOpen} onClose={() => setCreateModalOpen(false)}
+                              onSave={() => setCreateModalOpen(false)}/>
 
             {isDetailsOpen && (
                 <Grid size={{xs: 12, md: 5}}>

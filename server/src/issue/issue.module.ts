@@ -20,7 +20,6 @@ import { IssueLinkRepository } from '../repositories/issue-link.repository';
 import { CommentRepository } from '../repositories/comment.repository';
 import { Attachment } from '../attachment/entities/attachment.entity';
 import { Comment } from '../comment/entities/comment.entity';
-import { IssueLink } from '../link-type/entities/link-type.entity';
 import {
   ChangeItem,
   ChangeLog,
@@ -28,6 +27,7 @@ import {
 import { ProjectIssueTypeRepository } from '../repositories/project-issue-type.repository';
 import { WorkflowTransitionRepository } from '../repositories/workflow-transition.repository';
 import { User } from '../user/entities/user.entity';
+import { IssueLink } from '../link-type/entities/issue-link.entity';
 
 @Module({
   imports: [

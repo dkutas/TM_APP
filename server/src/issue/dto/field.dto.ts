@@ -52,6 +52,7 @@ export interface IssueWithFieldsDto extends Issue {
   links: IssueLinkDto[] | null;
   comments: IssueCommentDto[] | null;
   attachments: IssueAttachmentDto[] | null;
+  history: IssueHistoryItemDto[] | null;
   fields: FieldDto[];
 }
 
@@ -76,13 +77,19 @@ export interface IssueCommentDto {
   updatedAt?: string | null;
 }
 
+export interface IssueHistoryChangeItemDto {
+  fieldKey: string; // pl. "status", "assignee", "custom.severity"
+  fromId?: string | null;
+  toId?: string | null;
+  fromDisplay?: string | null;
+  toDisplay?: string | null;
+}
+
 export interface IssueHistoryItemDto {
   id: string;
   authorId: string;
-  changedAt: string; // ISO
-  field: string; // pl. "status", "assignee", "custom.severity"
-  from?: string | null;
-  to?: string | null;
+  createdAt: string; // ISO
+  items: IssueHistoryChangeItemDto[];
 }
 
 export interface IssueAttachmentDto {

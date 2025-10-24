@@ -1,6 +1,10 @@
 // issue.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateIssueDto } from './dto/create-issue.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CFvalues, SystemValues } from './dto/create-issue.dto';
 import { UpdateIssueDto } from './dto/update-issue.dto';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { Issue } from './entities/issue.entity';
@@ -16,6 +20,7 @@ import {
   FieldDto,
   IssueAttachmentDto,
   IssueCommentDto,
+  IssueHistoryItemDto,
   IssueLinkDto,
   IssueTransitionDto,
   IssueWithFieldsDto,
@@ -32,6 +37,10 @@ import { ChangeLogRepository } from '../repositories/change-log.repository';
 import { ProjectIssueTypeRepository } from '../repositories/project-issue-type.repository';
 import { WorkflowTransitionRepository } from '../repositories/workflow-transition.repository';
 import { User } from '../user/entities/user.entity';
+import { ProjectIssueType } from '../project/entities/projectIssueType.entity';
+import { WorkflowStatus } from '../workflow/entities/workflow.entity';
+import { Priority } from '../priority/entities/priority.entity';
+import { isObject } from 'class-validator';
 
 type OptionJson = { optionId: string };
 type UserJson = { userId: string };
@@ -44,7 +53,7 @@ const isUserJson = (x: unknown): x is UserJson =>
   typeof x === 'object' && x !== null && typeof (x as any).userId === 'string';
 
 const toStringOrNull = (x: unknown): string | null =>
-  x == null ? null : typeof x === 'string' ? x : String(x);
+  x == null ? null : typeof x === 'string' ? x : String(x as unknown);
 
 const toBoolOrNull = (x: unknown): boolean | null => {
   if (typeof x === 'boolean') return x;
@@ -88,10 +97,6 @@ export class IssueService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
-
-  create(createIssueDto: CreateIssueDto) {
-    return this.issueRepository.create(createIssueDto);
-  }
 
   findAll() {
     return this.issueRepository.find({
@@ -144,13 +149,6 @@ export class IssueService {
     });
   }
 
-  getComments(id: string) {
-    return this.issueRepository.find({
-      where: { id: id },
-      relations: ['comments'],
-    });
-  }
-
   async findByProject(projectId: string) {
     return this.issueRepository.find({
       where: { project: { id: projectId } },
@@ -188,16 +186,18 @@ export class IssueService {
       ]);
 
     // flatten change-log items to IssueHistoryItemDto[]
-    // const history: IssueHistoryItemDto[] = historyLogs.flatMap((h) =>
-    //   (h.items ?? []).map((it) => ({
-    //     id: it.id,
-    //     authorId: h.actor.id,
-    //     changedAt: h.changedAt.toISOString(),
-    //     field: it.field ?? (it as any).fieldKey ?? '',
-    //     from: it.from ?? null,
-    //     to: it.to ?? null,
-    //   })),
-    // );
+    const history: IssueHistoryItemDto[] = historyLogs.map((h) => ({
+      id: h.id,
+      authorId: h.actor.id,
+      createdAt: h.createdAt.toISOString(),
+      items: (h.items ?? []).map((it) => ({
+        fieldKey: it.fieldKey ?? '',
+        fromDisplay: it.fromDisplay ?? '',
+        toDisplay: it.toDisplay ?? '',
+        fromId: it.fromId ?? null,
+        toId: it.toId ?? null,
+      })),
+    }));
 
     // meglévő értékek az issue-hoz (fieldDef + options + option)
     const values = await this.valueRepo.findByIssueWithJoins(issueId);
@@ -291,7 +291,7 @@ export class IssueService {
       links,
       comments,
       attachments,
-      // history,
+      history,
       fields,
       ...basic,
     };
@@ -316,6 +316,7 @@ export class IssueService {
     issueId: string,
     updates: Array<{ fieldDefId: string; value: unknown }>,
     systemUpdates: UpdateIssueDto['systemUpdates'],
+    actorId: string,
   ) {
     return this.ds.transaction(async (trx) => {
       const valueRepo = trx.getRepository(IssueFieldValue);
@@ -324,15 +325,27 @@ export class IssueService {
 
       const issue = await this.issueRepository.findOne({
         where: { id: issueId },
+        relations: ['assignee', 'reporter', 'priority', 'status'],
       });
+
+      const historyItems: Array<{
+        from: string;
+        to: string;
+        fieldKey: string;
+      }> = [];
 
       if (!issue) throw new NotFoundException('Issue not found');
 
       // rendszermezők frissítése
-      if (systemUpdates) {
-        for (const [key, values] of Object.entries(systemUpdates)) {
-          await this.issueRepository.update(issue.id, { [key]: values });
-        }
+      for (const [key, values] of Object.entries(systemUpdates)) {
+        historyItems.push({
+          fieldKey: key,
+          from: isObject(issue[key])
+            ? (issue[key] as { id: string }).id
+            : String(issue[key]) || '',
+          to: values ?? '',
+        });
+        await this.issueRepository.update(issue.id, { [key]: values });
       }
 
       for (const { fieldDefId, value } of updates) {
@@ -356,7 +369,6 @@ export class IssueService {
           valueBool: null,
           valueDate: null,
           valueDatetime: null,
-          valueUserId: null,
           valueJson: null,
         };
 
@@ -397,6 +409,260 @@ export class IssueService {
         switch (dataType) {
           case DataType.TEXT:
             patch.valueText = toStringOrNull(value);
+            historyItems.push({
+              fieldKey: fd.key,
+              from: v ? v.valueText || 'null' : 'null',
+              to: String(value),
+            });
+            break;
+          case DataType.NUMBER:
+            patch.valueNumber = value == null ? null : String(value as number);
+            historyItems.push({
+              fieldKey: fd.key,
+              from: v ? v.valueNumber || 'null' : 'null',
+              to: String(value),
+            });
+            break;
+          case DataType.BOOL:
+            patch.valueBool = toBoolOrNull(value);
+            historyItems.push({
+              fieldKey: fd.key,
+              from: v ? String(v.valueBool) || 'null' : 'null',
+              to: String(value),
+            });
+            break;
+          case DataType.DATE:
+            patch.valueDate = isISODate(value) ? value : null;
+            historyItems.push({
+              fieldKey: fd.key,
+              from: v ? v.valueDate || 'null' : 'null',
+              to: String(value),
+            });
+            break;
+          case DataType.DATETIME:
+            patch.valueDatetime = toDateOrNull(value);
+            historyItems.push({
+              fieldKey: fd.key,
+              from: v ? String(v.valueDatetime) || 'null' : 'null',
+              to: String(value),
+            });
+            break;
+          case DataType.USER: {
+            patch.valueJson = (await this.getUserExists(value as string))
+              ? { userId: value as string }
+              : null;
+            historyItems.push({
+              fieldKey: fd.key,
+              from: v ? JSON.stringify(v.valueJson) || 'null' : 'null',
+              to: JSON.stringify({ userId: value as string }),
+            });
+            break;
+          }
+          case DataType.OPTION:
+            patch.valueJson =
+              typeof value === 'string' && value ? { optionId: value } : null;
+            historyItems.push({
+              fieldKey: fd.key,
+              from: v ? JSON.stringify(v.valueJson) || 'null' : 'null',
+              to: JSON.stringify({ optionId: value }),
+            });
+            break;
+          default:
+            patch.valueJson = value ?? null;
+            historyItems.push({
+              fieldKey: fd.key,
+              from: v ? JSON.stringify(v.valueJson) || 'null' : 'null',
+              to: JSON.stringify(value),
+            });
+            break;
+        }
+
+        if (v) {
+          await valueRepo.update(v.id, { ...patch, updatedAt: new Date() });
+        } else {
+          await valueRepo.insert({
+            issue,
+            fieldDef: fd,
+            ...patch,
+            updatedAt: new Date(),
+          });
+        }
+      }
+
+      await this.historyRepo.add({
+        issueId: issue.id,
+        actorId: actorId,
+        items: historyItems,
+      });
+
+      return { ok: true };
+    });
+  }
+
+  async createIssue(
+    projectId: string,
+    projectIssueTypeId: string,
+    dto: {
+      cFvalues: CFvalues;
+      systemValues: SystemValues;
+    },
+  ) {
+    return this.ds.transaction(async (trx) => {
+      const issueRepo = trx.getRepository(Issue);
+      const pitRepo = trx.getRepository(ProjectIssueType);
+      const wsRepo = trx.getRepository(WorkflowStatus);
+      const prioRepo = trx.getRepository(Priority);
+      const userRepo = trx.getRepository(User);
+      const fdRepo = trx.getRepository(FieldDefinition);
+      const valRepo = trx.getRepository(IssueFieldValue);
+      const valOptRepo = trx.getRepository(IssueFieldValueOption);
+
+      const pit = await pitRepo.findOne({
+        where: {
+          issueType: { id: projectIssueTypeId },
+          project: { id: projectId },
+        },
+        relations: ['workflow', 'issueType', 'project'],
+      });
+
+      if (!pit) {
+        throw new NotFoundException(
+          'ProjectIssueType not found for given project',
+        );
+      }
+      let startStatus = await wsRepo.findOne({
+        where: {
+          workflow: { id: pit.workflow.id },
+          category: 'TODO',
+        },
+      });
+
+      if (!startStatus) {
+        startStatus = await wsRepo
+          .createQueryBuilder('s')
+          .leftJoin('s.workflow', 'w')
+          .leftJoin('WorkflowTransition', 't', 't.to_status_id = s.id')
+          .where('w.id = :wid', { wid: pit.workflow.id })
+          .andWhere('t.id IS NULL')
+          .getOne();
+      }
+
+      if (!startStatus) {
+        startStatus = await wsRepo.findOne({
+          where: { workflow: { id: pit.workflow.id } },
+        });
+      }
+      if (!startStatus)
+        throw new BadRequestException('No start status found for workflow');
+
+      const {
+        assignee,
+        summary,
+        description,
+        priority: priorityId,
+        dueDate,
+        reporter,
+      } = dto.systemValues;
+
+      if (!summary?.trim())
+        throw new BadRequestException('Summary is required');
+
+      const priority = await prioRepo.findOne({
+        where: { id: priorityId },
+      });
+      if (!priority)
+        throw new BadRequestException(`Priority not found: ${priorityId}`);
+
+      const reporterUser = reporter
+        ? await userRepo.findOne({ where: { id: reporter } })
+        : null;
+      if (reporter && !reporterUser)
+        throw new BadRequestException('Reporter not found');
+
+      const assigneeUser = assignee
+        ? await userRepo.findOne({ where: { id: assignee } })
+        : null;
+      if (assignee && !assigneeUser)
+        throw new BadRequestException('Assignee not found');
+
+      const seq =
+        (await this.issueRepository.countBy({
+          project: { id: projectId },
+        })) + 1;
+      const key = `${pit.keyPrefix ?? pit['key_prefix']}-${seq}`;
+
+      const issue = issueRepo.create({
+        project: { id: projectId },
+        projectIssueType: { id: pit.id },
+        issueType: { id: pit.issueType.id },
+        key,
+        summary: summary.trim(),
+        description: description ?? null,
+        status: { id: startStatus.id },
+        priority: { id: priority.id },
+        reporter: reporterUser ? { id: reporterUser.id } : null,
+        assignee: assigneeUser ? { id: assigneeUser.id } : null,
+        dueDate: dueDate ?? null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Issue);
+      const saved = await issueRepo.save(issue);
+
+      const cfs: Array<{
+        fieldDefId: string;
+        value: string | number | boolean | string[] | null;
+        fieldName?: string;
+      }> = Array.isArray(dto.cFvalues)
+        ? dto.cFvalues
+        : dto.cFvalues
+          ? [dto.cFvalues]
+          : [];
+
+      for (const { fieldDefId, value } of cfs) {
+        const fd = await fdRepo.findOne({ where: { id: fieldDefId } });
+        if (!fd) continue;
+
+        const reset: Partial<IssueFieldValue> = {
+          valueText: null,
+          valueNumber: null,
+          valueBool: null,
+          valueDate: null,
+          valueDatetime: null,
+          valueUserId: null,
+          valueJson: null,
+        };
+
+        if (fd.dataType === DataType.MULTI_OPTION) {
+          const base = await valRepo.save(
+            valRepo.create({
+              issue: { id: saved.id },
+              fieldDef: { id: fd.id },
+              ...reset,
+            }),
+          );
+
+          if (Array.isArray(value) && value.length) {
+            const optionIds = (value as unknown[]).filter(
+              (x): x is string => typeof x === 'string',
+            );
+            if (optionIds.length) {
+              await valOptRepo.insert(
+                optionIds.map((optionId) => ({
+                  issueFieldValue: { id: base.id },
+                  option: { id: optionId },
+                })),
+              );
+            }
+          }
+          await valRepo.update(base.id, { updatedAt: new Date() });
+          continue;
+        }
+
+        // single-value mezők
+        const patch: Partial<IssueFieldValue> = { ...reset };
+        switch (fd.dataType as DataType) {
+          case DataType.TEXT:
+            patch.valueText = toStringOrNull(value);
             break;
           case DataType.NUMBER:
             patch.valueNumber = value == null ? null : String(value as number);
@@ -425,19 +691,16 @@ export class IssueService {
             break;
         }
 
-        if (v) {
-          await valueRepo.update(v.id, { ...patch, updatedAt: new Date() });
-        } else {
-          await valueRepo.insert({
-            issue,
-            fieldDef: fd,
-            ...patch,
-            updatedAt: new Date(),
-          });
-        }
+        await valRepo.insert({
+          issue: { id: saved.id },
+          fieldDef: { id: fd.id },
+          ...patch,
+          updatedAt: new Date(),
+        });
       }
 
-      return { ok: true };
+      // 7) Visszatérés
+      return { ok: true, issueId: saved.id, key: saved.key };
     });
   }
 
@@ -489,12 +752,6 @@ export class IssueService {
       updatedAt: i.updatedAt,
     }));
   }
-
-  //Todo
-  // setValue(id: string, fieldKey: string, value: any) {
-  //   // Implement the logic to set a specific field value of the issue
-  //   // return this.issueRepository.update(id, { [fieldKey]: value });
-  // }
 
   async getIssueLinks(issueId: string): Promise<IssueLinkDto[]> {
     const { out, inn } = await this.linkRepo.findByIssue(issueId);
@@ -575,12 +832,12 @@ export class IssueService {
     });
   }
 
-  addIssueComment(issueId: string, authorId: string, body: string) {
-    // await this.historyRepo.add({
-    //   issueId,
-    //   actorId: authorId,
-    //   items: [{ fieldKey: 'comment', from: null, to: 'added' }],
-    // });
+  async addIssueComment(issueId: string, authorId: string, body: string) {
+    await this.historyRepo.add({
+      issueId,
+      actorId: authorId,
+      items: [{ fieldKey: 'comment', from: null, to: body }],
+    });
 
     return this.commentRepo.save({
       author: { id: authorId },

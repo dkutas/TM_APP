@@ -33,7 +33,8 @@ export class IssueController {
 
   @Post()
   create(@Body() createIssueDto: CreateIssueDto) {
-    return this.issueService.create(createIssueDto);
+    const { projectId, issueTypeId, ...rest } = createIssueDto;
+    return this.issueService.createIssue(projectId, issueTypeId, rest);
   }
 
   @Get()
@@ -86,12 +87,19 @@ export class IssueController {
     return this.issueService.getIssueWithFields(id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Put(':id/fields')
-  upsertFields(@Param('id') id: string, @Body() body: UpdateIssueDto) {
+  upsertFields(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+    @Body() body: UpdateIssueDto,
+  ) {
     return this.issueService.upsertIssueFields(
       id,
       body.updates,
       body.systemUpdates,
+      req.user.id,
     );
   }
 

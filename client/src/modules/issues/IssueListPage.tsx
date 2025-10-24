@@ -3,6 +3,7 @@ import type {Issue} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import {
     Box,
+    Button,
     Card,
     CardContent,
     IconButton,
@@ -27,6 +28,7 @@ import TableRowsIcon from "@mui/icons-material/TableRows";
 import SplitscreenIcon from "@mui/icons-material/Splitscreen";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {useUIStore} from "../../app/store.ts";
+import IssueCreateModal from "./IssueCreateModal.tsx";
 
 const BASE_COLUMNS = ["Key", "Type", "Summary", "Assignee", "Status", "Estimate"] as const;
 
@@ -44,6 +46,7 @@ export default function IssueListPage() {
     const [issues, setIssues] = useState<Issue[]>([]);
     const [filters, setFilters] = useState<Filters>({Key: "", Type: "", Summary: "", Assignee: "", Status: ""});
     const {isDetailsOpen, selectedIssueId, selectIssue, setDetailsOpen} = useUIStore();
+    const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -57,7 +60,7 @@ export default function IssueListPage() {
     const customKeys = useMemo(() => {
         const keys = new Set<string>();
         for (const it of issues) {
-            const bag: Record<string, unknown> = (it as any).custom || (it as any).customValues || {};
+            const bag: Record<string, unknown> = (it).custom || (it).customValues || {};
             Object.keys(bag).forEach((k) => keys.add(k));
             if (keys.size >= 3) break;
         }
@@ -122,7 +125,7 @@ export default function IssueListPage() {
                                 <TableCell>{i.summary}</TableCell>
                                 <TableCell>{i.assignee?.name || i.assignee?.email || "—"}</TableCell>
                                 <TableCell>{i.status?.name || "—"}</TableCell>
-                                <TableCell>{(i as any).estimate ?? "-"}</TableCell>
+                                <TableCell>{(i).estimate ?? "-"}</TableCell>
                                 {customKeys.map((ck) => (
                                     <TableCell key={ck}>{bag?.[ck] ?? "—"}</TableCell>
                                 ))}
@@ -158,23 +161,26 @@ export default function IssueListPage() {
             <Grid container spacing={2}>
                 <Grid size={12} display="flex" alignItems="center" justifyContent="space-between">
                     <Typography variant="h4">Issues</Typography>
-                    <ToggleButtonGroup
-                        value={isDetailsOpen}
-                        exclusive
-                        onChange={(_, v) => setDetailsOpen(v)}
-                        size="small"
-                    >
-                        <Tooltip title="Table view">
-                            <ToggleButton value={false} aria-label="table">
-                                <TableRowsIcon fontSize="small"/>
-                            </ToggleButton>
-                        </Tooltip>
-                        <Tooltip title="Split view">
-                            <ToggleButton value={true} aria-label="split">
-                                <SplitscreenIcon sx={{rotate: "90deg"}} fontSize="small"/>
-                            </ToggleButton>
-                        </Tooltip>
-                    </ToggleButtonGroup>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" gap={2}>
+                        <Button variant="contained" onClick={() => setCreateModalOpen(true)}>Create issue</Button>
+                        <ToggleButtonGroup
+                            value={isDetailsOpen}
+                            exclusive
+                            onChange={(_, v) => setDetailsOpen(v)}
+                            size="small"
+                        >
+                            <Tooltip title="Table view">
+                                <ToggleButton value={false} aria-label="table">
+                                    <TableRowsIcon fontSize="small"/>
+                                </ToggleButton>
+                            </Tooltip>
+                            <Tooltip title="Split view">
+                                <ToggleButton value={true} aria-label="split">
+                                    <SplitscreenIcon sx={{rotate: "90deg"}} fontSize="small"/>
+                                </ToggleButton>
+                            </Tooltip>
+                        </ToggleButtonGroup>
+                    </Box>
                 </Grid>
 
                 {/* Filter header */}
@@ -186,7 +192,7 @@ export default function IssueListPage() {
                                     key={k}
                                     label={k as BaseCol}
                                     size="small"
-                                    value={(filters as any)[k]}
+                                    value={(filters)[k]}
                                     onChange={(e) => setFilters((f) => ({...f, [k]: e.target.value}))}
                                     slotProps={{input: {startAdornment: <SearchIcon fontSize="small"/>}}}
                                 />
@@ -243,7 +249,7 @@ export default function IssueListPage() {
                                                     <Typography variant="body2" color="text.secondary">
                                                         Estimate
                                                     </Typography>
-                                                    <Typography>{(selected as any).estimate ?? "—"}</Typography>
+                                                    <Typography>{(selected).estimate ?? "—"}</Typography>
                                                 </Box>
                                             </Stack>
                                             <Box>
@@ -251,7 +257,7 @@ export default function IssueListPage() {
                                                     Description
                                                 </Typography>
                                                 <Typography
-                                                    whiteSpace="pre-line">{(selected as any).description || "—"}</Typography>
+                                                    whiteSpace="pre-line">{(selected).description || "—"}</Typography>
                                             </Box>
                                         </Stack>
                                     ) : (
@@ -266,6 +272,8 @@ export default function IssueListPage() {
                     </>
                 )}
             </Grid>
+            <IssueCreateModal open={isCreateModalOpen} onClose={() => setCreateModalOpen(false)}
+                              onSave={() => setCreateModalOpen(false)}/>
         </Box>
 
     );

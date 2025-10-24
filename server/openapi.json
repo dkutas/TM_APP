@@ -372,6 +372,60 @@
         ]
       }
     },
+    "/project/{id}/issue-types": {
+      "get": {
+        "operationId": "ProjectController_findIssueTypes",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/project/{projectId}/issue-type/{issueTypeId}/fields": {
+      "get": {
+        "operationId": "ProjectController_findFieldsByIssueType",
+        "parameters": [
+          {
+            "name": "issueTypeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
     "/issue-type": {
       "post": {
         "operationId": "IssueTypeController_create",
@@ -681,6 +735,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "tags": [
           "Issue"
         ]
@@ -972,6 +1031,20 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "LinkType"
+        ]
+      }
+    },
+    "/link-type/link-issues": {
+      "post": {
+        "operationId": "LinkTypeController_linkIssues",
+        "parameters": [],
+        "responses": {
+          "201": {
             "description": ""
           }
         },

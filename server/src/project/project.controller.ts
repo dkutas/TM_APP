@@ -52,4 +52,18 @@ export class ProjectController {
   remove(@Param('id') id: string) {
     return this.projectService.remove(id);
   }
+
+  @Get(':id/issue-types')
+  findIssueTypes(@Param('id') id: string) {
+    return this.projectService.findIssueTypes(id);
+  }
+
+  @Get(':projectId/issue-type/:issueTypeId/fields')
+  findFieldsByIssueType(
+    @Param('issueTypeId') issueTypeId: string,
+    @Param('projectId') projectId: string,
+  ) {
+    console.log(issueTypeId, projectId);
+    return this.projectService.findFieldsByIssueType(issueTypeId, projectId);
+  }
 }

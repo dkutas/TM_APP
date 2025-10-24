@@ -27,7 +27,7 @@ export class ChangeItem {
   @PrimaryGeneratedColumn('uuid') id: string;
   @ManyToOne(() => ChangeLog, (l) => l.items, { onDelete: 'CASCADE' })
   changeLog: ChangeLog;
-  @Column({ length: 120 }) fieldKey: string; // pl. system.status, custom.foo, link.type
+  @Column({ length: 120 }) fieldKey: string;
   @Column({ type: 'text', nullable: true }) fromDisplay?: string;
   @Column({ type: 'text', nullable: true }) toDisplay?: string;
   @Column({ type: 'uuid', nullable: true }) fromId?: string;

@@ -32,6 +32,16 @@ export type Project = ModDates & {
     id: string, key: string, description: string, name: string
 };
 
+export type ProjectIssueType = {
+    id: ID,
+    issueType: IssueType;
+    keyPrefix: string;
+    active: true
+}
+export type ProjectIssueTypeResponse = Project & {
+    projectIssueTypes: ProjectIssueType[];
+}
+
 export type ProjectRole = {
     id: UUID;
     name: string;
@@ -129,6 +139,18 @@ export type IssueCustomFieldDefs =
     | (CustomFieldBase & { dataType: DataType.OPTION })
     | (CustomFieldBase & { dataType: DataType.MULTI_OPTION });
 
+export type IssueCustomFieldContext = {
+    fieldDef: IssueCustomFieldDefs,
+    max: number,
+    min: number,
+    order: number,
+    regexp?: string,
+    visible: boolean,
+    required: boolean,
+    editable: boolean,
+    defaultValue?: string | number | boolean | null | string[]
+}
+
 export type NormalizedFieldValue = { label: string, value: string | number | boolean | null | string[] }
 
 export type IssueTransition = {
@@ -143,6 +165,22 @@ export type IssueTransition = {
         category: IssueStatus["category"]
     };
 }
+
+export type HistoryLog = {
+    id: string;
+    authorId: ID;
+    fromValue: string | null;
+    toValue: string | null;
+    createdAt: string; // ISO
+    items: Array<{
+        fieldKey: string;
+        fromId: string | null;
+        fromDisplay: string | null;
+        toId: string | null;
+        toDisplay: string | null;
+    }>;
+}
+
 
 export type Issue = {
     id: ID;
@@ -162,6 +200,7 @@ export type Issue = {
     dueDate?: string;
     attachments: Array<Attachment>
     comments: Array<Comment>;
+    history: Array<HistoryLog>
     fields: Array<IssueCustomField>
 };
 

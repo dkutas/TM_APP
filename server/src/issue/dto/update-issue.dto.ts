@@ -1,6 +1,6 @@
 export class UpdateIssueDto {
   updates: Array<{ fieldDefId: string; value: any }>;
-  systemUpdates?: {
+  systemUpdates: {
     assignee: string | null;
     summary?: string;
     description?: string;

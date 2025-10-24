@@ -42,4 +42,17 @@ export class LinkTypeController {
   remove(@Param('id') id: string) {
     return this.linkTypeService.remove(id);
   }
+
+  @Post('link-issues')
+  linkIssues(
+    @Body()
+    body: {
+      srcIssueId: string;
+      dstIssueId: string;
+      linkTypeId: string;
+    },
+  ) {
+    const { srcIssueId, dstIssueId, linkTypeId } = body;
+    return this.linkTypeService.linkIssues(srcIssueId, dstIssueId, linkTypeId);
+  }
 }

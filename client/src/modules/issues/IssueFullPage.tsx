@@ -240,8 +240,8 @@ export default function IssueFullPage() {
 
                     <Paper sx={{p: 2, borderRadius: 3}}>
                         {tab === 0 && (
-                            issue.comments && issue.comments.length > 0 ? (
-                                <Stack spacing={1}>{
+                            <>
+                                {
                                     !commentFieldOpen ?
                                         <Button onClick={() => {
                                             setCommentFieldOpen(true)
@@ -275,29 +275,53 @@ export default function IssueFullPage() {
                                             </CardContent>
                                         </Card>
                                 }
-                                    {issue.comments.map((c) => (
-                                        <Card key={c.id} variant="outlined">
-                                            <CardContent>
-                                                <Typography fontWeight={600}>{c.author?.name}</Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {new Date(c.createdAt).toLocaleString()}
-                                                </Typography>
-                                                <Typography variant="body1" sx={{mt: 1}}>
-                                                    {c.body}
-                                                </Typography>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </Stack>
-                            ) : (
-                                <Typography color="text.secondary">No comments yet.</Typography>
-                            )
+                                {issue.comments && issue.comments.length > 0 ? (
+                                    <Stack spacing={1}>
+                                        {issue.comments.map((c) => (
+                                            <Card key={c.id} variant="outlined">
+                                                <CardContent>
+                                                    <Typography fontWeight={600}>{c.author?.name}</Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {new Date(c.createdAt).toLocaleString()}
+                                                    </Typography>
+                                                    <Typography variant="body1" sx={{mt: 1}}>
+                                                        {c.body}
+                                                    </Typography>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </Stack>
+                                ) : (
+                                    <Typography color="text.secondary">No comments yet.</Typography>
+                                )}
+                            </>
                         )}
-                        {tab === 1 && <Typography color="text.secondary">History — placeholder</Typography>}
+                        {tab === 1 && <>{issue.history && issue.history.length > 0 ?
+                            issue.history.map(log => (<Stack>
+                                <Card key={log.id} variant="outlined">
+                                    <CardContent>
+                                        <Typography fontWeight={600}>{log.authorId}</Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {new Date(log.createdAt).toLocaleString()}
+                                        </Typography>
+                                        {log.items.map(item => (
+                                            <>
+                                                <Typography>{item.fieldKey}</Typography>
+                                                <Typography variant="body1" sx={{mt: 1}}>
+                                                    {item.fromDisplay} -{">"} {item.toDisplay}
+                                                </Typography>
+                                            </>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+                            </Stack>))
+                            : <Typography></Typography>
+                                        }
+                        </>
+                        }
                     </Paper>
                 </Grid>
 
-                {/* RIGHT SIDEBAR */}
                 <Grid size={{xs: 12, md: 4}}>
                     <Paper sx={{p: 2, borderRadius: 3, position: {md: 'sticky'}, top: {md: 16}}}>
                         <Stack spacing={1.5}>

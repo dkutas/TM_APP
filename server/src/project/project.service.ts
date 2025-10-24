@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { Repository } from 'typeorm';
 import { ProjectMembership } from '../role/entities/role.entity';
+import { FieldContextRepository } from '../repositories/field-context.repository';
 
 @Injectable()
 export class ProjectService {
@@ -12,6 +13,7 @@ export class ProjectService {
     @InjectRepository(Project) private projectRepo: Repository<Project>,
     @InjectRepository(ProjectMembership)
     private memberShipRepo: Repository<ProjectMembership>,
+    private fieldContextRepo: FieldContextRepository,
   ) {}
 
   create(createProjectDto: CreateProjectDto) {
@@ -48,6 +50,17 @@ export class ProjectService {
       relations: { user: true },
       select: { user: { id: true, name: true, email: true, createdAt: true } },
       order: { user: { name: 'ASC' } },
+    });
+  }
+
+  findFieldsByIssueType(issueTypeId: string, projectId: string) {
+    return this.fieldContextRepo.findApplicable(projectId, issueTypeId);
+  }
+
+  findIssueTypes(id: string) {
+    return this.projectRepo.findOne({
+      where: { id },
+      relations: ['projectIssueTypes.issueType'],
     });
   }
 }
