@@ -41,7 +41,19 @@ import dayjs from 'dayjs';
 export type FieldOption = { id: string; key?: string; value: string };
 
 
-export type UserLite = { id: ID; name?: string | null; email?: string | null };
+export type UserLite = {
+    id: string;
+    name?: string | null;
+    email?: string | null
+};
+export type Membership = {
+    id: ID;
+    user: {
+        id: string;
+        name?: string | null;
+        email?: string | null
+    }
+};
 
 export type IssueEditModalProps = {
     open: boolean;
@@ -126,10 +138,10 @@ export default function IssueEditModal({
                     const res = await api.get<IssueCustomFieldDefs[]>(`/issue/${issueId}/field-definitions`);
                     if (!cancelled) setCustomFields(res.data as IssueCustomField[]);
                 }
-                const users = await api.get<UserLite[]>('/user');
+                const users = await api.get<Membership[]>(`/project/${issue?.project.id}/members`);
                 const priorities = await api.get<IssuePriority[]>('/priority');
                 if (!cancelled) {
-                    setUsers(users.data)
+                    setUsers(users.data.map((u) => u.user));
                     setPriorities(priorities.data)
                 }
 
@@ -249,6 +261,20 @@ export default function IssueEditModal({
                             ))}
                         </Select>
                     </FormControl>
+                </Grid>
+                <Grid size={{xs: 12, md: 12}}>
+                    <DatePicker
+                        label="Due Date"
+                        value={issue?.dueDate ? dayjs(new Date(issue.dueDate)) : null}
+                        onChange={(e) => setSystemFields((v) => {
+                            console.log(e)
+                            return {
+                                ...(v as IssueSystemFields),
+                                dueDate: e?.toISOString() || ""
+                            }
+                        })}
+                        slotProps={{textField: {fullWidth: true}}}
+                    />
                 </Grid>
             </>
         )

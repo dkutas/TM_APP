@@ -303,6 +303,16 @@ export default function IssueFullPage() {
                         <Stack spacing={1.5}>
                             <Typography variant="subtitle2" color="text.secondary">Assignee</Typography>
                             <Typography>{issue.assignee?.name || issue.assignee?.email || "—"}</Typography>
+                            <Typography variant="subtitle2" color="text.secondary">Reporter</Typography>
+                            <Typography>{issue.reporter?.name || issue.reporter?.email || "—"}</Typography>
+                            {issue.dueDate &&
+                                <>
+                                    <Typography variant="subtitle2" color="text.secondary">Due date</Typography>
+                                    <Typography>{issue.dueDate}</Typography>
+                                </>
+                            }
+                            <Typography variant="subtitle2" color="text.secondary">Priority</Typography>
+                            <Typography>{issue.priority.name}</Typography>
                             <Typography
                                 variant="subtitle2" color="text.secondary">IssueType</Typography>
                             <Typography>{issue.issueType.name || issue.assignee?.email || "—"}</Typography>
