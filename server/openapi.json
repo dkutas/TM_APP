@@ -574,8 +574,8 @@
       }
     },
     "/issue/{id}": {
-      "get": {
-        "operationId": "IssueController_findOne",
+      "delete": {
+        "operationId": "IssueController_remove",
         "parameters": [
           {
             "name": "id",
@@ -595,8 +595,8 @@
           "Issue"
         ]
       },
-      "delete": {
-        "operationId": "IssueController_remove",
+      "get": {
+        "operationId": "IssueController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -640,7 +640,7 @@
         ]
       }
     },
-    "/issue/users/{id}/issues": {
+    "/issue/search": {
       "get": {
         "operationId": "IssueController_listUserIssues",
         "parameters": [
@@ -658,6 +658,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "tags": [
           "Issue"
         ]
@@ -1039,12 +1044,35 @@
         ]
       }
     },
-    "/link-type/link-issues": {
+    "/link-type/issue-link": {
       "post": {
         "operationId": "LinkTypeController_linkIssues",
         "parameters": [],
         "responses": {
           "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "LinkType"
+        ]
+      }
+    },
+    "/link-type/issue-link/{id}": {
+      "delete": {
+        "operationId": "LinkTypeController_deleteIssueLink",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": ""
           }
         },

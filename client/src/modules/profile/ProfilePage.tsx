@@ -15,7 +15,7 @@ export default function ProfilePage() {
             api.get<UserProject[]>("user/" + user?.id + "/memberships").then(res => {
                 setProjects(res.data);
             });
-            api.get<UserIssue[]>("issue/users/" + user?.id + "/issues?role=reporter").then(res => {
+            api.get<UserIssue[]>(`issue/search?role=assignee`).then(res => {
                 setIssues(res.data);
             });
         }

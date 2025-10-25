@@ -21,6 +21,7 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CommandPalette from "../layout/CommandPalette.tsx";
 import {useAuth} from "../auth/authContext.tsx";
+import {ConfirmDialog} from "./Confirm/ConfirmDialog.tsx";
 
 
 const navItems = [
@@ -115,6 +116,7 @@ function App() {
                 <CommandPalette open={palette} onClose={() => setPalette(false)}/>
             </Box>
             <AppBar position="fixed" color="primary" sx={{top: 'auto', bottom: 0}}><Toolbar/></AppBar>
+            <ConfirmDialog/>
         </Box>
     )
 }

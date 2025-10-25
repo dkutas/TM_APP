@@ -169,8 +169,6 @@ export type IssueTransition = {
 export type HistoryLog = {
     id: string;
     authorId: ID;
-    fromValue: string | null;
-    toValue: string | null;
     createdAt: string; // ISO
     items: Array<{
         fieldKey: string;
@@ -220,3 +218,14 @@ export type UserIssue = ModDates & {
     project: Project,
     priority: 'Low' | 'Medium' | 'High'
 };
+
+
+export type IssueLinkType = {
+    id: ID;
+    name: string;
+    category: string;
+    directed: boolean;
+    inwardLabel: string;
+    outwardLabel: string;
+    allowCycles: boolean;
+}

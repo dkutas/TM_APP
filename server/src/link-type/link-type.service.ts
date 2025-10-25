@@ -43,4 +43,8 @@ export class LinkTypeService {
     });
     return this.issueLinkRepository.save(issueLink);
   }
+
+  deleteIssueLink(issueLinkId: string) {
+    return this.issueLinkRepository.delete(issueLinkId);
+  }
 }

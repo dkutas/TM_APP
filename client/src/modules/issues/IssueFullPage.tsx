@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {NavLink, useParams} from "react-router-dom";
-import type {Issue, IssueLink, IssueTransition, NormalizedFieldValue, User} from "../../lib/types";
+import type {Issue, IssueCustomField, IssueLink, IssueTransition, NormalizedFieldValue, User} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import Link from '@mui/material/Link';
 import {
@@ -23,6 +23,9 @@ import {
 } from "@mui/material";
 import {api} from "../../lib/apiClient.ts";
 import IssueEditModal from "./IssueEditModal.tsx";
+import {LinkIssueModal} from "./LinkIssueModal.tsx";
+import {Delete} from "@mui/icons-material";
+import {useConfirm} from "../../app/Confirm/useConfirm.ts";
 
 
 const StatusCategoryColorMap: { [key: string]: ButtonOwnProps['color'] & ChipOwnProps['color'] } = {
@@ -38,23 +41,35 @@ function capitalizeFirstLetter(string: string) {
 
 export default function IssueFullPage() {
     const [issue, setIssue] = useState<Issue | null>(null);
+    const [issueFields, setIssueFields] = useState<IssueCustomField[]>([]);
     const [tab, setTab] = useState(0);
     const [customFieldEntries, setCustomFieldEntries] = useState<NormalizedFieldValue[]>([]);
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [transitions, setTransitions] = useState<IssueTransition[]>([]);
     const [commentFieldOpen, setCommentFieldOpen] = useState(false);
+    const [linkIssuesOpen, setLinkIssuesOpen] = useState(false);
     const [newCommentValue, setNewCommentValue] = useState("");
+    const {openConfirm} = useConfirm("Are you sure you want to delete this issue link?");
 
     const {issueId} = useParams();
 
-    const refreshIssues = useCallback(() => {
+    const refreshIssues = useCallback(async () => {
         if (issueId) {
-            api.get<Issue>(`issue/${issueId}/fields`).then((res) => setIssue(res.data));
-            api.get<IssueTransition[]>(`issue/${issueId}/transitions`).then((res) => {
+            await api.get<Issue>(`issue/${issueId}/fields`).then((res) => {
+                setIssue(res.data);
+                setIssueFields(res.data.fields ?? []);
+            });
+            await api.get<IssueTransition[]>(`issue/${issueId}/transitions`).then((res) => {
                 setTransitions(res.data);
             })
         }
     }, [issueId]);
+
+    const handleDeleteLink = useCallback((linkId: string) => {
+        api.delete(`link-type/issue-link/${linkId}`).then(() => {
+            refreshIssues()
+        })
+    }, [refreshIssues])
 
     const addComment = useCallback(() => {
         if (issueId && newCommentValue.trim().length > 0) {
@@ -91,7 +106,10 @@ export default function IssueFullPage() {
 
     useEffect(() => {
         if (issueId) {
-            api.get<Issue>(`issue/${issueId}/fields`).then((res) => setIssue(res.data));
+            api.get<Issue>(`issue/${issueId}/fields`).then((res) => {
+                setIssue(res.data)
+                setIssueFields(res.data.fields ?? [])
+            });
             api.get<IssueTransition[]>(`issue/${issueId}/transitions`).then((res) => {
                 setTransitions(res.data);
             })
@@ -139,6 +157,8 @@ export default function IssueFullPage() {
             {transition.name}
         </Button>)
     }
+
+    console.log()
 
 
     return (
@@ -188,28 +208,44 @@ export default function IssueFullPage() {
 
                     <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
                         <Typography variant="h6">Linked issues</Typography>
-                        <Button variant="outlined" size="small">Link issue</Button>
+                        <Button variant="outlined" onClick={() => setLinkIssuesOpen(true)} size="small">Link
+                            issue</Button>
                     </Stack>
                     <Paper sx={{p: 2, borderRadius: 3, mb: 3}}>
                         {issue.links && issue.links.length > 0 ? (
                             <Stack spacing={1}>
-                                {issue.links.map((link) => (
-                                    <Stack key={link.id} direction="row" spacing={2} alignItems="center"
-                                           justifyContent="space-between">
-                                        <Box>
-                                            <Typography
-                                                sx={{textDecoration: "none", color: "inherit"}}
-                                                fontWeight={500}
-                                                component={NavLink}
-                                                to={`/issues/${link.otherIssue?.id}`}>
-                                                {link.otherIssue?.key} {getLinkName(link)} {link.otherIssue?.summary}
-                                            </Typography>
+                                {Object.entries(Object.groupBy(issue.links, (link) => link.linkType.name)).map(([linkTypeName, links]) => (
+                                        <Box key={linkTypeName} mb={2}>
+                                            <Typography variant="subtitle1" fontWeight={600}
+                                                        mb={1}>{capitalizeFirstLetter(linkTypeName)}</Typography>
+                                            <Stack spacing={1}>
+                                                {links && links.map((link) => (
+                                                    <Stack key={link.id} direction="row" spacing={2} alignItems="center"
+                                                           justifyContent="space-between">
+                                                        <Typography
+                                                            sx={{textDecoration: "none", color: "inherit"}}
+                                                            fontWeight={500}
+                                                            component={NavLink}
+                                                            to={`/issues/${link.otherIssue?.id}`}>
+                                                            {link.otherIssue?.key} {getLinkName(link)} {link.otherIssue?.summary}
+                                                        </Typography>
+                                                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+
+                                                            <Chip label={link.otherIssue?.status?.name}
+                                                                  color={StatusCategoryColorMap[link.otherIssue?.status.category]}
+                                                                  variant="filled"/>
+                                                            <Button startIcon={<Delete/>} color="error"
+                                                                    onClick={() => openConfirm(() => {
+                                                                        handleDeleteLink(link.id)
+                                                                    })}
+                                                                    variant="outlined">Delete link</Button>
+                                                        </Box>
+                                                    </Stack>
+                                                ))}
+                                            </Stack>
                                         </Box>
-                                        <Chip label={link.otherIssue?.status?.name}
-                                              color={StatusCategoryColorMap[link.otherIssue?.status.category]}
-                                              variant="filled"/>
-                                    </Stack>
-                                ))}
+                                    )
+                                )}
                             </Stack>
                         ) : (
                             <Typography color="text.secondary">No linked issues.</Typography>
@@ -297,26 +333,30 @@ export default function IssueFullPage() {
                             </>
                         )}
                         {tab === 1 && <>{issue.history && issue.history.length > 0 ?
-                            issue.history.map(log => (<Stack>
-                                <Card key={log.id} variant="outlined">
-                                    <CardContent>
-                                        <Typography fontWeight={600}>{log.authorId}</Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {new Date(log.createdAt).toLocaleString()}
-                                        </Typography>
-                                        {log.items.map(item => (
-                                            <>
-                                                <Typography>{item.fieldKey}</Typography>
-                                                <Typography variant="body1" sx={{mt: 1}}>
-                                                    {item.fromDisplay} -{">"} {item.toDisplay}
-                                                </Typography>
-                                            </>
-                                        ))}
-                                    </CardContent>
-                                </Card>
-                            </Stack>))
+                            issue.history.map(log => (
+                                <Stack>
+                                    <Card key={log.id} variant="outlined">
+                                        <CardContent>
+                                            <Typography fontWeight={600}>{log.authorId}</Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {new Date(log.createdAt).toLocaleString()}
+                                            </Typography>
+                                            {log.items.map(item => {
+                                                const fieldDef = issue.fields.find((field) => field.key === item.fieldKey)
+                                                return (
+                                                    <>
+                                                        <Typography>{fieldDef ? fieldDef.name : capitalizeFirstLetter(item.fieldKey)}</Typography>
+                                                        <Typography variant="body1" sx={{mt: 1}}>
+                                                            {item.fromDisplay} -{">"} {item.toDisplay}
+                                                        </Typography>
+                                                    </>
+                                                )
+                                            })}
+                                        </CardContent>
+                                    </Card>
+                                </Stack>))
                             : <Typography></Typography>
-                                        }
+                        }
                         </>
                         }
                     </Paper>
@@ -363,9 +403,16 @@ export default function IssueFullPage() {
                 open={isEditOpen}
                 issueId={issue.id}
                 onClose={setIsEditOpen}
-                fields={issue.fields}
+                fields={issueFields}
                 onSave={refreshIssues}
-                issue={issue}/>
+                issue={issue}
+            />
+            <LinkIssueModal
+                open={linkIssuesOpen} onClose={() => {
+                setLinkIssuesOpen(false)
+                refreshIssues()
+            }} issueId={issue.id}
+            />
         </Box>
     );
 }

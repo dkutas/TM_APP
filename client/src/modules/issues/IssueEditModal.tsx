@@ -104,9 +104,11 @@ export default function IssueEditModal({
                 fieldName: customFields.find((_field) => _field.id === field)?.name,
             })),
             systemUpdates: systemFields,
-        }).then(res => {
+        }).then(async (res) => {
             if (res.data.ok) {
-                onSave()
+                await onSave()
+                setSystemFields(null)
+                setCustomFields(fieldsProp ?? [])
             }
         })
         onClose(false)
@@ -117,7 +119,6 @@ export default function IssueEditModal({
         if (!open) return;
 
         if (issue) {
-            console.log(issue)
             setSystemFields({
                 summary: issue.summary,
                 description: issue.description || undefined,

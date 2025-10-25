@@ -7,7 +7,11 @@ export type UserIssueRole = 'assignee' | 'reporter' | 'watcher';
 export class UserIssuesQueryDto extends PaginationDto {
   @IsOptional()
   @IsIn(['assignee', 'reporter', 'watcher'])
-  role?: UserIssueRole = 'assignee';
+  role?: UserIssueRole;
+
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
 
   @IsOptional()
   @IsUUID()

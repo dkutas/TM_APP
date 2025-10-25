@@ -704,8 +704,8 @@ export class IssueService {
     });
   }
 
-  async findByUser(userId: string, query: UserIssuesQueryDto) {
-    const { page = 1, limit = 25, role = 'assignee', sort } = query;
+  async search(userId: string, query: UserIssuesQueryDto) {
+    const { page = 1, limit = 25, role, sort } = query;
 
     const qb = this.issueRepository
       .createQueryBuilder('i')
@@ -715,7 +715,7 @@ export class IssueService {
       .leftJoinAndSelect('i.issueType', 'it')
       .where('1=1');
 
-    this.applyUserRoleFilter(qb, role, userId);
+    this.applyUserRoleFilter(qb, userId, role);
     this.applyFilters(qb, query);
 
     // rendezés
@@ -955,7 +955,7 @@ export class IssueService {
       issueTypeId,
     );
 
-    const defs: FieldDefsDTO[] = contexts.map((ctx) => {
+    return contexts.map((ctx) => {
       const fd = ctx.fieldDef;
       const options = fd.options?.length
         ? fd.options
@@ -980,7 +980,6 @@ export class IssueService {
         options,
       };
     });
-    return defs;
   }
 
   // ---- ATTACHMENTS -------------------------------------------------------
@@ -1027,21 +1026,13 @@ export class IssueService {
 
   private applyUserRoleFilter(
     qb: SelectQueryBuilder<Issue>,
-    role: UserIssueRole,
     userId: string,
+    role?: UserIssueRole,
   ) {
     if (role === 'assignee') {
-      qb.andWhere('i.assigneeId = :userId', { userId });
+      qb.andWhere('i.assignee_id = :userId', { userId });
     } else if (role === 'reporter') {
       qb.andWhere('i.reporter_id = :userId', { userId });
-    } else if (role === 'watcher') {
-      // watchers: issue_watchers(issue_id, user_id) kapcsolótábla
-      qb.innerJoin(
-        'issue_watchers',
-        'iw',
-        'iw.issue_id = i.id AND iw.user_id = :userId',
-        { userId },
-      );
     }
   }
 

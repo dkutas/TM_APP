@@ -7,6 +7,7 @@ type UIState = {
     setDetailsOpen: (open: boolean) => void;
     selectIssue: (id?: string) => void;
     setSplitPane: (w: number) => void;
+
 }
 export const useUIStore = create<UIState>(
     (set => ({
@@ -16,5 +17,29 @@ export const useUIStore = create<UIState>(
         setDetailsOpen: (open) => set({isDetailsOpen: open}),
         selectIssue: (id) => set({selectedIssueId: id}),
         setSplitPane: (w) => set({splitPaneSize: w}),
+    }))
+)
+
+export const useConfirmStore = create<{
+    confirmOpen: boolean;
+    setConfirmOpen: (open: boolean) => void;
+    onConfirmSure: () => void;
+    setOnConfirmSure: (cb: () => void) => void;
+    confirmTitle?: string;
+    setConfirmTitle: (title: string) => void;
+    onConfirmClose: () => void;
+    setOnConfirmClose: (cb: () => void) => void;
+}>(
+    (set => ({
+        confirmOpen: false,
+        setConfirmOpen: (open) => set({confirmOpen: open}),
+        onConfirmSure: () => {
+        },
+        setOnConfirmSure: (cb) => set({onConfirmSure: cb}),
+        confirmTitle: undefined,
+        setConfirmTitle: (title) => set({confirmTitle: title}),
+        onConfirmClose: () => {
+        },
+        setOnConfirmClose: (cb) => set({onConfirmClose: cb}),
     }))
 )

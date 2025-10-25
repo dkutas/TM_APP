@@ -47,11 +47,6 @@ export class IssueController {
   //   return this.issueService.getComments(id);
   // }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.issueService.findOne(id);
-  }
-
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.issueService.remove(id);
@@ -67,13 +62,21 @@ export class IssueController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('users/:id/issues')
+  @ApiBearerAuth()
+  @Get('search')
   async listUserIssues(
     @Param('id') userId: string,
+    @Req() req: AuthenticatedRequest,
     @Query(new ValidationPipe({ transform: true, whitelist: true }))
     query: UserIssuesQueryDto,
   ) {
-    return this.issueService.findByUser(userId, query);
+    console.log(query);
+    return this.issueService.search(query.userId || req.user.id, query);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.issueService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard)
