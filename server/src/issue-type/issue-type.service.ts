@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateIssueTypeDto } from './dto/create-issue-type.dto';
 import { UpdateIssueTypeDto } from './dto/update-issue-type.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,19 +12,36 @@ export class IssueTypeService {
     private readonly issueTypeRepository: Repository<IssueType>,
   ) {}
 
-  create(createIssueTypeDto: CreateIssueTypeDto) {
-    return this.issueTypeRepository.create(createIssueTypeDto);
+  async create(createIssueTypeDto: CreateIssueTypeDto) {
+    const issueType = await this.issueTypeRepository.findOne({
+      where: { key: createIssueTypeDto.key },
+    });
+    if (issueType) {
+      throw new HttpException(
+        { message: 'IssueType already exists' },
+        HttpStatus.CONFLICT,
+      );
+    }
+    return this.issueTypeRepository.save(
+      this.issueTypeRepository.create(createIssueTypeDto),
+    );
   }
 
   findAll() {
-    return this.issueTypeRepository.find();
+    return this.issueTypeRepository.find({ order: { name: 1 } });
   }
 
   findOne(id: string) {
     return this.issueTypeRepository.findOne({ where: { id } });
   }
 
-  update(id: string, updateIssueTypeDto: UpdateIssueTypeDto) {
+  async update(id: string, updateIssueTypeDto: UpdateIssueTypeDto) {
+    if (!(await this.issueTypeRepository.findOne({ where: { id } }))) {
+      throw new HttpException(
+        `No IssueType exist with ID: ${id}`,
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
     return this.issueTypeRepository.update(id, updateIssueTypeDto);
   }
 

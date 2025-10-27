@@ -24,13 +24,6 @@ import {useAuth} from "../auth/authContext.tsx";
 import {ConfirmDialog} from "./Confirm/ConfirmDialog.tsx";
 
 
-const navItems = [
-    {to: '/projects', label: 'Projects', Icon: <AccountTreeIcon/>},
-    {to: '/issues', label: 'Issues', Icon: <ConfirmationNumberIcon/>},
-    {to: '/settings', label: 'Settings', Icon: <SettingsIcon/>}
-]
-
-
 function App() {
     const page = useRoutes(routes)
     const [palette, setPalette] = useState(false)
@@ -90,15 +83,35 @@ function App() {
                 bgcolor: 'background.paper'
             }}>
                 <Toolbar/>
-                <List sx={{gap: 2}}>
-                    {navItems.map((it) => (
-                        <ListItemButton sx={{pr: 5}} key={it.to} component={NavLink} to={it.to}>
+                <List sx={{
+                    gap: 2,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    flexDirection: "column",
+                    height: "full",
+                }}>
+                    <Box>
+                        <ListItemButton sx={{pr: 5}} component={NavLink} to='/projects'>
                             <ListItemIcon>
-                                {it.Icon}
+                                <AccountTreeIcon/>
                             </ListItemIcon>
-                            <ListItemText primary={it.label}/>
+                            <ListItemText primary="Projects"/>
                         </ListItemButton>
-                    ))}
+                        <ListItemButton sx={{pr: 5}} component={NavLink} to='/issues'>
+                            <ListItemIcon>
+                                <ConfirmationNumberIcon/>
+                            </ListItemIcon>
+                            <ListItemText primary="Issues"/>
+                        </ListItemButton>
+                    </Box>
+                    <Box>
+                        <ListItemButton sx={{pr: 5}} component={NavLink} to='/settings'>
+                            <ListItemIcon>
+                                <SettingsIcon/>
+                            </ListItemIcon>
+                            <ListItemText primary="Settings"/>
+                        </ListItemButton>
+                    </Box>
                 </List>
             </Box>
 
