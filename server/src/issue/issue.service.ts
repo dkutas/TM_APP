@@ -397,6 +397,17 @@ export class IssueService {
                 })),
               );
             }
+            if (optionIds.length > 0 || v.options.length > 0) {
+              historyItems.push({
+                fieldKey: fd.key,
+                from: JSON.stringify({
+                  optionIds: v.options.map((option) => option.option.id),
+                }),
+                to: JSON.stringify({
+                  optionIds: optionIds.map((id) => id),
+                }),
+              });
+            }
           }
           // frissített updatedAt
           await valueRepo.update(v.id, { updatedAt: new Date() });

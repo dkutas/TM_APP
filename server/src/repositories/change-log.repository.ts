@@ -18,6 +18,7 @@ export class ChangeLogRepository extends Repository<ChangeLog> {
       .leftJoinAndSelect('h.actor', 'a')
       .leftJoinAndSelect('h.items', 'it')
       .where('i.id = :issueId', { issueId })
+      .orderBy('h.createdAt', 'DESC')
       .getMany();
   }
 
@@ -31,7 +32,6 @@ export class ChangeLogRepository extends Repository<ChangeLog> {
     }>;
   }) {
     const { issueId, actorId, items } = params;
-    console.log(params);
 
     const changeLog = this.create({
       issue: { id: issueId },

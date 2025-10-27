@@ -152,6 +152,12 @@ export type IssueCustomFieldContext = {
 }
 
 export type NormalizedFieldValue = { label: string, value: string | number | boolean | null | string[] }
+export type NormalizedHistoryRecord = {
+    id: ID,
+    actorName: string,
+    createdAt: string, // ISO
+    items: { fieldLabel: string, value: string }[]
+}
 
 export type IssueTransition = {
     id: string;
@@ -167,7 +173,7 @@ export type IssueTransition = {
 }
 
 export type HistoryLog = {
-    id: string;
+    id: ID;
     authorId: ID;
     createdAt: string; // ISO
     items: Array<{

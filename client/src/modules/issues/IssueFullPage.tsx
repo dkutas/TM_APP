@@ -1,6 +1,14 @@
 import {useCallback, useEffect, useState} from "react";
 import {NavLink, useParams} from "react-router-dom";
-import type {Issue, IssueCustomField, IssueLink, IssueTransition, NormalizedFieldValue, User} from "../../lib/types";
+import type {
+    Issue,
+    IssueCustomField,
+    IssueLink,
+    IssueTransition,
+    NormalizedFieldValue,
+    NormalizedHistoryRecord,
+    User
+} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import Link from '@mui/material/Link';
 import {
@@ -44,11 +52,14 @@ export default function IssueFullPage() {
     const [issueFields, setIssueFields] = useState<IssueCustomField[]>([]);
     const [tab, setTab] = useState(0);
     const [customFieldEntries, setCustomFieldEntries] = useState<NormalizedFieldValue[]>([]);
+    const [historyEntries, setHistoryEntries] = useState<NormalizedHistoryRecord[]>([]);
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [transitions, setTransitions] = useState<IssueTransition[]>([]);
     const [commentFieldOpen, setCommentFieldOpen] = useState(false);
     const [linkIssuesOpen, setLinkIssuesOpen] = useState(false);
     const [newCommentValue, setNewCommentValue] = useState("");
+    const [showFiveComments, setShowFiveComments] = useState(true);
+    const [showFiveHistory, setShowFiveHistory] = useState(true);
     const {openConfirm} = useConfirm("Are you sure you want to delete this issue link?");
 
     const {issueId} = useParams();
@@ -118,8 +129,9 @@ export default function IssueFullPage() {
     }, [issueId]);
 
     useEffect(() => {
-        (async (): Promise<NormalizedFieldValue[]> => {
+        (async (): Promise<{ entries: NormalizedFieldValue[], history: NormalizedHistoryRecord[] }> => {
             const entries: NormalizedFieldValue[] = [];
+            const historyEntries: NormalizedHistoryRecord[] = [];
             // Array model: fieldValues: [{ fieldDef: { name|key }, valueXxx... }]
             if (!!issue && Array.isArray(issue?.fields)) {
                 for (const fv of issue.fields) {
@@ -136,9 +148,47 @@ export default function IssueFullPage() {
                     }
                     entries.push({label, value});
                 }
+
+                for (const hLog of issue.history) {
+                    const user = await api.get<User>(`/user/${hLog.authorId}`).then((res) => res.data.name).catch(() => hLog.authorId);
+                    const createdAt = hLog.createdAt;
+                    const items: NormalizedHistoryRecord["items"] = []
+                    for (const item of hLog.items) {
+                        const fieldDef = issue.fields.find((field) => field.key === item.fieldKey)
+                        if (fieldDef) {
+                            const label = fieldDef.name || fieldDef.key || "Custom field";
+                            let fromValue: NormalizedFieldValue['value'] = item.fromDisplay;
+                            let toValue: NormalizedFieldValue['value'] = item.toDisplay;
+
+                            if (fieldDef.dataType === "OPTION" && fieldDef.options) {
+                                fromValue = fieldDef.options.find(op => op.id === JSON.parse(item.fromDisplay as string)?.optionId)?.value || item.fromDisplay;
+                                toValue = fieldDef.options.find(op => op.id === JSON.parse(item.toDisplay as string)?.optionId)?.value || item.toDisplay;
+                            } else if (fieldDef.dataType === "MULTI_OPTION" && fieldDef.options) {
+                                const parsedFrom = JSON.parse(item.fromDisplay as string);
+                                const parsedTo = JSON.parse(item.toDisplay as string);
+                                fromValue = fieldDef.options.filter(op => parsedFrom?.optionIds.includes(op.id)).map(op => op.value).join(", ") || "Empty";
+                                toValue = fieldDef.options.filter(op => parsedTo?.optionIds.includes(op.id)).map(op => op.value).join(", ") || "Empty";
+                            } else if (fieldDef.dataType === "USER") {
+                                if (item.fromDisplay) {
+                                    const userId = JSON.parse(item.fromDisplay as string)?.userId;
+                                    fromValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
+                                }
+                                if (item.toDisplay) {
+                                    const userId = JSON.parse(item.toDisplay as string)?.userId;
+                                    toValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => item.toDisplay);
+                                }
+                            }
+                            items.push({fieldLabel: label, value: `${fromValue} -> ${toValue}`});
+                        }
+                    }
+                    historyEntries.push({id: hLog.id, actorName: user, createdAt, items})
+                }
             }
-            return entries;
-        })().then(values => setCustomFieldEntries(values));
+            return {entries, history: historyEntries};
+        })().then(({history, entries}) => {
+            setCustomFieldEntries(entries)
+            setHistoryEntries(history)
+        });
     }, [issue, issue?.fields]);
 
     if (!issue) return null;
@@ -157,8 +207,6 @@ export default function IssueFullPage() {
             {transition.name}
         </Button>)
     }
-
-    console.log()
 
 
     return (
@@ -274,92 +322,114 @@ export default function IssueFullPage() {
                         <Tab label="History"/>
                     </Tabs>
 
-                    <Paper sx={{p: 2, borderRadius: 3}}>
-                        {tab === 0 && (
-                            <>
-                                {
-                                    !commentFieldOpen ?
-                                        <Button onClick={() => {
-                                            setCommentFieldOpen(true)
-                                        }}>Add comment</Button> :
-                                        <Card>
-                                            <CardContent>
-                                                <TextField
-                                                    fullWidth
-                                                    minRows={3}
-                                                    multiline
-                                                    value={newCommentValue}
-                                                    onChange={(e) => setNewCommentValue(e.target.value)}
-                                                />
-                                                <CardActions disableSpacing sx={{justifyContent: "space-between"}}>
-                                                    <Button
-                                                        variant="contained"
-                                                        onClick={() => {
-                                                            addComment()
-                                                        }}>
-                                                        Save
-                                                    </Button>
-                                                    <Button
-                                                        variant="outlined"
-                                                        onClick={() => {
-                                                            setNewCommentValue("")
-                                                            setCommentFieldOpen(false)
-                                                        }}>
-                                                        Close
-                                                    </Button>
-                                                </CardActions>
-                                            </CardContent>
-                                        </Card>
-                                }
-                                {issue.comments && issue.comments.length > 0 ? (
-                                    <Stack spacing={1}>
-                                        {issue.comments.map((c) => (
-                                            <Card key={c.id} variant="outlined">
-                                                <CardContent>
-                                                    <Typography fontWeight={600}>{c.author?.name}</Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        {new Date(c.createdAt).toLocaleString()}
-                                                    </Typography>
-                                                    <Typography variant="body1" sx={{mt: 1}}>
-                                                        {c.body}
-                                                    </Typography>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </Stack>
-                                ) : (
-                                    <Typography color="text.secondary">No comments yet.</Typography>
-                                )}
-                            </>
-                        )}
-                        {tab === 1 && <>{issue.history && issue.history.length > 0 ?
-                            issue.history.map(log => (
-                                <Stack>
-                                    <Card key={log.id} variant="outlined">
+                    {tab === 0 && (
+                        <Paper sx={{p: 2, borderRadius: 3}}>
+                            {
+                                !commentFieldOpen ?
+                                    <Button onClick={() => {
+                                        setCommentFieldOpen(true)
+                                    }}>Add comment</Button> :
+                                    <Card>
                                         <CardContent>
-                                            <Typography fontWeight={600}>{log.authorId}</Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {new Date(log.createdAt).toLocaleString()}
-                                            </Typography>
-                                            {log.items.map(item => {
-                                                const fieldDef = issue.fields.find((field) => field.key === item.fieldKey)
-                                                return (
-                                                    <>
-                                                        <Typography>{fieldDef ? fieldDef.name : capitalizeFirstLetter(item.fieldKey)}</Typography>
-                                                        <Typography variant="body1" sx={{mt: 1}}>
-                                                            {item.fromDisplay} -{">"} {item.toDisplay}
-                                                        </Typography>
-                                                    </>
-                                                )
-                                            })}
+                                            <TextField
+                                                fullWidth
+                                                minRows={3}
+                                                multiline
+                                                value={newCommentValue}
+                                                onChange={(e) => setNewCommentValue(e.target.value)}
+                                            />
+                                            <CardActions disableSpacing sx={{justifyContent: "space-between"}}>
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => {
+                                                        addComment()
+                                                    }}>
+                                                    Save
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    onClick={() => {
+                                                        setNewCommentValue("")
+                                                        setCommentFieldOpen(false)
+                                                    }}>
+                                                    Close
+                                                </Button>
+                                            </CardActions>
                                         </CardContent>
                                     </Card>
-                                </Stack>))
-                            : <Typography></Typography>
+                            }
+                            {issue.comments && issue.comments.length > 0 ? (
+                                <Stack spacing={1}>
+                                    {issue.comments.filter((_, i) => {
+                                        if (showFiveComments) {
+                                            return i < 3
+                                        } else return true
+                                    }).map((c) => (
+                                        <Card key={c.id} variant="outlined">
+                                            <CardContent>
+                                                <Typography fontWeight={600}>{c.author?.name}</Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {new Date(c.createdAt).toLocaleString()}
+                                                </Typography>
+                                                <Typography variant="body1" sx={{mt: 1}}>
+                                                    {c.body}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </Stack>
+                            ) : (
+                                <Typography color="text.secondary">No comments yet.</Typography>
+                            )}
+                            {
+                                issue.comments.length > 0 ?
+                                    <Button
+                                        onClick={() => setShowFiveComments((curr) => !curr)}>{showFiveComments ? "Show all comments" : "Hide all comments"}</Button> : null
+                            }
+                        </Paper>
+                    )}
+                    {tab === 1 && <Paper sx={{p: 2, borderRadius: 3}}>
+                        {
+                            historyEntries.length > 0 ?
+                                historyEntries.filter((_, i) => {
+                                    if (showFiveHistory) {
+                                        return i < 3
+                                    } else return true
+                                }).map(log => (
+                                    <Stack key={`stack-${log.id}`}>
+                                        <Card key={`card-${log.id}`} variant="outlined" sx={{mb: 1}}>
+                                            <CardContent key={`content-${log.id}`}>
+                                                <Typography variant="subtitle1"
+                                                            fontWeight={600}>{log.actorName}</Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {new Date(log.createdAt).toLocaleString()}
+                                                </Typography>
+                                                {log.items.map(item => {
+                                                    return (
+                                                        <Card key={`field-${item.fieldLabel}`} variant="outlined"
+                                                              sx={{mb: 1}}>
+                                                            <CardContent>
+                                                                <Typography
+                                                                    variant="subtitle2"
+                                                                    fontWeight={600}>{capitalizeFirstLetter(item.fieldLabel)}</Typography>
+                                                                <Typography variant="body1">
+                                                                    {item.value}
+                                                                </Typography>
+                                                            </CardContent>
+                                                        </Card>
+                                                    )
+                                                })}
+                                            </CardContent>
+                                        </Card>
+                                    </Stack>))
+                                : <Typography>No history records found.</Typography>
                         }
-                        </>
-                        }
+
+                        {historyEntries.length > 0 ?
+                            <Button
+                                onClick={() => setShowFiveHistory((curr) => !curr)}>{showFiveHistory ? "Show all History" : "Hide all History"}</Button> : null}
                     </Paper>
+                    }
                 </Grid>
 
                 <Grid size={{xs: 12, md: 4}}>
