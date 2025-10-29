@@ -4,6 +4,7 @@ import type {
     Issue,
     IssueCustomField,
     IssueLink,
+    IssuePriority,
     IssueTransition,
     NormalizedFieldValue,
     NormalizedHistoryRecord,
@@ -62,8 +63,8 @@ export default function IssueFullPage() {
     const [isOver, setIsOver] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const [showFiveComments, setShowFiveComments] = useState(true);
-    const [showFiveHistory, setShowFiveHistory] = useState(true);
+    const [showThreeComments, setShowThreeComments] = useState(true);
+    const [showThreeHistory, setShowThreeHistory] = useState(true);
     const {openConfirm} = useConfirm("Are you sure you want to delete this issue link?");
 
     const {issueId} = useParams();
@@ -195,36 +196,76 @@ export default function IssueFullPage() {
                     const createdAt = hLog.createdAt;
                     const items: NormalizedHistoryRecord["items"] = []
                     for (const item of hLog.items) {
-                        const fieldDef = issue.fields.find((field) => field.key === item.fieldKey)
-                        if (fieldDef) {
-                            const label = fieldDef.name || fieldDef.key || "Custom field";
-                            let fromValue: NormalizedFieldValue['value'] = item.fromDisplay;
-                            let toValue: NormalizedFieldValue['value'] = item.toDisplay;
+                        if (item.fieldKey.toLowerCase().startsWith("custom.")) {
+                            const fieldDef = issue.fields.find((field) => field.key === item.fieldKey)
+                            if (fieldDef) {
+                                const label = fieldDef.name || fieldDef.key || "Custom field";
+                                let fromValue: NormalizedFieldValue['value'] = item.fromDisplay;
+                                let toValue: NormalizedFieldValue['value'] = item.toDisplay;
 
-                            if (fieldDef.dataType === "OPTION" && fieldDef.options) {
-                                fromValue = fieldDef.options.find(op => op.id === JSON.parse(item.fromDisplay as string)?.optionId)?.value || item.fromDisplay;
-                                toValue = fieldDef.options.find(op => op.id === JSON.parse(item.toDisplay as string)?.optionId)?.value || item.toDisplay;
-                            } else if (fieldDef.dataType === "MULTI_OPTION" && fieldDef.options) {
-                                const parsedFrom = JSON.parse(item.fromDisplay as string);
-                                const parsedTo = JSON.parse(item.toDisplay as string);
-                                fromValue = fieldDef.options.filter(op => parsedFrom?.optionIds.includes(op.id)).map(op => op.value).join(", ") || "Empty";
-                                toValue = fieldDef.options.filter(op => parsedTo?.optionIds.includes(op.id)).map(op => op.value).join(", ") || "Empty";
-                            } else if (fieldDef.dataType === "USER") {
+                                if (fieldDef.dataType === "OPTION" && fieldDef.options) {
+                                    fromValue = fieldDef.options.find(op => op.id === JSON.parse(item.fromDisplay as string)?.optionId)?.value || item.fromDisplay;
+                                    toValue = fieldDef.options.find(op => op.id === JSON.parse(item.toDisplay as string)?.optionId)?.value || item.toDisplay;
+                                } else if (fieldDef.dataType === "MULTI_OPTION" && fieldDef.options) {
+                                    const parsedFrom = JSON.parse(item.fromDisplay as string);
+                                    const parsedTo = JSON.parse(item.toDisplay as string);
+                                    fromValue = fieldDef.options.filter(op => parsedFrom?.optionIds.includes(op.id)).map(op => op.value).join(", ") || "Empty";
+                                    toValue = fieldDef.options.filter(op => parsedTo?.optionIds.includes(op.id)).map(op => op.value).join(", ") || "Empty";
+                                } else if (fieldDef.dataType === "USER") {
+                                    if (item.fromDisplay) {
+                                        const userId = JSON.parse(item.fromDisplay as string)?.userId;
+                                        fromValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
+                                    }
+                                    if (item.toDisplay) {
+                                        const userId = JSON.parse(item.toDisplay as string)?.userId;
+                                        toValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => item.toDisplay);
+                                    }
+                                }
+                                items.push({fieldLabel: label, value: `${fromValue} -> ${toValue}`});
+                            }
+                        } else {
+                            if (item.fieldKey === "assignee" || item.fieldKey === "reporter") {
+                                let fromUser = item.fromDisplay;
+                                let toUser = item.toDisplay;
                                 if (item.fromDisplay) {
-                                    const userId = JSON.parse(item.fromDisplay as string)?.userId;
-                                    fromValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
+                                    const fromUserId = item.fromDisplay;
+                                    fromUser = await api.get<User>(`/user/${fromUserId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
                                 }
                                 if (item.toDisplay) {
-                                    const userId = JSON.parse(item.toDisplay as string)?.userId;
-                                    toValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => item.toDisplay);
+                                    const toUserId = item.toDisplay;
+                                    toUser = await api.get<User>(`/user/${toUserId}`).then((res) => res.data.name).catch(() => item.toDisplay);
                                 }
+                                items.push({
+                                    fieldLabel: capitalizeFirstLetter(item.fieldKey),
+                                    value: `${fromUser || "—"} -> ${toUser || "—"}`
+                                });
+                            } else if (item.fieldKey === "priority") {
+                                let fromPriority = item.fromDisplay;
+                                let toPriority = item.toDisplay;
+                                if (item.fromDisplay) {
+                                    const fromPriorityId = item.fromDisplay;
+                                    fromPriority = await api.get<IssuePriority>(`/priority/${fromPriorityId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
+                                }
+                                if (item.toDisplay) {
+                                    const toPriorityId = item.toDisplay;
+                                    toPriority = await api.get<IssuePriority>(`/priority/${toPriorityId}`).then((res) => res.data.name).catch(() => item.toDisplay);
+                                }
+                                items.push({
+                                    fieldLabel: capitalizeFirstLetter(item.fieldKey),
+                                    value: `${fromPriority || "—"} -> ${toPriority || "—"}`
+                                });
+                            } else {
+                                items.push({
+                                    fieldLabel: item.fieldKey,
+                                    value: `${item.fromDisplay || "—"} -> ${item.toDisplay || "—"}`
+                                });
                             }
-                            items.push({fieldLabel: label, value: `${fromValue} -> ${toValue}`});
                         }
                     }
                     historyEntries.push({id: hLog.id, actorName: user, createdAt, items})
                 }
             }
+            console.log({entries, historyEntries})
             return {entries, history: historyEntries};
         })().then(({history, entries}) => {
             setCustomFieldEntries(entries)
@@ -416,7 +457,7 @@ export default function IssueFullPage() {
                         <Paper sx={{p: 2, borderRadius: 3}}>
                             {
                                 !commentFieldOpen ?
-                                    <Button onClick={() => {
+                                    <Button fullWidth onClick={() => {
                                         setCommentFieldOpen(true)
                                     }}>Add comment</Button> :
                                     <Card>
@@ -430,19 +471,19 @@ export default function IssueFullPage() {
                                             />
                                             <CardActions disableSpacing sx={{justifyContent: "space-between"}}>
                                                 <Button
-                                                    variant="contained"
-                                                    onClick={() => {
-                                                        addComment()
-                                                    }}>
-                                                    Save
-                                                </Button>
-                                                <Button
                                                     variant="outlined"
                                                     onClick={() => {
                                                         setNewCommentValue("")
                                                         setCommentFieldOpen(false)
                                                     }}>
                                                     Close
+                                                </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => {
+                                                        addComment()
+                                                    }}>
+                                                    Save
                                                 </Button>
                                             </CardActions>
                                         </CardContent>
@@ -451,7 +492,7 @@ export default function IssueFullPage() {
                             {issue.comments && issue.comments.length > 0 ? (
                                 <Stack spacing={1}>
                                     {issue.comments.filter((_, i) => {
-                                        if (showFiveComments) {
+                                        if (showThreeComments) {
                                             return i < 3
                                         } else return true
                                     }).map((c) => (
@@ -472,9 +513,10 @@ export default function IssueFullPage() {
                                 <Typography color="text.secondary">No comments yet.</Typography>
                             )}
                             {
-                                issue.comments.length > 0 ?
+                                issue.comments.length > 3 ?
                                     <Button
-                                        onClick={() => setShowFiveComments((curr) => !curr)}>{showFiveComments ? "Show all comments" : "Hide all comments"}</Button> : null
+                                        fullWidth
+                                        onClick={() => setShowThreeComments((curr) => !curr)}>{showThreeComments ? "Show all comments" : "Hide all comments"}</Button> : null
                             }
                         </Paper>
                     )}
@@ -482,7 +524,7 @@ export default function IssueFullPage() {
                         {
                             historyEntries.length > 0 ?
                                 historyEntries.filter((_, i) => {
-                                    if (showFiveHistory) {
+                                    if (showThreeHistory) {
                                         return i < 3
                                     } else return true
                                 }).map(log => (
@@ -496,17 +538,16 @@ export default function IssueFullPage() {
                                                 </Typography>
                                                 {log.items.map(item => {
                                                     return (
-                                                        <Card key={`field-${item.fieldLabel}`} variant="outlined"
-                                                              sx={{mb: 1}}>
-                                                            <CardContent>
-                                                                <Typography
-                                                                    variant="subtitle2"
-                                                                    fontWeight={600}>{capitalizeFirstLetter(item.fieldLabel)}</Typography>
-                                                                <Typography variant="body1">
-                                                                    {item.value}
-                                                                </Typography>
-                                                            </CardContent>
-                                                        </Card>
+                                                        <Box key={`field-${item.fieldLabel}`} sx={{my: 0.5}}>
+                                                            <Typography
+
+                                                                variant="subtitle2"
+                                                                fontWeight={600}>{capitalizeFirstLetter(item.fieldLabel)}</Typography>
+                                                            <Typography variant="body1">
+                                                                {item.value}
+                                                            </Typography>
+                                                        </Box>
+
                                                     )
                                                 })}
                                             </CardContent>
@@ -515,9 +556,10 @@ export default function IssueFullPage() {
                                 : <Typography>No history records found.</Typography>
                         }
 
-                        {historyEntries.length > 0 ?
+                        {historyEntries.length > 3 ?
                             <Button
-                                onClick={() => setShowFiveHistory((curr) => !curr)}>{showFiveHistory ? "Show all History" : "Hide all History"}</Button> : null}
+                                fullWidth
+                                onClick={() => setShowThreeHistory((curr) => !curr)}>{showThreeHistory ? "Show all History" : "Hide all History"}</Button> : null}
                     </Paper>
                     }
                 </Grid>

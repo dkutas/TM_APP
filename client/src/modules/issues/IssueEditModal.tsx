@@ -450,7 +450,7 @@ export default function IssueEditModal({
                         </>
                     )}
                 </DialogContent>
-                <DialogActions>
+                <DialogActions sx={{display: "flex", justifyContent: "space-between"}}>
                     <Button onClick={() => onClose(false)}>Close</Button>
                     <Button variant="contained" onClick={() => saveValues()}>
                         Save

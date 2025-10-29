@@ -529,7 +529,7 @@ export default function IssueCreateModal({
                         : renderEditContent()
                     }
                 </DialogContent>
-                <DialogActions sx={{display: 'flex', justifyContent: 'space-between', px: 3, py: 2}}>
+                <DialogActions sx={{display: 'flex', justifyContent: 'space-between'}}>
                     {renderActions()}
                 </DialogActions>
             </Dialog>
