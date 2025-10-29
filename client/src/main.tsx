@@ -11,7 +11,15 @@ const theme = createTheme({
         warning: {
             main: '#4b4b4b'
         }
+    },
+    components: {
+        MuiPaper: {
+            defaultProps: {
+                variant: "outlined"
+            }
+        }
     }
+
 })
 
 createRoot(document.getElementById('root')!).render(

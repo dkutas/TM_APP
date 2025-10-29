@@ -32,8 +32,8 @@ export class Issue {
 
   @ManyToOne(() => WorkflowStatus, { onDelete: 'RESTRICT' })
   status: WorkflowStatus;
-  @ManyToOne(() => Priority, { onDelete: 'SET NULL', nullable: true })
-  priority?: Priority;
+  @ManyToOne(() => Priority, { onDelete: 'SET NULL' })
+  priority: Priority;
 
   @ManyToOne(() => User, { onDelete: 'RESTRICT' }) reporter: User;
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })

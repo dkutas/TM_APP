@@ -2,8 +2,8 @@ import {Box, CardContent, CircularProgress, Typography} from "@mui/material";
 import type {UserIssue} from "../../lib/types.ts";
 import {Link} from "react-router-dom";
 
-export const IssuesPanel = ({issues}: { issues: UserIssue[] }) => {
-    if (issues.length === 0) {
+export const IssuesPanel = ({issues, isLoading}: { issues: UserIssue[], isLoading: boolean }) => {
+    if (isLoading) {
         return (
             <CircularProgress color="secondary" size={20}/>
         );
@@ -11,8 +11,15 @@ export const IssuesPanel = ({issues}: { issues: UserIssue[] }) => {
     return (
         <CardContent sx={{height: '100%'}}>
             <Typography variant="h5" component="div" mb={2}>
-                My Latest Issues
-            </Typography>
+                My Assigned Issues
+            </Typography>{issues.length === 0 ?
+            <Box>
+                <Typography variant="body1" color="text.secondary">
+                    You have no assigned issues.
+                </Typography>
+            </Box>
+            :
+
             <Box display="flex" flexDirection="column" sx={{flexGrow: 1}}>
                 {issues.map(issue => (
                     <Typography sx={{textDecoration: "none", pb: 1, color: "black"}} component={Link}
@@ -21,6 +28,7 @@ export const IssuesPanel = ({issues}: { issues: UserIssue[] }) => {
                     </Typography>)
                 )}
             </Box>
+        }
         </CardContent>
     );
 };

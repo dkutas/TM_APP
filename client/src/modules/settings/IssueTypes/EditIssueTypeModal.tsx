@@ -11,15 +11,10 @@ import {
 import {useEffect, useState} from "react";
 import type {IssueType} from "../../../lib/types.ts";
 import {api} from "../../../lib/apiClient.ts";
+import type {EditCrudModalProps} from "../types.ts";
 
-interface EditIssueTypeModalProps {
-    open: boolean
-    id: string
-    closeDialog: () => void
-    onSave: () => void
-}
 
-export const EditIssueTypeModal = ({open, id, closeDialog, onSave}: EditIssueTypeModalProps) => {
+export const EditIssueTypeModal = ({open, id, closeDialog, onSave}: EditCrudModalProps) => {
     const [isLoading, setIsLoading] = useState(false)
     const [formValue, setFormValue] = useState<IssueType | null>(null)
 

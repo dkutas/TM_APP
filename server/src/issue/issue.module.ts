@@ -28,6 +28,7 @@ import { ProjectIssueTypeRepository } from '../repositories/project-issue-type.r
 import { WorkflowTransitionRepository } from '../repositories/workflow-transition.repository';
 import { User } from '../user/entities/user.entity';
 import { IssueLink } from '../link-type/entities/issue-link.entity';
+import { AttachmentService } from '../attachment/attachment.service';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { IssueLink } from '../link-type/entities/issue-link.entity';
     IssueLinkRepository,
     ProjectIssueTypeRepository,
     WorkflowTransitionRepository,
+    AttachmentService,
   ],
 })
 export class IssueModule {}

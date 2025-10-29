@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {NavLink, useParams} from "react-router-dom";
 import type {
     Issue,
@@ -22,6 +22,7 @@ import {
     Chip,
     type ChipOwnProps,
     Divider,
+    IconButton,
     Paper,
     Stack,
     Tab,
@@ -32,7 +33,7 @@ import {
 import {api} from "../../lib/apiClient.ts";
 import IssueEditModal from "./IssueEditModal.tsx";
 import {LinkIssueModal} from "./LinkIssueModal.tsx";
-import {Delete} from "@mui/icons-material";
+import {CloudUpload, Delete} from "@mui/icons-material";
 import {useConfirm} from "../../app/Confirm/useConfirm.ts";
 
 
@@ -58,6 +59,9 @@ export default function IssueFullPage() {
     const [commentFieldOpen, setCommentFieldOpen] = useState(false);
     const [linkIssuesOpen, setLinkIssuesOpen] = useState(false);
     const [newCommentValue, setNewCommentValue] = useState("");
+    const [isOver, setIsOver] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [showFiveComments, setShowFiveComments] = useState(true);
     const [showFiveHistory, setShowFiveHistory] = useState(true);
     const {openConfirm} = useConfirm("Are you sure you want to delete this issue link?");
@@ -92,6 +96,43 @@ export default function IssueFullPage() {
             })
         }
     }, [issueId, newCommentValue, refreshIssues])
+
+    const uploadFiles = useCallback(async (files: FileList | File[]) => {
+        if (!issueId) return;
+        const form = new FormData();
+        Array.from(files).forEach((f) => form.append('files', f));
+        setIsUploading(true);
+        try {
+            await api.post(`issue/${issueId}/attachments`, form, {
+                headers: {'Content-Type': 'multipart/form-data'},
+            });
+            await refreshIssues();
+        } finally {
+            setIsUploading(false);
+        }
+    }, [issueId, refreshIssues]);
+
+    const onDropFiles = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsOver(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+            uploadFiles(e.dataTransfer.files);
+        }
+    }, [uploadFiles]);
+
+    const onBrowseFiles = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length) {
+            uploadFiles(e.target.files);
+            e.target.value = '';
+        }
+    }, [uploadFiles]);
+
+    const handleDeleteAttachment = useCallback((attachmentId: string) => {
+        api.delete(`issue/attachments/${attachmentId}`).then(() => {
+            refreshIssues()
+        })
+    }, [refreshIssues])
 
 
     const transitionIssue = useCallback((transition: IssueTransition) => {
@@ -302,14 +343,63 @@ export default function IssueFullPage() {
 
                     <Typography variant="h6" mb={1}>Attachments</Typography>
                     <Paper sx={{p: 2, borderRadius: 3, mb: 3}}>
+                        {/* Drop/Browse layer */}
+                        <Box
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsOver(true);
+                            }}
+                            onDragLeave={() => setIsOver(false)}
+                            onDrop={onDropFiles}
+                            onClick={() => fileInputRef.current?.click()}
+                            sx={{
+                                border: '2px dashed',
+                                borderColor: isOver ? 'primary.main' : 'divider',
+                                bgcolor: isOver ? 'action.hover' : 'background.default',
+                                borderRadius: 2,
+                                p: 2,
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                mb: 2,
+                            }}
+                            aria-label="Drop files to upload"
+                            role="button"
+                        >
+                            <input ref={fileInputRef} type="file" multiple hidden onChange={onBrowseFiles}/>
+                            <Stack alignItems="center" spacing={1}>
+                                <CloudUpload/>
+                                <Typography variant="body2">
+                                    Húzd ide a fájlokat vagy kattints a böngészéshez
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                    Max 20 fájl, 50MB / fájl
+                                </Typography>
+                                {isUploading && (
+                                    <Typography variant="caption" color="text.secondary">Feltöltés…</Typography>
+                                )}
+                            </Stack>
+                        </Box>
+
+                        {/* Existing list */}
                         {issue.attachments && issue.attachments.length > 0 ? (
                             <Stack spacing={1}>
                                 {issue.attachments.map((a) => (
                                     <Stack key={a.id} direction="row" alignItems="center"
                                            justifyContent="space-between">
-                                        <Typography>{a.fileName}</Typography>
-                                        <Typography color="text.secondary"
-                                                    variant="body2">{a.size || "—"}kb</Typography>
+                                        <Link href={a.url} target="_blank"
+                                              rel="noreferrer"
+                                              underline="hover">{a.fileName}</Link>
+                                        <Box sx={{display: "flex", alignItems: "center", gap: 1}}>
+                                            <Typography color="text.secondary" variant="body2">
+                                                {a.size ? `${Math.round(+a.size / 1024)} KB` : '—'}
+                                            </Typography>
+                                            <IconButton
+                                                onClick={() => openConfirm(() => handleDeleteAttachment(a.id), `Are you sure to delete ${a.fileName}`)}
+                                                color="error">
+                                                <Delete/>
+                                            </IconButton>
+                                        </Box>
                                     </Stack>
                                 ))}
                             </Stack>
@@ -446,7 +536,7 @@ export default function IssueFullPage() {
                                 </>
                             }
                             <Typography variant="subtitle2" color="text.secondary">Priority</Typography>
-                            <Typography>{issue.priority.name}</Typography>
+                            <Typography>{issue.priority?.name}</Typography>
                             <Typography
                                 variant="subtitle2" color="text.secondary">IssueType</Typography>
                             <Typography>{issue.issueType.name || issue.assignee?.email || "—"}</Typography>

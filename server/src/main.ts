@@ -3,9 +3,13 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
 import * as process from 'node:process';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Task Management API')
@@ -19,12 +23,17 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
   writeFileSync('./openapi.json', JSON.stringify(document, null, 2));
 
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/files',
+  });
+
   app.enableCors({
     origin: process.env.CORS_ORIGIN?.split(',').filter(Boolean).length
       ? process.env.CORS_ORIGIN?.split(',')
       : ['http://localhost:5173', 'http://localhost:8080'],
     credentials: true,
   });
+
   const port = Number(process.env.PORT || 3000);
   await app.listen(port);
 }

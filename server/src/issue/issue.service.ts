@@ -283,6 +283,7 @@ export class IssueService {
       description: issue.description ?? null,
       project: issue.project,
       projectIssueType: issue.projectIssueType,
+      priority: issue.priority,
       issueType: issue.issueType,
       status: issue.status,
       reporter: issue.reporter,
@@ -880,21 +881,6 @@ export class IssueService {
     return { ok: true };
   }
 
-  // async getIssueHistory(issueId: string): Promise<IssueHistoryItemDto[]> {
-  //   const list = await this.historyRepo.findByIssue(issueId);
-  //   return list.flatMap((h) =>
-  //     h.items.map((it) => ({
-  //       id: it.id,
-  //       authorId: h.actor.id,
-  //       changedAt: h.changedAt.toISOString(),
-  //       items:
-  //       field: it.field,
-  //       from: it.from ?? null,
-  //       to: it.to ?? null,
-  //     })),
-  //   );
-  // }
-
   async getIssueAttachments(issueId: string): Promise<IssueAttachmentDto[]> {
     const list = await this.attachRepo.findByIssue(issueId);
     return list.map((a) => ({
@@ -904,7 +890,7 @@ export class IssueService {
       size: a.size,
       uploadedBy: a.uploader.id,
       createdAt: a.createdAt.toISOString(),
-      url: `/api/attachment/${a.id}/download`, // vagy signed URL generálás
+      url: a.url,
     }));
   }
 
@@ -928,33 +914,6 @@ export class IssueService {
     });
     return a;
   }
-
-  // async deleteIssueAttachment(attachmentId: string, userId: string) {
-  //   // opcionális: issueId kinyerése history-hoz
-  //   const row = await this.attachRepo
-  //     .createQueryBuilder('a')
-  //     .leftJoin('a.issue', 'i')
-  //     .addSelect('i.id')
-  //     .where('a.id = :id', { id: attachmentId })
-  //     .getOne();
-  //   await this.attachRepo.removeAttachment(attachmentId);
-  //   if (row?.issue?.id) {
-  //     await this.historyRepo.add({
-  //       issueId: row?.issue.id,
-  //       actorId: userId,
-  //       items: [
-  //         {
-  //           fieldKey: 'attachment',
-  //           from: `- ${(row as any).fileName ?? ''}`,
-  //           to: null,
-  //         },
-  //       ],
-  //     });
-  //   }
-  //   return { ok: true };
-  // }
-
-  // ---- HISTORY -----------------------------------------------------------
 
   async getIssueFieldDefinitions(issueId: string): Promise<FieldDefsDTO[]> {
     const issue = await this.issues.findOneWithCore(issueId);

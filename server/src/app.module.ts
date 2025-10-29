@@ -39,15 +39,9 @@ import { FieldDefinition } from './field-definition/entities/field-definition.en
 import { FieldContext } from './field-context/entities/field-context.entity';
 import { Attachment } from './attachment/entities/attachment.entity';
 import { Comment } from './comment/entities/comment.entity';
-import { ProjectHierarchyRuleModule } from './project-hierarchy-rule/project-hierarchy-rule.module';
 import { ChangeLogModule } from './change-log/change-log.module';
 import { RoleModule } from './role/role.module';
-import {
-  Permission,
-  ProjectMembership,
-  Role,
-  RolePermission,
-} from './role/entities/role.entity';
+import { ProjectMembership, Role } from './role/entities/role.entity';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { ChangeItem, ChangeLog } from './change-log/entities/change-log.entity';
 import { IssueLink } from './link-type/entities/issue-link.entity';
@@ -83,10 +77,8 @@ import { IssueLink } from './link-type/entities/issue-link.entity';
         Attachment,
         IssueFieldValueOption,
         Role,
-        Permission,
         ChangeLog,
         ChangeItem,
-        RolePermission,
         ProjectMembership,
       ],
       namingStrategy: new SnakeNamingStrategy(),
@@ -106,7 +98,6 @@ import { IssueLink } from './link-type/entities/issue-link.entity';
     FieldDefinitionModule,
     FieldOptionModule,
     FieldContextModule,
-    ProjectHierarchyRuleModule,
     RoleModule,
     ChangeLogModule,
   ],

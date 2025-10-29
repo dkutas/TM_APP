@@ -14,25 +14,10 @@ import { RoleEnum } from '../../common/enums';
 export class Role {
   @PrimaryGeneratedColumn('uuid') id: string;
   @Column({ type: 'enum', enum: RoleEnum })
-  name: RoleEnum; // pl. PROJECT_ADMIN
-  @Column({ length: 40 }) scope: string; // 'project' | 'global'
-}
-
-@Entity('permissions')
-@Index(['key'], { unique: true })
-export class Permission {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ length: 120 }) key: string; // pl. issue.create
-  @Column({ type: 'text', nullable: true }) description?: string;
-}
-
-@Entity('role_permissions')
-@Index(['role', 'permission'], { unique: true })
-export class RolePermission {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @ManyToOne(() => Role, { onDelete: 'CASCADE' }) role: Role;
-  @ManyToOne(() => Permission, { onDelete: 'CASCADE' })
-  permission: Permission;
+  name: RoleEnum;
+  @Column({ length: 40, enum: ['project', 'system'] }) scope:
+    | 'project'
+    | 'system';
 }
 
 @Entity('project_memberships')

@@ -4,14 +4,21 @@ import Grid from "@mui/material/Grid2";
 import {Box, Button, Card, CardActionArea, CardContent, Typography,} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import {api} from "../../lib/apiClient.ts";
+import {CreateProjectModal} from "./ProjectAdmin/CreateProjectModal.tsx";
 
 export default function ProjectListPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const navigate = useNavigate();
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    const fetchProjects = () => {
+        api.get(`/project`).then((res) => setProjects(res.data));
+    }
 
     useEffect(() => {
-        api.get(`/project`).then((res) => setProjects(res.data));
+        fetchProjects()
     }, []);
+
 
     const colors = [
         "#CDEBC1", // soft green
@@ -28,7 +35,7 @@ export default function ProjectListPage() {
         <Grid container spacing={3}>
             <Grid size={12} display="flex" alignItems="center" justifyContent="space-between">
                 <Typography variant="h4">Your Projects</Typography>
-                <Button variant="contained">New Project</Button>
+                <Button variant="contained" onClick={() => setIsCreateModalOpen(true)}>New Project</Button>
             </Grid>
 
             <Grid size={12}>
@@ -66,6 +73,8 @@ export default function ProjectListPage() {
                     ))}
                 </Grid>
             </Grid>
+            <CreateProjectModal open={isCreateModalOpen} closeDialog={() => setIsCreateModalOpen(false)}
+                                onSave={fetchProjects}/>
         </Grid>
     );
 }

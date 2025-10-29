@@ -4,12 +4,12 @@ export const useConfirm = (title: string, onClose?: () => void) => {
     const {setConfirmOpen, setConfirmTitle, setOnConfirmSure, setOnConfirmClose} = useConfirmStore()
 
     return {
-        openConfirm: (_onConfirm?: () => void) => {
+        openConfirm: (_onConfirm?: (params?: any) => void, _confirmTitle?: string) => {
             setOnConfirmSure(_onConfirm || (() => {
             })
             );
             setOnConfirmClose(() => onClose);
-            setConfirmTitle(title);
+            setConfirmTitle(_confirmTitle || title);
             setConfirmOpen(true);
         }
     }

@@ -428,8 +428,6 @@ export default function IssueEditModal({
                         <Box py={6} textAlign="center">
                             <CircularProgress/>
                         </Box>
-                    ) : customFields.length === 0 ? (
-                        <Typography color="text.secondary">No editable custom fields.</Typography>
                     ) : (
                         <>
                             <Typography typography="h5" sx={{mb: 3}}>System fields</Typography>
@@ -437,15 +435,18 @@ export default function IssueEditModal({
                                 {renderSystemFields()}
                             </Grid></Stack>
                             <Typography typography="h5" sx={{mb: 3}}>Custom fields</Typography>
-                            <Stack spacing={2} sx={{mt: 1}}>
-                                <Grid container gap={2} spacing={1}>
-                                    {customFields.map((f) => (
-                                        <Grid key={f.id} size={{xs: 12, md: 12}}>
-                                            {renderCustomFields(f)}
-                                        </Grid>
-                                    ))}
-                                </Grid>
-                            </Stack>
+                            {customFields.length === 0 ? (
+                                    <Typography color="text.secondary">No editable custom fields.</Typography>
+                                ) :
+                                <Stack spacing={2} sx={{mt: 1}}>
+                                    <Grid container gap={2} spacing={1}>
+                                        {customFields.map((f) => (
+                                            <Grid key={f.id} size={{xs: 12, md: 12}}>
+                                                {renderCustomFields(f)}
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Stack>}
                         </>
                     )}
                 </DialogContent>

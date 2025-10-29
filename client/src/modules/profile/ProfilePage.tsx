@@ -1,4 +1,4 @@
-import {Avatar, Box, Card, Paper, Stack, Typography} from "@mui/material";
+import {Avatar, Box, Paper, Stack, Typography} from "@mui/material";
 import {useAuth} from "../../auth/authContext.tsx";
 import {api} from "../../lib/apiClient.ts";
 import {useEffect, useState} from "react";
@@ -10,14 +10,16 @@ export default function ProfilePage() {
     const {user} = useAuth();
     const [projects, setProjects] = useState<UserProject[]>([]);
     const [issues, setIssues] = useState<UserIssue[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    
     useEffect(() => {
         if (user?.id) {
-            api.get<UserProject[]>("user/" + user?.id + "/memberships").then(res => {
-                setProjects(res.data);
-            });
-            api.get<UserIssue[]>(`issue/search?role=assignee`).then(res => {
-                setIssues(res.data);
-            });
+            Promise.all([api.get<UserProject[]>("user/" + user?.id + "/memberships").then(res => res.data),
+                api.get<UserIssue[]>(`issue/search?role=assignee`).then(res => res.data)]).then(([memberships, issue]) => {
+                setProjects(memberships);
+                setIssues(issue);
+                setIsLoading(false);
+            })
         }
     }, [user, setProjects])
     return (
@@ -32,15 +34,15 @@ export default function ProfilePage() {
                 </Stack>
             </Paper>
 
-            <Paper elevation={0}
-                   sx={{gap: 5, mt: 4, display: "flex", justifyContent: "space-between"}}>
-                <Card sx={{flex: 1, display: "flex", p: 2}}>
+            <Box
+                sx={{gap: 5, mt: 4, display: "flex", justifyContent: "space-between"}}>
+                <Paper sx={{flex: 1, display: "flex", p: 2}}>
                     <ProjectsPanel projects={projects}/>
-                </Card>
-                <Card sx={{flex: 1, display: "flex", p: 2}}>
-                    <IssuesPanel issues={issues}/>
-                </Card>
-            </Paper>
+                </Paper>
+                <Paper sx={{flex: 1, display: "flex", p: 2}}>
+                    <IssuesPanel issues={issues} isLoading={isLoading}/>
+                </Paper>
+            </Box>
         </Box>
     )
 }

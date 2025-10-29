@@ -5,7 +5,7 @@ import {useAuth} from "./authContext.tsx";
 export default function LoginPage() {
     const {login} = useAuth();
     const [email, setEmail] = useState('kutas.d@gmail.com');
-    const [password, setPassword] = useState('admin');
+    const [password, setPassword] = useState('Admin');
 
     return (
         <Box display="flex" justifyContent="center" mt={6}>

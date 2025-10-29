@@ -395,6 +395,60 @@
         ]
       }
     },
+    "/project/{projectId}/members-with-roles": {
+      "get": {
+        "operationId": "ProjectController_findMembersWithRoles",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/project/{projectId}/issue-type/{issueTypeId}": {
+      "post": {
+        "operationId": "ProjectController_assignIssueTypeToProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "issueTypeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
     "/project/{projectId}/issue-type/{issueTypeId}/fields": {
       "get": {
         "operationId": "ProjectController_findFieldsByIssueType",
@@ -643,16 +697,7 @@
     "/issue/search": {
       "get": {
         "operationId": "IssueController_listUserIssues",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": ""
@@ -864,27 +909,6 @@
         "tags": [
           "Issue"
         ]
-      },
-      "post": {
-        "operationId": "IssueController_addAttachment",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Issue"
-        ]
       }
     },
     "/issue/{id}/field-definitions": {
@@ -905,6 +929,62 @@
             "description": ""
           }
         },
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/{issueId}/attachments": {
+      "post": {
+        "operationId": "IssueController_upload",
+        "parameters": [
+          {
+            "name": "issueId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/attachments/{attachmentId}": {
+      "delete": {
+        "operationId": "IssueController_deleteAttachment",
+        "parameters": [
+          {
+            "name": "attachmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "tags": [
           "Issue"
         ]
@@ -1372,64 +1452,7 @@
         ]
       }
     },
-    "/attachment": {
-      "post": {
-        "operationId": "AttachmentController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAttachmentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Attachment"
-        ]
-      },
-      "get": {
-        "operationId": "AttachmentController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Attachment"
-        ]
-      }
-    },
     "/attachment/{id}": {
-      "get": {
-        "operationId": "AttachmentController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Attachment"
-        ]
-      },
       "delete": {
         "operationId": "AttachmentController_remove",
         "parameters": [
@@ -1658,6 +1681,43 @@
         ]
       }
     },
+    "/field-definition/with-contexts": {
+      "get": {
+        "operationId": "FieldDefinitionController_findAllWithContexts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FieldDefinition"
+        ]
+      }
+    },
+    "/field-definition/{id}/with-contexts": {
+      "get": {
+        "operationId": "FieldDefinitionController_findOneWithContexts",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FieldDefinition"
+        ]
+      }
+    },
     "/field-definition/{id}": {
       "get": {
         "operationId": "FieldDefinitionController_findOne",
@@ -1702,27 +1762,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "FieldDefinition"
-        ]
-      },
-      "delete": {
-        "operationId": "FieldDefinitionController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": ""
@@ -1952,117 +1991,6 @@
         },
         "tags": [
           "FieldContext"
-        ]
-      }
-    },
-    "/project-hierarchy-rule": {
-      "post": {
-        "operationId": "ProjectHierarchyRuleController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProjectHierarchyRuleDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "ProjectHierarchyRule"
-        ]
-      },
-      "get": {
-        "operationId": "ProjectHierarchyRuleController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "ProjectHierarchyRule"
-        ]
-      }
-    },
-    "/project-hierarchy-rule/{id}": {
-      "get": {
-        "operationId": "ProjectHierarchyRuleController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "ProjectHierarchyRule"
-        ]
-      },
-      "patch": {
-        "operationId": "ProjectHierarchyRuleController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProjectHierarchyRuleDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "ProjectHierarchyRule"
-        ]
-      },
-      "delete": {
-        "operationId": "ProjectHierarchyRuleController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "ProjectHierarchyRule"
         ]
       }
     },
@@ -2362,10 +2290,6 @@
         "type": "object",
         "properties": {}
       },
-      "CreateAttachmentDto": {
-        "type": "object",
-        "properties": {}
-      },
       "CreateCommentDto": {
         "type": "object",
         "properties": {}
@@ -2399,14 +2323,6 @@
         "properties": {}
       },
       "UpdateFieldContextDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "CreateProjectHierarchyRuleDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateProjectHierarchyRuleDto": {
         "type": "object",
         "properties": {}
       },

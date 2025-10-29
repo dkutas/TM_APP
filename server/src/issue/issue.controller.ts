@@ -4,12 +4,15 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Put,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { IssueService } from './issue.service';
@@ -26,10 +29,18 @@ import {
 } from './dto/field.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../auth/auth.controller';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { join } from 'path';
+import { AttachmentService } from '../attachment/attachment.service';
+import { AttachFileDto } from '../attachment/dto/attach-file.dto';
+import { diskStorage } from 'multer';
 
 @Controller('issue')
 export class IssueController {
-  constructor(private readonly issueService: IssueService) {}
+  constructor(
+    private readonly issueService: IssueService,
+    private readonly attachmentService: AttachmentService,
+  ) {}
 
   @Post()
   create(@Body() createIssueDto: CreateIssueDto) {
@@ -41,11 +52,6 @@ export class IssueController {
   findAll() {
     return this.issueService.findAll();
   }
-
-  // @Get(':id/comments')
-  // getComments(@Param('id') id: string) {
-  //   return this.issueService.getComments(id);
-  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
@@ -65,7 +71,6 @@ export class IssueController {
   @ApiBearerAuth()
   @Get('search')
   async listUserIssues(
-    @Param('id') userId: string,
     @Req() req: AuthenticatedRequest,
     @Query(new ValidationPipe({ transform: true, whitelist: true }))
     query: UserIssuesQueryDto,
@@ -142,41 +147,82 @@ export class IssueController {
     return this.issueService.deleteIssueComment(commentId, body.authorId);
   }
 
-  // // ---------------- HISTORY --------------
-  // @Get(':id/history')
-  // getHistory(@Param('id') id: string): Promise<IssueHistoryItemDto[]> {
-  //   return this.issueService.getIssueHistory(id);
-  // }
-
-  // ------------- ATTACHMENTS -------------
   @Get(':id/attachments')
   getAttachments(@Param('id') id: string): Promise<IssueAttachmentDto[]> {
     return this.issueService.getIssueAttachments(id);
   }
 
-  @Post(':id/attachments')
-  addAttachment(
-    @Param('id') id: string,
-    @Body()
-    body: {
-      uploadedBy: string;
-      fileName: string;
-      mimeType: string;
-      size: number;
-      storageKey: string;
-    },
-  ) {
-    return this.issueService.addIssueAttachment(id, body.uploadedBy, {
-      fileName: body.fileName,
-      mimeType: body.mimeType,
-      size: body.size,
-      storageKey: body.storageKey,
-    });
-  }
-
   @Get(':id/field-definitions')
   getFieldDefinitions(@Param('id') id: string): Promise<FieldDefsDTO[]> {
     return this.issueService.getIssueFieldDefinitions(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post(':issueId/attachments')
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        destination: async (req, _file, cb) => {
+          const issueId = req.params.issueId;
+          if (!issueId) {
+            return cb(new Error('Issue ID is required in the URL'), '');
+          }
+          const dest = join(process.cwd(), 'uploads', 'issues', issueId);
+          try {
+            await import('fs/promises').then((fsPromises) => {
+              fsPromises
+                .mkdir(dest, { recursive: true })
+                .then(() => {
+                  cb(null, dest);
+                })
+                .catch((err) => {
+                  cb(err, '');
+                });
+            });
+          } catch (e) {
+            cb(new Error('Failed to create directory'), '');
+          }
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = file.originalname.split('.').pop();
+          cb(null, `${file.fieldname}-${uniqueSuffix}.${ext}`);
+        },
+      }),
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  async upload(
+    @Param('issueId', new ParseUUIDPipe()) issueId: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Req() req: AttachFileDto,
+  ) {
+    console.log('files', files);
+    const uploaderId = req.user.id;
+    console.log(uploaderId);
+    const stored = files.map((f) => ({
+      originalName: f.originalname,
+      mimeType: f.mimetype,
+      size: f.size,
+      relativeUrl: `/files/issues/${issueId}/${f.filename}`,
+    }));
+    return this.attachmentService.createForIssue({
+      issueId,
+      uploaderId,
+      storedFiles: stored,
+    });
+  }
+
+  @Delete('attachments/:attachmentId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async deleteAttachment(
+    @Param('attachmentId', new ParseUUIDPipe()) attachmentId: string,
+  ) {
+    return this.attachmentService.remove(attachmentId);
   }
 
   @Get(':id/transitions')
@@ -185,12 +231,4 @@ export class IssueController {
   ): Promise<IssueTransitionDto[]> {
     return this.issueService.getAvailableTransitions(id);
   }
-
-  // @Delete('attachments/:attachmentId')
-  // deleteAttachment(
-  //   @Param('attachmentId') attachmentId: string,
-  //   @Body() body: { userId: string },
-  // ) {
-  //   return this.issueService.deleteIssueAttachment(attachmentId, body.userId);
-  // }
 }

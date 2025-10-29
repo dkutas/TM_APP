@@ -1,20 +1,36 @@
 import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
-import type {Project} from "../../lib/types";
-import {Paper, Tab, Tabs, Typography} from "@mui/material";
+import type {MembershipWithRole, Project} from "../../../lib/types.ts";
+import {Avatar, Chip, CircularProgress, Paper, Stack, Tab, Tabs, Typography} from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import {api} from "../../lib/apiClient.ts";
+import {api} from "../../../lib/apiClient.ts";
+import {ProjectIssueTypes} from "./ProjectIssueTypes.tsx";
 
-export default function ProjectSettingsPage() {
+export function ProjectSettingsPage() {
     const {projectId} = useParams();
     const [project, setProject] = useState<Project | null>(null);
+    const [projectMembers, setProjectMembers] = useState<MembershipWithRole[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const [tab, setTab] = useState(0);
 
+
     useEffect(() => {
-        if (projectId) api.get("project/" + projectId).then(res => setProject(res.data));
+        if (projectId) {
+            setIsLoading(true);
+            Promise.all([api.get(`project/${projectId}`).then(res => res.data), api.get(`project/${projectId}/members-with-roles`).then(res => res.data)]).then(([projectData, membersData]) => {
+                    setProject(projectData);
+                    setProjectMembers(membersData);
+                    setIsLoading(false);
+                }
+            )
+        }
     }, [projectId]);
 
-    if (!project) return null;
+    if (!projectId || !project) return null;
+
+    if (isLoading) {
+        return <CircularProgress/>;
+    }
 
     return (
         <Grid container spacing={3}>
@@ -27,7 +43,6 @@ export default function ProjectSettingsPage() {
                     <Tab label="Overview"/>
                     <Tab label="Users"/>
                     <Tab label="Issue types"/>
-                    <Tab label="Workflows"/>
                 </Tabs>
             </Grid>
             <Grid size={12}>
@@ -41,22 +56,16 @@ export default function ProjectSettingsPage() {
                 {tab === 1 && (
                     <Paper sx={{p: 2}}>
                         <Typography variant="h6" gutterBottom>Users</Typography>
-                        {/*<Stack direction="row" spacing={1} flexWrap="wrap">*/}
-                        {/*    {project.users.map(u => (*/}
-                        {/*        <Chip key={u.id} avatar={<Avatar>{u.name[0]}</Avatar>} label={`${u.name}`}/>*/}
-                        {/*    ))}*/}
-                        {/*</Stack>*/}
+                        <Stack direction="row" spacing={1} flexWrap="wrap">
+                            {projectMembers.map(u => (
+                                <Chip key={u.id} avatar={<Avatar>{u.user.name?.[0]}</Avatar>}
+                                      label={`${u.user.name} - (${u.role.name})`}/>
+                            ))}
+                        </Stack>
                     </Paper>
                 )}
                 {tab === 2 && (
-                    <Paper sx={{p: 2}}>
-                        <Typography>Issue types — placeholder</Typography>
-                    </Paper>
-                )}
-                {tab === 3 && (
-                    <Paper sx={{p: 2}}>
-                        <Typography>Workflows — placeholder</Typography>
-                    </Paper>
+                    <ProjectIssueTypes projectId={projectId}/>
                 )}
             </Grid>
         </Grid>

@@ -1,14 +1,13 @@
 import {useEffect, useState} from "react";
 import type {IssueType} from "../../../lib/types.ts";
 import {api} from "../../../lib/apiClient.ts";
-import {Box, Button, Card, CardContent, IconButton, Paper, Stack, TextField, Typography} from "@mui/material";
+import {Box, Button, Card, CardContent, IconButton, Stack, Typography} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import {Visibility} from "@mui/icons-material";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 
 export const WorkflowSettings = () => {
     const [items, setItems] = useState<IssueType[]>([]);
-    const [q, setQ] = useState("");
 
     useEffect(() => {
         api.get<IssueType[]>("/workflow").then((r) => setItems(r.data));
@@ -17,9 +16,9 @@ export const WorkflowSettings = () => {
 
     const onAdd = () => {/* open create modal */
     };
-    const onEdit = (id: string) => {/* open edit modal */
+    const onView = (id: string) => {/* open edit modal */
     };
-    const onDelete = (id: string) => {/* confirm + call api.delete(`/issue-type/${id}`) */
+    const onEdit = (id: string) => {/* confirm + call api.delete(`/issue-type/${id}`) */
     };
     return (
         <>
@@ -29,16 +28,6 @@ export const WorkflowSettings = () => {
                     Create Workflow
                 </Button>
             </Stack>
-
-            <Paper sx={{p: 2, borderRadius: 3, mb: 2}}>
-                <TextField
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    placeholder="Search issuetypes…"
-                    fullWidth
-                    size="small"
-                />
-            </Paper>
 
             <Stack spacing={2}>
                 {items.map((t) => (
@@ -58,22 +47,16 @@ export const WorkflowSettings = () => {
                                 {t.description || "—"}
                             </Typography>
                             <Box sx={{display: "flex", gap: 1}}>
+                                <IconButton aria-label="view" onClick={() => onView(t.id)}>
+                                    <Visibility/>
+                                </IconButton>
                                 <IconButton aria-label="edit" onClick={() => onEdit(t.id)}>
                                     <EditIcon/>
-                                </IconButton>
-                                <IconButton aria-label="delete" onClick={() => onDelete(t.id)}>
-                                    <DeleteIcon/>
                                 </IconButton>
                             </Box>
                         </CardContent>
                     </Card>
                 ))}
-
-                {items.length === 0 && (
-                    <Paper variant="outlined" sx={{p: 4, borderRadius: 3, textAlign: "center"}}>
-                        <Typography color="text.secondary">No issue types yet.</Typography>
-                    </Paper>
-                )}
             </Stack>
 
         </>

@@ -58,6 +58,19 @@ export class ProjectController {
     return this.projectService.findIssueTypes(id);
   }
 
+  @Get(':projectId/members-with-roles')
+  findMembersWithRoles(@Param('projectId') projectId: string) {
+    return this.projectService.findMembersWithRoles(projectId);
+  }
+
+  @Post(':projectId/issue-type/:issueTypeId')
+  assignIssueTypeToProject(
+    @Param('projectId') projectId: string,
+    @Param('issueTypeId') issueTypeId: string,
+  ) {
+    return this.projectService.assignIssueTypeToProject(projectId, issueTypeId);
+  }
+
   @Get(':projectId/issue-type/:issueTypeId/fields')
   findFieldsByIssueType(
     @Param('issueTypeId') issueTypeId: string,

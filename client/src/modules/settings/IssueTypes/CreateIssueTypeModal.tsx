@@ -1,15 +1,10 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField} from "@mui/material";
 import {useCallback, useState} from "react";
 import {api} from "../../../lib/apiClient.ts";
+import type {CreateCrudModalProps} from "../types.ts";
 
-interface CreateIssueTypeModalProps {
-    open: boolean
-    closeDialog: () => void
-    onSave: () => void
 
-}
-
-export const CreateIssueTypeModal = ({open, closeDialog, onSave}: CreateIssueTypeModalProps) => {
+export const CreateIssueTypeModal = ({open, closeDialog, onSave}: CreateCrudModalProps) => {
     const [name, setName] = useState<string | null>("")
     const [key, setKey] = useState<string | null>("")
     const [description, setDescription] = useState<string | null>("")

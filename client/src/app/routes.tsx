@@ -1,6 +1,6 @@
 import type {RouteObject} from 'react-router-dom'
 import ProjectListPage from './../modules/projects/ProjectListPage'
-import ProjectSettingsPage from './../modules/projects/ProjectSettingsPage'
+import {ProjectSettingsPage} from '../modules/projects/ProjectAdmin/ProjectSettingsPage.tsx'
 import IssueListPage from './../modules/issues/IssueListPage'
 // import IssueBoardPage from './../modules/issues/IssueBoardPage'
 import IssueFullPage from './../modules/issues/IssueFullPage'
@@ -15,6 +15,7 @@ import SettingsPage from "../modules/settings/SettingsPage.tsx";
 import {IssueTypeSettings} from "../modules/settings/IssueTypes/IssueTypeSettings.tsx";
 import {CustomFieldsSettings} from "../modules/settings/CustomFields/CustomFieldsSettings.tsx";
 import {WorkflowSettings} from "../modules/settings/Workflows/WorkflowSettings.tsx";
+import {CustomFieldContexts} from "../modules/settings/CustomFields/CustomFieldContexts.tsx";
 
 export const routes: RouteObject[] = [
     {path: '/', element: <WelcomePage/>},
@@ -36,6 +37,7 @@ export const routes: RouteObject[] = [
                 path: '/settings', element: <SettingsPage/>, children: [
                     {path: "issue-types", element: <IssueTypeSettings/>},
                     {path: "custom-fields", element: <CustomFieldsSettings/>},
+                    {path: "custom-fields/:id/contexts", element: <CustomFieldContexts/>},
                     {path: "workflows", element: <WorkflowSettings/>},
 
                 ]

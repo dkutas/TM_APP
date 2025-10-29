@@ -8,9 +8,7 @@ export type User = {
     email: string;
 };
 
-/**
- * DataType enum kept in sync with backend (see UML2.md).
- */
+
 export enum DataType {
     TEXT = 'TEXT',
     NUMBER = 'NUMBER',
@@ -30,6 +28,16 @@ export type UserProject = {
 };
 export type Project = ModDates & {
     id: string, key: string, description: string, name: string
+};
+
+export type MembershipWithRole = {
+    id: ID;
+    user: {
+        id: string;
+        name?: string | null;
+        email?: string | null
+    },
+    role: ProjectRole
 };
 
 export type ProjectIssueType = {
@@ -127,6 +135,43 @@ export type IssueSystemFields = {
     reporter: ID;
     priority: ID;
     dueDate?: string;
+}
+
+export type WorkflowStatus = IssueStatus & {
+    key: string;
+    isTerminal: boolean;
+}
+
+export type WorkflowTransition = {
+    id: string;
+    name: string;
+    from: WorkflowStatus;
+    to: WorkflowStatus;
+}
+
+export type CustomFieldDefinitionBase = {
+    id: string;
+    key?: string;
+    name: string;
+    dataType: DataType;
+    description?: string;
+}
+
+export type CustomFieldContext = {
+    id: ID,
+    project: Project,
+    issueType: IssueType,
+    visible: boolean,
+    required: boolean,
+    editable: boolean,
+    order: number,
+    min: number,
+    max: number,
+    regex: string
+}
+
+export type CustomFieldDefWithContexts = CustomFieldDefinitionBase & {
+    contexts: CustomFieldContext[]
 }
 
 export type IssueCustomFieldDefs =

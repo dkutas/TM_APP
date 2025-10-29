@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { FieldDefinitionService } from './field-definition.service';
 import { CreateFieldDefinitionDto } from './dto/create-field-definition.dto';
 import { UpdateFieldDefinitionDto } from './dto/update-field-definition.dto';
@@ -27,6 +19,16 @@ export class FieldDefinitionController {
     return this.fieldDefinitionService.findAll();
   }
 
+  @Get('with-contexts')
+  findAllWithContexts() {
+    return this.fieldDefinitionService.findAllWithContexts();
+  }
+
+  @Get(':id/with-contexts/')
+  findOneWithContexts(@Param('id') id: string) {
+    return this.fieldDefinitionService.findOneWithContexts(id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.fieldDefinitionService.findOne(id);
@@ -38,10 +40,5 @@ export class FieldDefinitionController {
     @Body() updateFieldDefinitionDto: UpdateFieldDefinitionDto,
   ) {
     return this.fieldDefinitionService.update(id, updateFieldDefinitionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.fieldDefinitionService.remove(id);
   }
 }
