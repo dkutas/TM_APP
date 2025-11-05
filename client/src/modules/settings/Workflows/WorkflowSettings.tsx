@@ -5,6 +5,7 @@ import {Box, Button, Card, CardContent, IconButton, Stack, Typography} from "@mu
 import AddIcon from "@mui/icons-material/Add";
 import {Visibility} from "@mui/icons-material";
 import EditIcon from "@mui/icons-material/Edit";
+import {useNavigate} from "react-router-dom";
 
 export const WorkflowSettings = () => {
     const [items, setItems] = useState<IssueType[]>([]);
@@ -13,12 +14,15 @@ export const WorkflowSettings = () => {
         api.get<IssueType[]>("/workflow").then((r) => setItems(r.data));
     }, []);
 
+    const navigate = useNavigate();
+
 
     const onAdd = () => {/* open create modal */
     };
     const onView = (id: string) => {/* open edit modal */
     };
     const onEdit = (id: string) => {/* confirm + call api.delete(`/issue-type/${id}`) */
+        navigate(`${id}`);
     };
     return (
         <>

@@ -4,7 +4,6 @@ import { UpdateFieldDefinitionDto } from './dto/update-field-definition.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FieldDefinition } from './entities/field-definition.entity';
 import { Repository } from 'typeorm';
-import { FieldScope } from '../common/enums';
 
 @Injectable()
 export class FieldDefinitionService {
@@ -18,8 +17,6 @@ export class FieldDefinitionService {
       this.fieldsRepository.create({
         ...createFieldDefinitionDto,
         key: `custom.${createFieldDefinitionDto.name.toLowerCase().split(' ').join('_')}`,
-        isSystem: false,
-        scope: FieldScope.CUSTOM,
       }),
     );
   }
@@ -45,6 +42,20 @@ export class FieldDefinitionService {
     });
   }
 
+  async findOptionsByFieldDefId(fieldDefId: string) {
+    const ctx = await this.fieldsRepository.findOne({
+      where: { id: fieldDefId },
+      relations: { options: true },
+    });
+    if (ctx) {
+      return ctx.options;
+    }
+    throw new HttpException(
+      `No FieldDefinition exist with ID: ${fieldDefId}`,
+      HttpStatus.NOT_ACCEPTABLE,
+    );
+  }
+
   async update(id: string, updateFieldDefinitionDto: UpdateFieldDefinitionDto) {
     const existingField = await this.fieldsRepository.findOne({
       where: { id },
@@ -60,8 +71,6 @@ export class FieldDefinitionService {
       key: updateFieldDefinitionDto.name
         ? `custom.${updateFieldDefinitionDto.name.toLowerCase().split(' ').join('_')}`
         : existingField.key,
-      isSystem: false,
-      scope: FieldScope.CUSTOM,
     });
   }
 }

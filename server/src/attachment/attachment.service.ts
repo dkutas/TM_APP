@@ -90,6 +90,9 @@ export class AttachmentService {
   }
 
   findOne(id: string) {
-    return this.attachmentRepository.findOne({ where: { id } });
+    return this.attachmentRepository.findOne({
+      where: { id },
+      relations: { issue: true },
+    });
   }
 }

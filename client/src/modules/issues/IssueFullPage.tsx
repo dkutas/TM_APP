@@ -214,11 +214,11 @@ export default function IssueFullPage() {
                                 } else if (fieldDef.dataType === "USER") {
                                     if (item.fromDisplay) {
                                         const userId = JSON.parse(item.fromDisplay as string)?.userId;
-                                        fromValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
+                                        fromValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => "Unassigned");
                                     }
                                     if (item.toDisplay) {
                                         const userId = JSON.parse(item.toDisplay as string)?.userId;
-                                        toValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => item.toDisplay);
+                                        toValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => "Unassigned");
                                     }
                                 }
                                 items.push({fieldLabel: label, value: `${fromValue} -> ${toValue}`});
@@ -235,9 +235,10 @@ export default function IssueFullPage() {
                                     const toUserId = item.toDisplay;
                                     toUser = await api.get<User>(`/user/${toUserId}`).then((res) => res.data.name).catch(() => item.toDisplay);
                                 }
+                                console.log({fromUser, toUser})
                                 items.push({
                                     fieldLabel: capitalizeFirstLetter(item.fieldKey),
-                                    value: `${fromUser || "—"} -> ${toUser || "—"}`
+                                    value: `${fromUser || "Unassigned"} -> ${toUser || "Unassigned"}`
                                 });
                             } else if (item.fieldKey === "priority") {
                                 let fromPriority = item.fromDisplay;
@@ -293,7 +294,6 @@ export default function IssueFullPage() {
 
     return (
         <Box>
-            {/* Header Section */}
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                 <Box>
                     <Breadcrumbs>
@@ -331,7 +331,7 @@ export default function IssueFullPage() {
             <Grid container spacing={2} alignItems="flex-start">
                 <Grid size={{xs: 12, md: 8}}>
                     <Paper sx={{p: 2, borderRadius: 3, mb: 3}}>
-                        <Typography variant="body1" whiteSpace="pre-line">
+                        <Typography variant="body1">
                             {issue.description || "Description..."}
                         </Typography>
                     </Paper>

@@ -22,6 +22,7 @@
     "@tanstack/react-query": "^5.56.2",
     "@types/node": "^24.5.2",
     "@uiw/react-md-editor": "^4.0.6",
+    "@xyflow/react": "^12.9.2",
     "axios": "^1.12.2",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.18",
@@ -30,7 +31,6 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
     "react-router-dom": "^6.26.1",
-    "reactflow": "^11.10.0",
     "zod": "^3.23.8",
     "zustand": "^4.5.5"
   },
@@ -45,6 +45,6 @@
     "globals": "^16.2.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
-    "vite": "7.1.5"
+    "vite": "^7.1.12"
   }
 }

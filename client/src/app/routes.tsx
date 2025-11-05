@@ -16,6 +16,7 @@ import {IssueTypeSettings} from "../modules/settings/IssueTypes/IssueTypeSetting
 import {CustomFieldsSettings} from "../modules/settings/CustomFields/CustomFieldsSettings.tsx";
 import {WorkflowSettings} from "../modules/settings/Workflows/WorkflowSettings.tsx";
 import {CustomFieldContexts} from "../modules/settings/CustomFields/CustomFieldContexts.tsx";
+import EditWorkflowModal from "../modules/settings/Workflows/EditWorkflowModal.tsx";
 
 export const routes: RouteObject[] = [
     {path: '/', element: <WelcomePage/>},
@@ -39,6 +40,7 @@ export const routes: RouteObject[] = [
                     {path: "custom-fields", element: <CustomFieldsSettings/>},
                     {path: "custom-fields/:id/contexts", element: <CustomFieldContexts/>},
                     {path: "workflows", element: <WorkflowSettings/>},
+                    {path: 'workflows/:workflowId', element: <EditWorkflowModal/>}
 
                 ]
             }

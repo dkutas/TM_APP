@@ -2,28 +2,6 @@
   "openapi": "3.0.0",
   "paths": {
     "/user": {
-      "post": {
-        "operationId": "UserController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "User"
-        ]
-      },
       "get": {
         "operationId": "UserController_findAll",
         "parameters": [],
@@ -234,6 +212,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "tags": [
           "Project"
         ]
@@ -401,6 +384,83 @@
         "parameters": [
           {
             "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/project/{projectId}/members": {
+      "post": {
+        "operationId": "ProjectController_assignMember",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/project/{projectId}/assignable-users": {
+      "get": {
+        "operationId": "ProjectController_findAssignableUsers",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/project/{projectId}/members/{userId}": {
+      "delete": {
+        "operationId": "ProjectController_removeMember",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
             "required": true,
             "in": "path",
             "schema": {
@@ -627,50 +687,6 @@
         ]
       }
     },
-    "/issue/{id}": {
-      "delete": {
-        "operationId": "IssueController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Issue"
-        ]
-      },
-      "get": {
-        "operationId": "IssueController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Issue"
-        ]
-      }
-    },
     "/issue/{id}/transition": {
       "post": {
         "operationId": "IssueController_transition",
@@ -689,6 +705,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "tags": [
           "Issue"
         ]
@@ -708,6 +729,29 @@
             "bearer": []
           }
         ],
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/issue/{id}": {
+      "get": {
+        "operationId": "IssueController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
         "tags": [
           "Issue"
         ]
@@ -1452,6 +1496,37 @@
         ]
       }
     },
+    "/workflow/project/{projectId}/issueType/{issueTypeId}": {
+      "get": {
+        "operationId": "WorkflowController_findByProjectAndIssueType",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "issueTypeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
     "/attachment/{id}": {
       "delete": {
         "operationId": "AttachmentController_remove",
@@ -1772,6 +1847,29 @@
         ]
       }
     },
+    "/field-definition/{fieldDefId}/options": {
+      "get": {
+        "operationId": "FieldDefinitionController_findOptionsByFieldDefId",
+        "parameters": [
+          {
+            "name": "fieldDefId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FieldDefinition"
+        ]
+      }
+    },
     "/field-option": {
       "post": {
         "operationId": "FieldOptionController_create",
@@ -1977,6 +2075,37 @@
         "parameters": [
           {
             "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FieldContext"
+        ]
+      }
+    },
+    "/field-context/{projectId}/{issueTypeId}": {
+      "get": {
+        "operationId": "FieldContextController_findByProjectAndIssueType",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "issueTypeId",
             "required": true,
             "in": "path",
             "schema": {
@@ -2234,10 +2363,6 @@
       }
     },
     "schemas": {
-      "CreateUserDto": {
-        "type": "object",
-        "properties": {}
-      },
       "UpdateUserDto": {
         "type": "object",
         "properties": {}

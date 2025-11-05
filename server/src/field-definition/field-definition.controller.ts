@@ -41,4 +41,9 @@ export class FieldDefinitionController {
   ) {
     return this.fieldDefinitionService.update(id, updateFieldDefinitionDto);
   }
+
+  @Get(':fieldDefId/options')
+  findOptionsByFieldDefId(@Param('fieldDefId') fieldDefId: string) {
+    return this.fieldDefinitionService.findOptionsByFieldDefId(fieldDefId);
+  }
 }

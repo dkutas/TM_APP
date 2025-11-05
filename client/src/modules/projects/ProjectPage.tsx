@@ -18,8 +18,8 @@ import {
     Typography,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import {NavLink, useNavigate, useParams} from "react-router-dom";
 import {api} from "../../lib/apiClient.ts";
+import {NavLink, useNavigate, useParams} from "react-router-dom";
 
 // Lightweight types to avoid breaking existing ones
 type Project = {

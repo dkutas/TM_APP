@@ -17,14 +17,12 @@ export class FieldContextRepository extends Repository<FieldContext> {
       .innerJoinAndSelect('fc.fieldDef', 'fd')
       .leftJoinAndSelect('fd.options', 'opt')
       .leftJoinAndSelect('fc.defaultOption', 'defopt')
-      .where('fc.visible = :v', { v: true })
       .andWhere('(fc.project_id IS NULL OR fc.project_id = :p)', {
         p: projectId,
       })
       .andWhere('(fc.issue_type_id IS NULL OR fc.issue_type_id = :it)', {
         it: issueTypeId,
       })
-      .orderBy('fc.order', 'ASC')
       .addOrderBy('fd.key', 'ASC')
       .getMany();
   }

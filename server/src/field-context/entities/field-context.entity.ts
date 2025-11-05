@@ -24,10 +24,7 @@ export class FieldContext {
   @ManyToOne(() => IssueType, { onDelete: 'CASCADE', nullable: true })
   issueType?: IssueType | null;
 
-  @Column({ default: true }) visible: boolean;
   @Column({ default: false }) required: boolean;
-  @Column({ default: true }) editable: boolean;
-  @Column({ type: 'int', default: 0 }) order: number;
 
   @ManyToOne(() => FieldOption, { onDelete: 'SET NULL', nullable: true })
   defaultOption?: FieldOption;
@@ -35,4 +32,6 @@ export class FieldContext {
   @Column({ type: 'numeric', nullable: true }) min?: string;
   @Column({ type: 'numeric', nullable: true }) max?: string;
   @Column({ type: 'varchar', length: 200, nullable: true }) regex?: string;
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  defaultValue?: string;
 }

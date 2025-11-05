@@ -34,12 +34,14 @@ import { join } from 'path';
 import { AttachmentService } from '../attachment/attachment.service';
 import { AttachFileDto } from '../attachment/dto/attach-file.dto';
 import { diskStorage } from 'multer';
+import { ChangeLogRepository } from '../repositories/change-log.repository';
 
 @Controller('issue')
 export class IssueController {
   constructor(
     private readonly issueService: IssueService,
     private readonly attachmentService: AttachmentService,
+    private readonly historyRepo: ChangeLogRepository,
   ) {}
 
   @Post()
@@ -53,18 +55,16 @@ export class IssueController {
     return this.issueService.findAll();
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.issueService.remove(id);
-  }
-
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post(':id/transition')
   transition(
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body('transitionId') transitionId: string,
   ) {
     // Implement the logic to transition the issue to a new status
-    return this.issueService.transition(id, transitionId);
+    return this.issueService.transition(id, transitionId, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -75,7 +75,6 @@ export class IssueController {
     @Query(new ValidationPipe({ transform: true, whitelist: true }))
     query: UserIssuesQueryDto,
   ) {
-    console.log(query);
     return this.issueService.search(query.userId || req.user.id, query);
   }
 
@@ -200,15 +199,27 @@ export class IssueController {
     @UploadedFiles() files: Express.Multer.File[],
     @Req() req: AttachFileDto,
   ) {
-    console.log('files', files);
     const uploaderId = req.user.id;
-    console.log(uploaderId);
     const stored = files.map((f) => ({
       originalName: f.originalname,
       mimeType: f.mimetype,
       size: f.size,
       relativeUrl: `/files/issues/${issueId}/${f.filename}`,
     }));
+    for (const f of files) {
+      await this.historyRepo.add({
+        issueId: issueId,
+        actorId: uploaderId,
+        items: [
+          {
+            fieldKey: 'Attachment',
+            from: '(added files)',
+            to: f.originalname,
+          },
+        ],
+      });
+    }
+
     return this.attachmentService.createForIssue({
       issueId,
       uploaderId,
@@ -221,7 +232,26 @@ export class IssueController {
   @ApiBearerAuth()
   async deleteAttachment(
     @Param('attachmentId', new ParseUUIDPipe()) attachmentId: string,
+    @Req() req: AuthenticatedRequest,
   ) {
+    const attachmentToDelete =
+      await this.attachmentService.findOne(attachmentId);
+
+    if (!attachmentToDelete) {
+      throw new Error('Attachment not found');
+    }
+
+    await this.historyRepo.add({
+      issueId: attachmentToDelete.issue.id,
+      actorId: req.user.id,
+      items: [
+        {
+          fieldKey: 'Attachment',
+          from: attachmentToDelete.fileName,
+          to: '(removed)',
+        },
+      ],
+    });
     return this.attachmentService.remove(attachmentId);
   }
 

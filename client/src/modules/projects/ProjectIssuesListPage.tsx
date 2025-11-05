@@ -32,6 +32,14 @@ export default function ProjectIssuesListPage() {
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const {projectId} = useParams()
 
+    const refetchItems = () => {
+        if (projectId) {
+            api.get<Issue[]>("issue/project/" + projectId).then(res => {
+                setItems(res.data);
+            });
+        }
+    }
+
     useEffect(() => {
         api.get<Issue[]>("issue/project/" + projectId).then(res => {
             setItems(res.data);
@@ -94,7 +102,7 @@ export default function ProjectIssuesListPage() {
                 </Paper>
             </Grid>
             <IssueCreateModal open={isCreateModalOpen} onClose={() => setCreateModalOpen(false)}
-                              onSave={() => setCreateModalOpen(false)}/>
+                              onSave={refetchItems}/>
 
             {isDetailsOpen && (
                 <Grid size={{xs: 12, md: 5}}>

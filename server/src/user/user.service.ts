@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { RoleEnum } from '../common/enums';
 
 @Injectable()
 export class UserService {
@@ -16,7 +17,7 @@ export class UserService {
       name: createUserDto.name,
       email: createUserDto.email,
       password: passwordHash,
-      systemRole: createUserDto.systemRole,
+      systemRole: RoleEnum.USER,
     });
     return this.repo.save(user);
   }

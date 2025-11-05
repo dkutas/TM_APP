@@ -30,6 +30,17 @@ export class FieldContextController {
     return this.fieldContextService.findOne(id);
   }
 
+  @Get(':projectId/:issueTypeId')
+  findByProjectAndIssueType(
+    @Param('projectId') projectId: string,
+    @Param('issueTypeId') issueTypeId: string,
+  ) {
+    return this.fieldContextService.findByProjectAndIssueType(
+      projectId,
+      issueTypeId,
+    );
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

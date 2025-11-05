@@ -16,5 +16,4 @@ export class FieldOption {
   fieldDef: FieldDefinition;
   @Column({ length: 50 }) key: string;
   @Column({ length: 200 }) value: string;
-  @Column({ type: 'int', default: 0 }) order: number;
 }

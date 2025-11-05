@@ -29,15 +29,9 @@ export class AuthController {
       email: string;
       password: string;
       name: string;
-      admin?: boolean;
     },
   ) {
-    return this.auth.register(
-      body.email,
-      body.password,
-      body.name,
-      !!body.admin,
-    );
+    return this.auth.register(body.email, body.password, body.name);
   }
 
   @Post('refresh') refresh(@Body() body: { refreshToken: string }) {

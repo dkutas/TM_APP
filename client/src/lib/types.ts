@@ -46,8 +46,59 @@ export type ProjectIssueType = {
     keyPrefix: string;
     active: true
 }
+
+export type FieldError = {
+    field: string;
+    message: string;
+}
+
+export type AxiosErrorResponse<T> = {
+    response: {
+        headers: any;
+        status: number;
+        message: string;
+        data?: T;
+    },
+    request?: any;
+}
 export type ProjectIssueTypeResponse = Project & {
     projectIssueTypes: ProjectIssueType[];
+}
+
+export type CreateUserDto = {
+    name: string;
+    email: string;
+    password: string;
+}
+
+export type PitWorkflow = {
+    id: ID;
+    name: string;
+    description: string;
+    isActive: boolean;
+    statuses: WorkflowStatus[];
+    transitions: Array<{ id: ID, name: string, fromStatusId: WorkflowStatus, toStatusId: WorkflowStatus }>;
+}
+
+export type Workflow = {
+    id: ID;
+    name: string;
+    description?: string;
+    isActive: boolean;
+    statuses: WorkflowStatus[];
+    transitions: Array<{ id: ID, name: string, fromStatus: WorkflowStatus, toStatus: WorkflowStatus }>;
+}
+
+export type PitCustomFieldContext = {
+    id: ID;
+    fieldDef: IssueCustomFieldDefs;
+    max?: number;
+    min?: number;
+    order?: number;
+    regex?: string;
+    required?: boolean;
+    defaultOption?: CustomFieldOption | null;
+    defaultValue?: string | number | boolean | null | string[]
 }
 
 export type ProjectRole = {
@@ -101,7 +152,7 @@ export type IssueLink = {
 }
 
 export type CustomFieldOption = {
-    id: string;
+    id: ID;
     key: string;
     value: string;
     order: number;
@@ -111,6 +162,7 @@ type CustomFieldBase = {
     id: string;
     key: string;
     name: string;
+    description: string;
     required: boolean;
     visible: boolean;
     editable: boolean;
@@ -161,13 +213,22 @@ export type CustomFieldContext = {
     id: ID,
     project: Project,
     issueType: IssueType,
-    visible: boolean,
     required: boolean,
-    editable: boolean,
-    order: number,
     min: number,
     max: number,
     regex: string
+}
+
+export type CreateCustomFieldContextDto = {
+    fieldDefId?: ID,
+    projectId?: ID,
+    issueTypeId?: ID,
+    min?: number,
+    max?: number,
+    regex?: string
+    required: boolean,
+    defaultOption?: CustomFieldOption | null;
+    defaultValue?: string | number | boolean | null | string[]
 }
 
 export type CustomFieldDefWithContexts = CustomFieldDefinitionBase & {
@@ -192,8 +253,8 @@ export type IssueCustomFieldContext = {
     regexp?: string,
     visible: boolean,
     required: boolean,
-    editable: boolean,
-    defaultValue?: string | number | boolean | null | string[]
+    defaultValue?: string | number | boolean | null | string[],
+    defaultOption?: CustomFieldOption | null;
 }
 
 export type NormalizedFieldValue = { label: string, value: string | number | boolean | null | string[] }

@@ -6,19 +6,25 @@ import {
   Param,
   Patch,
   Post,
+  Req,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { AuthenticatedRequest } from '../auth/auth.controller';
 
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
   @ApiBody({ type: CreateProjectDto })
+  @ApiBearerAuth()
   @Post()
-  create(@Body() createProjectDto: CreateProjectDto) {
+  create(
+    @Req() req: AuthenticatedRequest,
+    @Body() createProjectDto: CreateProjectDto,
+  ) {
     return this.projectService.create(createProjectDto);
   }
 
@@ -61,6 +67,27 @@ export class ProjectController {
   @Get(':projectId/members-with-roles')
   findMembersWithRoles(@Param('projectId') projectId: string) {
     return this.projectService.findMembersWithRoles(projectId);
+  }
+
+  @Post(':projectId/members')
+  assignMember(
+    @Param('projectId') projectId: string,
+    @Body() { userId }: { userId: string },
+  ) {
+    return this.projectService.assignMember(userId, projectId);
+  }
+
+  @Get(':projectId/assignable-users')
+  findAssignableUsers(@Param('projectId') projectId: string) {
+    return this.projectService.findAssignableUsers(projectId);
+  }
+
+  @Delete(':projectId/members/:userId')
+  removeMember(
+    @Param('projectId') projectId: string,
+    @Param('userId') userId: string,
+  ) {
+    return this.projectService.removeMember(userId, projectId);
   }
 
   @Post(':projectId/issue-type/:issueTypeId')

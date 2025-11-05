@@ -125,11 +125,7 @@ export class IssueService {
     });
   }
 
-  remove(id: string) {
-    return this.issueRepository.delete(id);
-  }
-
-  async transition(id: string, transitionId: string) {
+  async transition(id: string, transitionId: string, userId: string) {
     if (!transitionId) {
       throw new NotFoundException('Status ID is required for transition');
     }
@@ -144,6 +140,19 @@ export class IssueService {
         }
         return t;
       });
+
+    await this.historyRepo.add({
+      issueId: id,
+      actorId: userId,
+      items: [
+        {
+          fieldKey: 'status',
+          from: transition.fromStatus.name,
+          to: transition.toStatus.name,
+        },
+      ],
+    });
+
     return this.issueRepository.update(id, {
       status: { id: transition.toStatus.id },
     });
@@ -209,15 +218,11 @@ export class IssueService {
       const v = valueByFd.get(fd.id);
 
       const options = fd.options?.length
-        ? fd.options
-            .slice()
-            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-            .map((o) => ({
-              id: o.id,
-              key: o.key,
-              value: o.value,
-              order: o.order ?? 0,
-            }))
+        ? fd.options.slice().map((o) => ({
+            id: o.id,
+            key: o.key,
+            value: o.value,
+          }))
         : null;
 
       let value: string | null | number | object | boolean | Date;
@@ -267,9 +272,6 @@ export class IssueService {
         name: fd.name,
         dataType: fd.dataType,
         required: ctx.required,
-        visible: ctx.visible,
-        editable: ctx.editable,
-        order: ctx.order,
         options,
         value,
       };
@@ -813,25 +815,6 @@ export class IssueService {
     return [...mapOut, ...mapIn];
   }
 
-  async addIssueLink(
-    issueId: string,
-    payload: {
-      linkTypeId: string;
-      otherIssueId: string;
-      direction: 'OUT' | 'IN';
-    },
-  ) {
-    const { linkTypeId, otherIssueId, direction } = payload;
-    return direction === 'OUT'
-      ? this.linkRepo.createLink(issueId, otherIssueId, linkTypeId)
-      : this.linkRepo.createLink(otherIssueId, issueId, linkTypeId);
-  }
-
-  async deleteIssueLink(linkId: string) {
-    await this.linkRepo.deleteLink(linkId);
-    return { ok: true };
-  }
-
   async getIssueComments(issueId: string): Promise<IssueCommentDto[]> {
     const list = await this.commentRepo.findByIssue(issueId);
     return list.map((c) => {
@@ -848,7 +831,7 @@ export class IssueService {
     await this.historyRepo.add({
       issueId,
       actorId: authorId,
-      items: [{ fieldKey: 'comment', from: null, to: body }],
+      items: [{ fieldKey: 'comment', from: '(added)', to: body }],
     });
 
     return this.commentRepo.save({
@@ -884,6 +867,7 @@ export class IssueService {
   async getIssueAttachments(issueId: string): Promise<IssueAttachmentDto[]> {
     const list = await this.attachRepo.findByIssue(issueId);
     return list.map((a) => ({
+      issueId: a.issue.id,
       id: a.id,
       fileName: a.fileName,
       mimeType: a.mimeType,
@@ -892,27 +876,6 @@ export class IssueService {
       createdAt: a.createdAt.toISOString(),
       url: a.url,
     }));
-  }
-
-  async addIssueAttachment(
-    issueId: string,
-    uploadedBy: string,
-    fileMeta: {
-      fileName: string;
-      mimeType: string;
-      size: number;
-      storageKey: string;
-    },
-  ) {
-    const a = await this.attachRepo.add({ issueId, uploadedBy, ...fileMeta });
-    await this.historyRepo.add({
-      issueId,
-      actorId: uploadedBy,
-      items: [
-        { fieldKey: 'attachment', from: null, to: `+ ${fileMeta.fileName}` },
-      ],
-    });
-    return a;
   }
 
   async getIssueFieldDefinitions(issueId: string): Promise<FieldDefsDTO[]> {
@@ -928,15 +891,11 @@ export class IssueService {
     return contexts.map((ctx) => {
       const fd = ctx.fieldDef;
       const options = fd.options?.length
-        ? fd.options
-            .slice()
-            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-            .map((o) => ({
-              id: o.id,
-              key: o.key,
-              value: o.value,
-              order: o.order ?? 0,
-            }))
+        ? fd.options.slice().map((o) => ({
+            id: o.id,
+            key: o.key,
+            value: o.value,
+          }))
         : null;
       return {
         id: fd.id,
@@ -944,9 +903,6 @@ export class IssueService {
         name: fd.name,
         dataType: fd.dataType,
         required: ctx.required,
-        visible: ctx.visible,
-        editable: ctx.editable,
-        order: ctx.order,
         options,
       };
     });

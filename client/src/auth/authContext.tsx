@@ -4,6 +4,7 @@ import axios, {AxiosError, type AxiosInstance, type AxiosRequestConfig} from "ax
 import type {User} from "./authTypes.ts";
 import {useNavigate} from "react-router-dom";
 import {setAccessTokenGetter} from "../lib/apiClient.ts";
+import type {CreateUserDto} from "../lib/types.ts";
 // AuthProvider-ben
 
 type Tokens = { accessToken: string; refreshToken: string };
@@ -12,6 +13,7 @@ type AuthContextValue = {
     user: User | null;
     isAuthReady: boolean;
     login: (email: string, password: string) => Promise<void>;
+    register: (userData: CreateUserDto) => Promise<void>;
     logout: () => void;
     getAccessToken: () => string | null;
 };
@@ -161,6 +163,15 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{ baseURL: string }>
         },
         []
     );
+    const register = useCallback(
+        async (userDate: CreateUserDto) => {
+            const {data} = await axios.post<Tokens & { user?: User }>(`${baseURL}/auth/register`, userDate);
+            setTokens({accessToken: data.accessToken, refreshToken: data.refreshToken});
+            if (data.user) setUser(data.user);
+            navigate("/profile");
+        },
+        []
+    );
 
     const logout = useCallback(async () => {
         try {
@@ -215,8 +226,8 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{ baseURL: string }>
     const getAccessToken = useCallback(() => accessRef.current, []);
 
     const value = useMemo<AuthContextValue>(
-        () => ({user, isAuthReady, login, logout, api, getAccessToken}),
-        [user, isAuthReady, login, logout, api, getAccessToken]
+        () => ({user, isAuthReady, login, logout, api, getAccessToken, register}),
+        [user, isAuthReady, login, logout, api, getAccessToken, register]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

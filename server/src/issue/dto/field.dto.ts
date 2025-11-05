@@ -9,7 +9,6 @@ export class FieldOptionDto {
   id: string;
   key: string;
   value: string;
-  order: number;
 }
 
 export interface FieldDtoBase {
@@ -17,9 +16,6 @@ export interface FieldDtoBase {
   key: string;
   name: string;
   required: boolean;
-  visible: boolean;
-  editable: boolean;
-  order: number;
   options?: FieldOptionDto[] | null;
 }
 
@@ -100,6 +96,7 @@ export interface IssueAttachmentDto {
   uploadedBy: string;
   createdAt: string; // ISO
   url: string; // signed/relative
+  issueId: string;
 }
 
 export interface IssueTransitionDto {

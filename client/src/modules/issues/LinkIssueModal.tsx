@@ -12,7 +12,7 @@ import {
     type SelectChangeEvent,
     TextField
 } from "@mui/material";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {type SyntheticEvent, useCallback, useEffect, useRef, useState} from "react";
 import {api} from "../../lib/apiClient";
 import type {IssueLinkType, UserIssue} from "../../lib/types.ts";
 
@@ -51,7 +51,7 @@ export const LinkIssueModal = ({open, onClose, issueId}: LinkIssueModalProps) =>
 
     const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const handleInputChange = useCallback((_, value: string) => {
+    const handleInputChange = useCallback((_: SyntheticEvent<Element, Event>, value: string) => {
         if (!value) {
             setIssues([])
             return;
@@ -66,7 +66,7 @@ export const LinkIssueModal = ({open, onClose, issueId}: LinkIssueModalProps) =>
                 setLoading(false);
             });
         }, DEBOUNCE_DELAY);
-    }, []);
+    }, [issueId]);
 
     useEffect(() => {
         api.get<IssueLinkType[]>('/link-type').then(response => {

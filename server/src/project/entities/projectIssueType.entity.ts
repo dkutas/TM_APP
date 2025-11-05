@@ -19,7 +19,5 @@ export class ProjectIssueType {
   project: Project;
   @ManyToOne(() => IssueType, { onDelete: 'CASCADE' }) issueType: IssueType;
   @ManyToOne(() => Workflow, { onDelete: 'RESTRICT' }) workflow: Workflow;
-
-  @Column({ length: 20 }) keyPrefix: string; // PROJ
-  @Column({ default: true }) active: boolean;
+  @Column({ length: 20 }) keyPrefix: string;
 }

@@ -48,6 +48,17 @@ export class WorkflowController {
     return this.workflowService.findOne(id);
   }
 
+  @Get('project/:projectId/issueType/:issueTypeId')
+  findByProjectAndIssueType(
+    @Param('projectId') projectId: string,
+    @Param('issueTypeId') issueTypeId: string,
+  ) {
+    return this.workflowService.findByProjectAndIssueType(
+      projectId,
+      issueTypeId,
+    );
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

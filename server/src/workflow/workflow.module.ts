@@ -7,10 +7,16 @@ import {
   WorkflowTransition,
 } from './entities/workflow.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProjectIssueType } from '../project/entities/projectIssueType.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Workflow, WorkflowStatus, WorkflowTransition]),
+    TypeOrmModule.forFeature([
+      Workflow,
+      WorkflowStatus,
+      WorkflowTransition,
+      ProjectIssueType,
+    ]),
   ],
   controllers: [WorkflowController],
   providers: [WorkflowService],

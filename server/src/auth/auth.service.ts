@@ -45,19 +45,18 @@ export class AuthService {
     return user;
   }
 
-  async register(
-    email: string,
-    password: string,
-    name: string,
-    admin: boolean = false,
-  ) {
+  async register(email: string, password: string, name: string) {
     const existingUser = await this.users.findByEmail(email);
-    if (existingUser) throw new UnauthorizedException('Email already in use');
+    if (existingUser)
+      throw new ForbiddenException({
+        message: 'Email already in use',
+        field: 'email',
+      });
     await this.users.create({
       email,
       password,
       name,
-      systemRole: admin ? RoleEnum.SUPER_ADMIN : RoleEnum.USER,
+      systemRole: RoleEnum.USER,
     });
     return this.login(email, password);
   }

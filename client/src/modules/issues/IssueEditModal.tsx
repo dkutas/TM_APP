@@ -123,8 +123,8 @@ export default function IssueEditModal({
                 summary: issue.summary,
                 description: issue.description || undefined,
                 assignee: issue.assignee?.id || undefined,
-                reporter: issue.reporter.id,
-                priority: issue.priority.id,
+                reporter: issue.reporter?.id,
+                priority: issue.priority?.id,
                 dueDate: issue.dueDate || undefined,
             })
         }

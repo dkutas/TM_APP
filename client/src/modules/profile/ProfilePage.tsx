@@ -11,7 +11,7 @@ export default function ProfilePage() {
     const [projects, setProjects] = useState<UserProject[]>([]);
     const [issues, setIssues] = useState<UserIssue[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    
+
     useEffect(() => {
         if (user?.id) {
             Promise.all([api.get<UserProject[]>("user/" + user?.id + "/memberships").then(res => res.data),
@@ -37,7 +37,7 @@ export default function ProfilePage() {
             <Box
                 sx={{gap: 5, mt: 4, display: "flex", justifyContent: "space-between"}}>
                 <Paper sx={{flex: 1, display: "flex", p: 2}}>
-                    <ProjectsPanel projects={projects}/>
+                    <ProjectsPanel projects={projects} isLoading={isLoading}/>
                 </Paper>
                 <Paper sx={{flex: 1, display: "flex", p: 2}}>
                     <IssuesPanel issues={issues} isLoading={isLoading}/>

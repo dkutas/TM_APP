@@ -7,11 +7,13 @@ import { Repository } from 'typeorm';
 import { ProjectMembership } from '../role/entities/role.entity';
 import { FieldContextRepository } from '../repositories/field-context.repository';
 import { ProjectIssueType } from './entities/projectIssueType.entity';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project) private projectRepo: Repository<Project>,
+    @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(ProjectIssueType)
     private projectIssueTypeRepo: Repository<ProjectIssueType>,
     @InjectRepository(ProjectMembership)
@@ -19,8 +21,16 @@ export class ProjectService {
     private fieldContextRepo: FieldContextRepository,
   ) {}
 
-  create(createProjectDto: CreateProjectDto) {
-    return this.projectRepo.save(createProjectDto);
+  async create(createProjectDto: CreateProjectDto, userId?: string) {
+    const project = await this.projectRepo.save(createProjectDto);
+    await this.memberShipRepo.save(
+      this.memberShipRepo.create({
+        project: { id: project.id },
+        user: { id: userId! },
+        role: { id: '1' },
+      }),
+    );
+    return project;
   }
 
   findAll() {
@@ -103,6 +113,49 @@ export class ProjectService {
     return this.projectRepo.findOne({
       where: { id },
       relations: { projectIssueTypes: { issueType: true } },
+    });
+  }
+
+  async findAssignableUsers(projectId: string) {
+    const members = await this.memberShipRepo.find({
+      where: { project: { id: projectId } },
+      relations: { user: true },
+      select: { user: { id: true } },
+    });
+    const memberIds = members.map((m) => m.user.id);
+    return this.userRepo
+      .createQueryBuilder('user')
+      .where('user.id NOT IN (:...memberIds)', {
+        memberIds: memberIds.length ? memberIds : [''],
+      })
+      .getMany();
+  }
+
+  assignMember(userId: string, projectId: string) {
+    const roleId = 'd2b4f111-21f9-4cfe-8d01-3d3e15399124';
+    const membership = this.memberShipRepo.create({
+      project: { id: projectId },
+      user: { id: userId },
+      role: { id: roleId },
+    });
+    return this.memberShipRepo.save(membership);
+  }
+
+  async removeMember(userId: string, projectId: string) {
+    const membership = await this.memberShipRepo.findOne({
+      where: {
+        project: { id: projectId },
+        user: { id: userId },
+      },
+    });
+
+    if (!membership) {
+      throw new Error('Membership not found');
+    }
+
+    return this.memberShipRepo.delete({
+      project: { id: projectId },
+      user: { id: userId },
     });
   }
 }
