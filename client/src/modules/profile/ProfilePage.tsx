@@ -23,26 +23,37 @@ export default function ProfilePage() {
         }
     }, [user, setProjects])
     return (
-        <Box display="flex" flexDirection="column" justifyContent="center" mt={4}>
-            <Paper sx={{p: 3}}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                    <Avatar>{user?.name?.[0] || 'U'}</Avatar>
-                    <Box>
-                        <Typography variant="h6">{user?.name || 'User'}</Typography>
-                        <Typography color="text.secondary">{user?.email}</Typography>
-                    </Box>
-                </Stack>
-            </Paper>
+        <>
+            <Box display="flex" flexDirection="column" justifyContent="center" mt={4}>
+                <Paper sx={{p: 3}}>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar>{user?.name?.[0] || 'U'}</Avatar>
+                        <Box>
+                            <Typography variant="h6">{user?.name || 'User'}</Typography>
+                            <Typography color="text.secondary">{user?.email}</Typography>
+                        </Box>
+                    </Stack>
+                </Paper>
 
-            <Box
-                sx={{gap: 5, mt: 4, display: "flex", justifyContent: "space-between"}}>
-                <Paper sx={{flex: 1, display: "flex", p: 2}}>
-                    <ProjectsPanel projects={projects} isLoading={isLoading}/>
-                </Paper>
-                <Paper sx={{flex: 1, display: "flex", p: 2}}>
-                    <IssuesPanel issues={issues} isLoading={isLoading}/>
-                </Paper>
+                <Box
+                    sx={{gap: 5, mt: 4, display: "flex", justifyContent: "space-between"}}>
+                    <Paper sx={{flex: 1, display: "flex", p: 2}}>
+                        <ProjectsPanel projects={projects} isLoading={isLoading}/>
+                    </Paper>
+                    <Paper sx={{flex: 1, display: "flex", p: 2}}>
+                        <IssuesPanel issues={issues} isLoading={isLoading}/>
+                    </Paper>
+                </Box>
+                <Box sx={{gap: 5, mt: 4}}>
+                    <Paper>
+                        <Typography variant="h6" sx={{p: 2}}>Activity Feed</Typography>
+                        <Box sx={{p: 2}}>
+                            <Typography color="text.secondary">No recent activity.</Typography>
+                        </Box>
+
+                    </Paper>
+                </Box>
             </Box>
-        </Box>
+        </>
     )
 }

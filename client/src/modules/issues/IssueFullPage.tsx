@@ -214,11 +214,20 @@ export default function IssueFullPage() {
                                 } else if (fieldDef.dataType === "USER") {
                                     if (item.fromDisplay) {
                                         const userId = JSON.parse(item.fromDisplay as string)?.userId;
-                                        fromValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => "Unassigned");
+                                        if (userId) {
+                                            fromValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => "Unassigned");
+                                        } else {
+                                            fromValue = "Unassigned"
+                                        }
+
                                     }
                                     if (item.toDisplay) {
                                         const userId = JSON.parse(item.toDisplay as string)?.userId;
-                                        toValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => "Unassigned");
+                                        if (userId) {
+                                            toValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => "Unassigned");
+                                        } else {
+                                            fromValue = "Unassigned"
+                                        }
                                     }
                                 }
                                 items.push({fieldLabel: label, value: `${fromValue} -> ${toValue}`});
@@ -229,11 +238,19 @@ export default function IssueFullPage() {
                                 let toUser = item.toDisplay;
                                 if (item.fromDisplay) {
                                     const fromUserId = item.fromDisplay;
-                                    fromUser = await api.get<User>(`/user/${fromUserId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
+                                    if (fromUserId && fromUserId !== "null") {
+                                        fromUser = await api.get<User>(`/user/${fromUserId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
+                                    } else {
+                                        fromUser = "Unassigned"
+                                    }
                                 }
                                 if (item.toDisplay) {
                                     const toUserId = item.toDisplay;
-                                    toUser = await api.get<User>(`/user/${toUserId}`).then((res) => res.data.name).catch(() => item.toDisplay);
+                                    if (toUserId && toUserId !== "null") {
+                                        toUser = await api.get<User>(`/user/${toUserId}`).then((res) => res.data.name).catch(() => item.toDisplay);
+                                    } else {
+                                        toUser = "Unassigned"
+                                    }
                                 }
                                 console.log({fromUser, toUser})
                                 items.push({
@@ -266,7 +283,6 @@ export default function IssueFullPage() {
                     historyEntries.push({id: hLog.id, actorName: user, createdAt, items})
                 }
             }
-            console.log({entries, historyEntries})
             return {entries, history: historyEntries};
         })().then(({history, entries}) => {
             setCustomFieldEntries(entries)

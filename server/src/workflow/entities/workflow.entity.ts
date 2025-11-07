@@ -37,6 +37,7 @@ export class WorkflowStatus {
   @Column({ length: 80 }) name: string;
   @Column({ default: false }) isTerminal: boolean;
   @Column({ length: 40, nullable: true }) category: string; // TODO/INPROGRESS/DONE
+  @Column({ type: 'jsonb', nullable: true }) position: { x: number; y: number };
 }
 
 @Entity('workflow_transitions')

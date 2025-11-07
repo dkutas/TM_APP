@@ -14,7 +14,6 @@ import {
     Typography,
 } from "@mui/material";
 import {
-    addEdge,
     applyEdgeChanges,
     applyNodeChanges,
     Background,
@@ -22,8 +21,10 @@ import {
     ConnectionMode,
     Controls,
     type Edge,
+    type EdgeChange,
     MarkerType,
     type Node,
+    type NodeChange,
     Position,
     ReactFlow
 } from "@xyflow/react";
@@ -62,6 +63,19 @@ const createId = () => {
     return `id-${Math.random().toString(36).slice(2, 11)}`;
 };
 
+const getColorForCategory = (category: string | undefined) => {
+    switch (category) {
+        case "DONE":
+            return "#4caf50";
+        case "INPROGRESS":
+            return "#2196f3";
+        case "TODO":
+            return "#9e9e9e";
+        default:
+            return "#9e9e9e";
+    }
+}
+
 // ===== Helper a default pozíciókhoz =====
 
 const defaultPositionForIndex = (index: number) => {
@@ -84,14 +98,37 @@ const addDefaultPositions = (statuses: WorkflowStatusDTO[]): WorkflowStatusDTO[]
             }
     );
 
-// ===== Node data =====
+const buildNodesFromStatuses = (
+    statuses: WorkflowStatusDTO[],
+    existingNodes: Node[],
+    selectedId: string | null,
+): Node[] =>
+    statuses.map((s, index) => {
+        const existing = existingNodes.find((n) => n.id === s.id);
+        const position = existing?.position ?? s.position ?? defaultPositionForIndex(index);
 
-type StatusNodeData = {
-    label: string;
-    statusId: string;
-    category?: string;
-    isTerminal: boolean;
-};
+        return {
+            id: s.id,
+            position,
+            data: {
+                label: s.name || s.key,
+                statusId: s.id,
+                category: s.category,
+                isTerminal: s.isTerminal,
+            },
+            sourcePosition: Position.Right,
+            targetPosition: Position.Left,
+            type: "custom",
+            style: {
+                padding: 8,
+                borderRadius: 8,
+                border: `2px solid ${s.id === selectedId ? "#1976d2" : "#90a4ae"}`,
+                backgroundColor: getColorForCategory(s.category),
+                minWidth: 140,
+                fontSize: 13,
+            },
+        };
+    });
 
 // ===== Props =====
 
@@ -172,37 +209,9 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
         [transitions, selectedTransitionId]
     );
 
-    const [nodes, setNodes] = useState<Node<StatusNodeData>[]>([]);
-    const [edges, setEdges] = useState<Edge[]>([]);
-    const statusesToNodes: (items: WorkflowStatusDTO[], selectedId: string | null) => Node<StatusNodeData>[] = useCallback(
-        (items: WorkflowStatusDTO[], selectedId: string | null): Node<StatusNodeData>[] =>
-            items.map((s, index) => ({
-                id: s.id,
-                position: s.position ?? defaultPositionForIndex(index),
-                data: {
-                    label: s.name || s.key,
-                    statusId: s.id,
-                    category: s.category,
-                    isTerminal: s.isTerminal,
-                },
-                sourcePosition: Position.Right,
-                targetPosition: Position.Left,
-                type: "custom",
-                style: {
-                    padding: 8,
-                    borderRadius: 8,
-                    border: `2px solid ${s.id === selectedId ? "#1976d2" : "#90a4ae"}`,
-                    backgroundColor: s.isTerminal ? "#e8f5e9" : "#eceff1",
-                    minWidth: 140,
-                    fontSize: 13,
-                },
-            })),
-        []
-    );
 
-    useEffect(() => {
-        setNodes(statusesToNodes(statuses, selectedStatusId));
-    }, [statuses, selectedStatusId, statusesToNodes]);
+    const [edges, setEdges] = useState<Edge[]>([]);
+    const [nodes, setNodes] = useState<Node[]>([]);
 
     const getStatusById = useCallback(
         (id: string | null | undefined) =>
@@ -219,7 +228,11 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                 target: t.toStatusId,
                 label: t.name,
                 type: "floating",
-                markerEnd: {type: MarkerType.ArrowClosed},
+                markerEnd: {type: MarkerType.ArrowClosed, size: 6,},
+                style: {
+                    stroke: "#555",
+                    strokeWidth: 3,
+                },
                 labelBgPadding: [4, 2],
                 labelBgBorderRadius: 4,
             })),
@@ -231,7 +244,157 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
         if (!workflowId) return;
 
         api.get<Workflow>(`workflow/${workflowId}`).then((r) => {
-            const wf = r.data;
+            const wf = {
+                "id": "1ce06f38-3d01-4d01-93c2-278e66e044d9",
+                "name": "Default Workflow",
+                "description": "Alap workflow",
+                "isActive": true,
+                "statuses": [
+                    {
+                        "id": "783002f8-e766-4335-8f86-e9b5d433c9bf",
+                        "key": "DONE",
+                        "name": "Done",
+                        "isTerminal": true,
+                        "category": "DONE",
+                        "position": {
+                            "x": 620,
+                            "y": 320
+                        }
+                    },
+                    {
+                        "id": "88f52c72-fe10-4f69-ba38-0934a1da88e5",
+                        "key": "INPROG",
+                        "name": "In Progress",
+                        "isTerminal": false,
+                        "category": "INPROGRESS",
+                        "position": {
+                            "x": 400,
+                            "y": 200
+                        }
+                    },
+                    {
+                        "id": "5a19ccea-30c5-4179-b367-b74d96dbba9c",
+                        "key": "TODO",
+                        "name": "To Do",
+                        "isTerminal": false,
+                        "category": "TODO",
+                        "position": {
+                            "x": 100,
+                            "y": 80
+                        }
+                    }
+                ],
+                "transitions": [
+                    {
+                        "id": "e8b4047b-7528-4d90-80f8-1830e451b6e2",
+                        "fromStatus": {
+                            "id": "5a19ccea-30c5-4179-b367-b74d96dbba9c",
+                            "key": "TODO",
+                            "name": "To Do",
+                            "isTerminal": false,
+                            "category": "TODO",
+                            "position": {
+                                "x": 100,
+                                "y": 80
+                            }
+                        },
+                        "toStatus": {
+                            "id": "88f52c72-fe10-4f69-ba38-0934a1da88e5",
+                            "key": "INPROG",
+                            "name": "In Progress",
+                            "isTerminal": false,
+                            "category": "INPROGRESS",
+                            "position": {
+                                "x": 400,
+                                "y": 200
+                            }
+                        },
+                        "name": "Start Progress",
+                        "guard": null
+                    },
+                    {
+                        "id": "996f67c6-a72b-496d-8533-d966c1b1e007",
+                        "fromStatus": {
+                            "id": "783002f8-e766-4335-8f86-e9b5d433c9bf",
+                            "key": "DONE",
+                            "name": "Done",
+                            "isTerminal": true,
+                            "category": "DONE",
+                            "position": {
+                                "x": 620,
+                                "y": 320
+                            }
+                        },
+                        "toStatus": {
+                            "id": "5a19ccea-30c5-4179-b367-b74d96dbba9c",
+                            "key": "TODO",
+                            "name": "To Do",
+                            "isTerminal": false,
+                            "category": "TODO",
+                            "position": {
+                                "x": 100,
+                                "y": 80
+                            }
+                        },
+                        "name": "Back to backlog",
+                        "guard": null
+                    },
+                    {
+                        "id": "f90d4dd5-a261-44e3-bbe5-024b8565f71b",
+                        "fromStatus": {
+                            "id": "88f52c72-fe10-4f69-ba38-0934a1da88e5",
+                            "key": "INPROG",
+                            "name": "In Progress",
+                            "isTerminal": false,
+                            "category": "INPROGRESS",
+                            "position": {
+                                "x": 400,
+                                "y": 200
+                            }
+                        },
+                        "toStatus": {
+                            "id": "5a19ccea-30c5-4179-b367-b74d96dbba9c",
+                            "key": "TODO",
+                            "name": "To Do",
+                            "isTerminal": false,
+                            "category": "TODO",
+                            "position": {
+                                "x": 100,
+                                "y": 80
+                            }
+                        },
+                        "name": "Reopen",
+                        "guard": null
+                    },
+                    {
+                        "id": "37d1bc01-77ab-46d2-b045-2beff5134cb0",
+                        "fromStatus": {
+                            "id": "88f52c72-fe10-4f69-ba38-0934a1da88e5",
+                            "key": "INPROG",
+                            "name": "In Progress",
+                            "isTerminal": false,
+                            "category": "INPROGRESS",
+                            "position": {
+                                "x": 400,
+                                "y": 200
+                            }
+                        },
+                        "toStatus": {
+                            "id": "783002f8-e766-4335-8f86-e9b5d433c9bf",
+                            "key": "DONE",
+                            "name": "Done",
+                            "isTerminal": true,
+                            "category": "DONE",
+                            "position": {
+                                "x": 620,
+                                "y": 320
+                            }
+                        },
+                        "name": "Resolve",
+                        "guard": null
+                    }
+                ]
+            }
 
             // státuszok
             const loadedStatuses: WorkflowStatusDTO[] = (wf.statuses ?? []).map((s, idx) => ({
@@ -244,7 +407,6 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
             }));
 
             setStatuses(addDefaultPositions(loadedStatuses));
-            setNodes(statusesToNodes(addDefaultPositions(loadedStatuses), null));
 
             // tranzíciók (csak ID-kat tárolunk)
             const loadedTransitions: WorkflowTransitionDTO[] = (wf.transitions ?? []).map(
@@ -259,26 +421,41 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
             setTransitions(loadedTransitions);
             setEdges(transitionsToEdges(loadedTransitions));
         })
-    }, [statusesToNodes, transitionsToEdges, workflowId]);
+    }, [workflowId]);
+
+    useEffect(() => {
+        setEdges(transitionsToEdges(transitions));
+    }, [transitions, transitionsToEdges]);
+
+    useEffect(() => {
+        setEdges((prev) =>
+            prev.map((e) => ({
+                ...e,
+                style: {
+                    ...(e.style ?? {}),
+                    stroke: e.id === selectedTransitionId ? "#1976d2" : "#555",
+                    strokeWidth: 3,
+                },
+            })),
+        );
+    }, [selectedTransitionId]);
+
+    useEffect(() => {
+        setNodes((prevNodes) => buildNodesFromStatuses(statuses, prevNodes, selectedStatusId));
+    }, [statuses, selectedStatusId]);
 
 
     const onNodesChange = useCallback(
-        (changes) => {
-            setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot))
-        },
+        (changes: NodeChange[]) =>
+            setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
         [],
     );
-
 
     const onEdgesChange = useCallback(
-        (changes) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+        (changes: EdgeChange[]) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
         [],
     );
 
-    const onConnect = useCallback(
-        (params) => setEdges((edgesSnapshot) => addEdge({...params, type: "step"}, edgesSnapshot)),
-        [],
-    );
 
     const handleAddStatus = () => {
         const index = statuses.length;
@@ -302,35 +479,57 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
             category: index === 0 ? "TODO" : "INPROGRESS",
             position,
         };
-
         setStatuses((prev) => [...prev, newStatus]);
         setSelectedStatusId(id);
         setSelectedTransitionId(null);
     };
 
-    // ===== Új tranzíció connect-ből =====
 
     const handleConnect = (connection: Connection) => {
         if (!connection.source || !connection.target) return;
 
-        // duplikált átmenet kiszűrése ugyanazon from-to párossal
-        const alreadyExists = transitions.some(
-            (t) => t.fromStatusId === connection.source && t.toStatusId === connection.target
+        const exists = transitions.some(
+            (t) =>
+                t.fromStatusId === connection.source &&
+                t.toStatusId === connection.target
         );
-        if (alreadyExists) {
+        if (exists) {
             return;
         }
+        console.log(connection)
 
         const newTransition: WorkflowTransitionDTO = {
             id: createId(),
             fromStatusId: connection.source,
             toStatusId: connection.target,
             name: "Új átmenet",
-            guard: "",
         };
         setTransitions((prev) => [...prev, newTransition]);
         setSelectedTransitionId(newTransition.id);
         setSelectedStatusId(null);
+    };
+
+    const handleOnDelete = (props: { nodes: Node[], edges: Edge[] }) => {
+        const {nodes: deletedNodes, edges: deletedEdges} = props;
+
+        if (deletedNodes.length > 0) {
+            const deletedNodeIds = new Set(deletedNodes.map((n) => n.id));
+            setStatuses((prev) => prev.filter((s) => !deletedNodeIds.has(s.id)));
+            setTransitions((prev) =>
+                prev.filter(
+                    (t) =>
+                        !deletedNodeIds.has(t.fromStatusId) &&
+                        !deletedNodeIds.has(t.toStatusId)
+                )
+            );
+            setSelectedStatusId(null);
+        }
+
+        if (deletedEdges.length > 0) {
+            const deletedEdgeIds = new Set(deletedEdges.map((e) => e.id));
+            setTransitions((prev) => prev.filter((t) => !deletedEdgeIds.has(t.id)));
+            setSelectedTransitionId(null);
+        }
     };
 
 
@@ -368,7 +567,6 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
             >
                 {/* Bal: graf */}
                 <Paper
-                    // variant="outlined"
                     sx={{
                         flex: 1,
                         height: "100%",
@@ -379,15 +577,22 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                         edges={edges}
                         nodeTypes={nodeTypes}
                         edgeTypes={edgeTypes}
-                        onNodeClick={(_, v) => setSelectedStatusId(v.id)}
-                        onEdgeClick={(_, v) => setSelectedTransitionId(v.id)}
+                        onNodeClick={(_, v) => {
+                            setSelectedTransitionId(null);
+                            setSelectedStatusId(v.id)
+                        }}
+                        onEdgeClick={(_, v) => {
+                            setSelectedStatusId(null)
+                            setSelectedTransitionId(v.id)
+                        }}
                         onPaneClick={() => {
                             setSelectedStatusId(null);
                             setSelectedTransitionId(null);
                         }}
                         onNodesChange={onNodesChange}
                         onEdgesChange={onEdgesChange}
-                        onConnect={onConnect}
+                        onDelete={handleOnDelete}
+                        onConnect={handleConnect}
                         fitView
                         fitViewOptions={fitViewOptions}
                         connectionMode={ConnectionMode.Loose}

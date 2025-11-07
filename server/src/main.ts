@@ -5,10 +5,15 @@ import { writeFileSync } from 'fs';
 import * as process from 'node:process';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { ConsoleLogger } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
+    logger: new ConsoleLogger({
+      timestamp: true,
+      // json: true,
+    }),
   });
 
   const config = new DocumentBuilder()

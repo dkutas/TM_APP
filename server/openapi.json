@@ -2270,6 +2270,25 @@
         ]
       }
     },
+    "/change-log/user": {
+      "get": {
+        "operationId": "ChangeLogController_getLastTenEntriesForUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ChangeLog"
+        ]
+      }
+    },
     "/change-log/{id}": {
       "get": {
         "operationId": "ChangeLogController_findOne",

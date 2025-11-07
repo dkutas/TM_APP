@@ -1,9 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateChangeLogDto } from './dto/create-change-log.dto';
 import { UpdateChangeLogDto } from './dto/update-change-log.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ChangeLog } from './entities/change-log.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ChangeLogService {
+  private readonly logger = new Logger(ChangeLogService.name);
+
+  constructor(
+    @InjectRepository(ChangeLog)
+    private changeLogRepository: Repository<ChangeLog>,
+  ) {}
+
   create(createChangeLogDto: CreateChangeLogDto) {
     return 'This action adds a new changeLog';
   }
@@ -18,6 +28,16 @@ export class ChangeLogService {
 
   update(id: number, updateChangeLogDto: UpdateChangeLogDto) {
     return `This action updates a #${id} changeLog`;
+  }
+
+  getLastTenEntriesForUser(userId: string) {
+    this.logger.log(`Getting last ten entries for user ${userId}`);
+    return this.changeLogRepository.find({
+      where: { actor: { id: userId } },
+      relations: { items: true, issue: true },
+      order: { createdAt: 'DESC' },
+      take: 10,
+    });
   }
 
   remove(id: number) {

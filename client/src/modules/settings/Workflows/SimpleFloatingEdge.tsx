@@ -1,8 +1,8 @@
-import {getSmoothStepPath, useInternalNode} from '@xyflow/react';
+import {type EdgeProps, getSmoothStepPath, useInternalNode} from '@xyflow/react';
 
 import {getEdgeParams} from './utils.js';
 
-function SimpleFloatingEdge({id, source, target, markerEnd, style}) {
+function SimpleFloatingEdge({id, source, target, markerEnd, style, label}: EdgeProps) {
     const sourceNode = useInternalNode(source);
     const targetNode = useInternalNode(target);
 
@@ -25,14 +25,16 @@ function SimpleFloatingEdge({id, source, target, markerEnd, style}) {
     });
 
     return (
-        <path
-            id={id}
-            className="react-flow__edge-path"
-            d={edgePath}
-            strokeWidth={5}
-            markerEnd={markerEnd}
-            style={style}
-        />
+        <>
+            <path
+                id={id}
+                className="react-flow__edge-path"
+                d={edgePath}
+                strokeWidth={5}
+                markerEnd={markerEnd}
+                style={style}
+            />
+        </>
     );
 }
 

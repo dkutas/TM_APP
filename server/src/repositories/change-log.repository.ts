@@ -1,5 +1,5 @@
 // repositories/change-log.repository.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import {
   ChangeItem,
@@ -8,6 +8,8 @@ import {
 
 @Injectable()
 export class ChangeLogRepository extends Repository<ChangeLog> {
+  private readonly logger = new Logger(ChangeLogRepository.name);
+
   constructor(ds: DataSource) {
     super(ChangeLog, ds.createEntityManager());
   }
@@ -33,9 +35,11 @@ export class ChangeLogRepository extends Repository<ChangeLog> {
   }) {
     const { issueId, actorId, items } = params;
 
+    this.logger.log(items);
     const changeLog = this.create({
       issue: { id: issueId },
       actor: { id: actorId },
+
       items: items
         .filter((it) => it.to && it.from && it.from !== it.to)
         .map((it) => {

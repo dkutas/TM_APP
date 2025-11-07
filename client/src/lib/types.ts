@@ -331,6 +331,17 @@ export type UserIssue = ModDates & {
     priority: 'Low' | 'Medium' | 'High'
 };
 
+export type ChangeLogHistory = ModDates & {
+    id: ID;
+    issue: UserIssue;
+    items: Array<{
+        fieldKey: string;
+        fromDisplay: string | null;
+        fromId: string | null;
+        toDisplay: string | null;
+        toId: string | null;
+    }>;
+}
 
 export type IssueLinkType = {
     id: ID;
