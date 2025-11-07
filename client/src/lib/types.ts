@@ -106,7 +106,12 @@ export type ProjectRole = {
     name: string;
 }
 
-export type IssueStatus = { category: "TODO" | "INPROGRESS" | "DONE", name: string, id: ID };
+export type IssueStatus = {
+    category: "TODO" | "INPROGRESS" | "DONE",
+    name: string,
+    id: ID,
+    position: { x: number, y: number }
+};
 export type IssuePriority = { rank: number, name: string, id: ID };
 export type UserValue = ModDates & {
     id: ID;

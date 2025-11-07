@@ -19,7 +19,8 @@ export const WorkflowSettings = () => {
 
     const onAdd = () => {/* open create modal */
     };
-    const onView = (id: string) => {/* open edit modal */
+    const onView = (id: string) => {
+        navigate(`${id}/view`);
     };
     const onEdit = (id: string) => {/* confirm + call api.delete(`/issue-type/${id}`) */
         navigate(`${id}`);

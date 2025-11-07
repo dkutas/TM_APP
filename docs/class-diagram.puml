@@ -59,7 +59,6 @@ class WorkflowTransition {
   +from_status_id: UUID
   +to_status_id: UUID
   +name: string
-  +guard: text?
   --
   +isAllowed(context: Map<string, any>): bool
 }

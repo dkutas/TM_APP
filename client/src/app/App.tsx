@@ -123,7 +123,7 @@ function App() {
                 pb: (t) => `calc(${(t.mixins.toolbar).minHeight || 56}px + ${t.spacing(1)})`
             }}>
                 <Toolbar/>
-                <Container maxWidth="xl">
+                <Container maxWidth="2xl">
                     {page}
                 </Container>
                 <CommandPalette open={palette} onClose={() => setPalette(false)}/>

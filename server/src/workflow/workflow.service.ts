@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Workflow } from './entities/workflow.entity';
+import {
+  Workflow,
+  WorkflowStatus,
+  WorkflowTransition,
+} from './entities/workflow.entity';
 import { Repository } from 'typeorm';
 import { ProjectIssueType } from '../project/entities/projectIssueType.entity';
 
@@ -11,6 +15,10 @@ export class WorkflowService {
   constructor(
     @InjectRepository(Workflow)
     private readonly workflowRepository: Repository<Workflow>,
+    @InjectRepository(WorkflowStatus)
+    private readonly workflowStatusRepository: Repository<WorkflowStatus>,
+    @InjectRepository(WorkflowTransition)
+    private readonly workflowTransitionRepository: Repository<WorkflowTransition>,
     @InjectRepository(ProjectIssueType)
     private readonly projectIssueTypeRepository: Repository<ProjectIssueType>,
   ) {}
@@ -33,8 +41,32 @@ export class WorkflowService {
     });
   }
 
-  update(id: string, updateWorkflowDto: UpdateWorkflowDto) {
-    return this.workflowRepository.update(id, updateWorkflowDto);
+  async update(id: string, updateWorkflowDto: UpdateWorkflowDto) {
+    const { statuses, transitions } = updateWorkflowDto;
+
+    for (const status of statuses || []) {
+      await this.workflowStatusRepository.save({
+        ...status,
+        position: { ...status.position },
+        workflow: { id: id },
+      });
+    }
+
+    for (const transition of transitions || []) {
+      await this.workflowTransitionRepository.save({
+        id: transition.id,
+        name: transition.name,
+        fromStatus: { id: transition.fromStatusId },
+        toStatus: { id: transition.toStatusId },
+        workflow: { id: id },
+      });
+    }
+
+    return this.workflowRepository.save({
+      id: id,
+      name: updateWorkflowDto.name,
+      description: updateWorkflowDto.description,
+    });
   }
 
   remove(id: string) {

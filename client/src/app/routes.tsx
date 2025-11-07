@@ -40,7 +40,8 @@ export const routes: RouteObject[] = [
                     {path: "custom-fields", element: <CustomFieldsSettings/>},
                     {path: "custom-fields/:id/contexts", element: <CustomFieldContexts/>},
                     {path: "workflows", element: <WorkflowSettings/>},
-                    {path: 'workflows/:workflowId', element: <EditWorkflowModal/>}
+                    {path: 'workflows/:workflowId', element: <EditWorkflowModal/>},
+                    {path: 'workflows/:workflowId/:view', element: <EditWorkflowModal/>}
 
                 ]
             }

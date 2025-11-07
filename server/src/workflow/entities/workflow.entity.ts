@@ -53,5 +53,4 @@ export class WorkflowTransition {
   toStatus: WorkflowStatus;
 
   @Column({ length: 100 }) name: string;
-  @Column({ type: 'text', nullable: true }) guard?: string; // pl. szerep, mezőfeltétel
 }

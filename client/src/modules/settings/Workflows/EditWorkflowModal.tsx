@@ -3,11 +3,14 @@ import "@xyflow/react/dist/style.css";
 import {
     Box,
     Button,
-    Chip,
     Divider,
+    FormControl,
     FormControlLabel,
     IconButton,
+    InputLabel,
+    MenuItem,
     Paper,
+    Select,
     Stack,
     Switch,
     TextField,
@@ -51,7 +54,6 @@ export interface WorkflowTransitionDTO {
     fromStatusId: string;
     toStatusId: string;
     name: string;
-    guard?: string;
 }
 
 // ===== Helper az ID generáláshoz =====
@@ -157,11 +159,12 @@ const fitViewOptions = {padding: 4};
 const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                                         initialStatuses,
                                                         initialTransitions,
-                                                        height = "70vh",
-                                                        onChange,
+                                                        height = "80vh",
                                                     }) => {
 
-    const {workflowId} = useParams();
+    const {workflowId, view} = useParams();
+    const [name, setName] = useState<string>("");
+    const [description, setDescription] = useState<string>("");
     const [statuses, setStatuses] = useState<WorkflowStatusDTO[]>(() =>
         addDefaultPositions(initialStatuses ?? [])
     );
@@ -169,14 +172,15 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
         initialTransitions ?? []
     );
 
+    console.log(view)
     const [selectedStatusId, setSelectedStatusId] = useState<string | null>(null);
     const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(
         null
     );
 
-    const updateStatus = (id: string, patch: Partial<WorkflowStatusDTO>) => {
+    const updateStatus = useCallback((id: string, patch: Partial<WorkflowStatusDTO>) => {
         setStatuses((prev) => prev.map((s) => (s.id === id ? {...s, ...patch} : s)));
-    };
+    }, []);
 
     const updateTransition = (id: string, patch: Partial<WorkflowTransitionDTO>) => {
         setTransitions((prev) => prev.map((t) => (t.id === id ? {...t, ...patch} : t)));
@@ -221,22 +225,47 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
 
 
     const transitionsToEdges: (items: WorkflowTransitionDTO[]) => Edge[] = useCallback(
-        (items: WorkflowTransitionDTO[]) =>
-            items.map((t) => ({
-                id: t.id,
-                source: t.fromStatusId,
-                target: t.toStatusId,
-                label: t.name,
-                type: "floating",
-                markerEnd: {type: MarkerType.ArrowClosed, size: 6,},
-                style: {
-                    stroke: "#555",
-                    strokeWidth: 3,
-                },
-                labelBgPadding: [4, 2],
-                labelBgBorderRadius: 4,
-            })),
-        []
+        (items) => {
+            // Gruppoljuk a tranzíciókat node-párok szerint (iránytól függetlenül)
+            const groups = items.reduce<Record<string, WorkflowTransitionDTO[]>>((acc, t) => {
+                const key = [t.fromStatusId, t.toStatusId].sort().join('__');
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(t);
+                return acc;
+            }, {});
+
+            const baseOffset = 40; // px – ennyire távolodjanak egymástól a párhuzamos élek
+
+            return items.map((t) => {
+                const key = [t.fromStatusId, t.toStatusId].sort().join('__');
+                const group = groups[key] ?? [];
+                const index = group.findIndex((g) => g.id === t.id);
+                const count = group.length;
+
+                let curveOffset = 0;
+                if (count > 1 && index !== -1) {
+                    // index: 0..count-1 → ..., -1, 0, 1, ...
+                    const middle = (count - 1) / 2;
+                    const offsetIndex = index - middle;
+                    curveOffset = offsetIndex * baseOffset;
+                }
+
+                return {
+                    id: t.id,
+                    source: t.fromStatusId,
+                    target: t.toStatusId,
+                    label: t.name,
+                    type: 'floating',          // ez a te SimpleFloatingEdge-ed typja
+                    data: {curveOffset},     // <-- ezt használja majd a SimpleFloatingEdge
+                    markerEnd: {type: MarkerType.ArrowClosed, strokeWidth: 3, color: '#000000'},
+                    style: {
+                        strokeWidth: 3,
+                        stroke: t.id === selectedTransitionId ? "#1976d2" : "#555",
+                    },
+                };
+            });
+        },
+        [],
     );
 
 
@@ -244,157 +273,7 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
         if (!workflowId) return;
 
         api.get<Workflow>(`workflow/${workflowId}`).then((r) => {
-            const wf = {
-                "id": "1ce06f38-3d01-4d01-93c2-278e66e044d9",
-                "name": "Default Workflow",
-                "description": "Alap workflow",
-                "isActive": true,
-                "statuses": [
-                    {
-                        "id": "783002f8-e766-4335-8f86-e9b5d433c9bf",
-                        "key": "DONE",
-                        "name": "Done",
-                        "isTerminal": true,
-                        "category": "DONE",
-                        "position": {
-                            "x": 620,
-                            "y": 320
-                        }
-                    },
-                    {
-                        "id": "88f52c72-fe10-4f69-ba38-0934a1da88e5",
-                        "key": "INPROG",
-                        "name": "In Progress",
-                        "isTerminal": false,
-                        "category": "INPROGRESS",
-                        "position": {
-                            "x": 400,
-                            "y": 200
-                        }
-                    },
-                    {
-                        "id": "5a19ccea-30c5-4179-b367-b74d96dbba9c",
-                        "key": "TODO",
-                        "name": "To Do",
-                        "isTerminal": false,
-                        "category": "TODO",
-                        "position": {
-                            "x": 100,
-                            "y": 80
-                        }
-                    }
-                ],
-                "transitions": [
-                    {
-                        "id": "e8b4047b-7528-4d90-80f8-1830e451b6e2",
-                        "fromStatus": {
-                            "id": "5a19ccea-30c5-4179-b367-b74d96dbba9c",
-                            "key": "TODO",
-                            "name": "To Do",
-                            "isTerminal": false,
-                            "category": "TODO",
-                            "position": {
-                                "x": 100,
-                                "y": 80
-                            }
-                        },
-                        "toStatus": {
-                            "id": "88f52c72-fe10-4f69-ba38-0934a1da88e5",
-                            "key": "INPROG",
-                            "name": "In Progress",
-                            "isTerminal": false,
-                            "category": "INPROGRESS",
-                            "position": {
-                                "x": 400,
-                                "y": 200
-                            }
-                        },
-                        "name": "Start Progress",
-                        "guard": null
-                    },
-                    {
-                        "id": "996f67c6-a72b-496d-8533-d966c1b1e007",
-                        "fromStatus": {
-                            "id": "783002f8-e766-4335-8f86-e9b5d433c9bf",
-                            "key": "DONE",
-                            "name": "Done",
-                            "isTerminal": true,
-                            "category": "DONE",
-                            "position": {
-                                "x": 620,
-                                "y": 320
-                            }
-                        },
-                        "toStatus": {
-                            "id": "5a19ccea-30c5-4179-b367-b74d96dbba9c",
-                            "key": "TODO",
-                            "name": "To Do",
-                            "isTerminal": false,
-                            "category": "TODO",
-                            "position": {
-                                "x": 100,
-                                "y": 80
-                            }
-                        },
-                        "name": "Back to backlog",
-                        "guard": null
-                    },
-                    {
-                        "id": "f90d4dd5-a261-44e3-bbe5-024b8565f71b",
-                        "fromStatus": {
-                            "id": "88f52c72-fe10-4f69-ba38-0934a1da88e5",
-                            "key": "INPROG",
-                            "name": "In Progress",
-                            "isTerminal": false,
-                            "category": "INPROGRESS",
-                            "position": {
-                                "x": 400,
-                                "y": 200
-                            }
-                        },
-                        "toStatus": {
-                            "id": "5a19ccea-30c5-4179-b367-b74d96dbba9c",
-                            "key": "TODO",
-                            "name": "To Do",
-                            "isTerminal": false,
-                            "category": "TODO",
-                            "position": {
-                                "x": 100,
-                                "y": 80
-                            }
-                        },
-                        "name": "Reopen",
-                        "guard": null
-                    },
-                    {
-                        "id": "37d1bc01-77ab-46d2-b045-2beff5134cb0",
-                        "fromStatus": {
-                            "id": "88f52c72-fe10-4f69-ba38-0934a1da88e5",
-                            "key": "INPROG",
-                            "name": "In Progress",
-                            "isTerminal": false,
-                            "category": "INPROGRESS",
-                            "position": {
-                                "x": 400,
-                                "y": 200
-                            }
-                        },
-                        "toStatus": {
-                            "id": "783002f8-e766-4335-8f86-e9b5d433c9bf",
-                            "key": "DONE",
-                            "name": "Done",
-                            "isTerminal": true,
-                            "category": "DONE",
-                            "position": {
-                                "x": 620,
-                                "y": 320
-                            }
-                        },
-                        "name": "Resolve",
-                        "guard": null
-                    }
-                ]
-            }
+            const wf = r.data;
 
             // státuszok
             const loadedStatuses: WorkflowStatusDTO[] = (wf.statuses ?? []).map((s, idx) => ({
@@ -402,8 +281,8 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                 key: s.key,
                 name: s.name,
                 isTerminal: s.isTerminal,
-                category: (s).category,
-                position: (s as any).position ?? defaultPositionForIndex(idx),
+                category: s.category,
+                position: s.position ?? defaultPositionForIndex(idx),
             }));
 
             setStatuses(addDefaultPositions(loadedStatuses));
@@ -415,13 +294,15 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                     name: t.name,
                     fromStatusId: t.fromStatus.id,
                     toStatusId: t.toStatus.id,
-                    guard: (t as any).guard,
                 })
             );
             setTransitions(loadedTransitions);
             setEdges(transitionsToEdges(loadedTransitions));
+
+            setName(wf.name);
+            setDescription(wf.description || "");
         })
-    }, [workflowId]);
+    }, [workflowId, transitionsToEdges]);
 
     useEffect(() => {
         setEdges(transitionsToEdges(transitions));
@@ -448,7 +329,7 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
     const onNodesChange = useCallback(
         (changes: NodeChange[]) =>
             setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
-        [],
+        []
     );
 
     const onEdgesChange = useCallback(
@@ -474,7 +355,7 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
         const newStatus: WorkflowStatusDTO = {
             id,
             key: keyCandidate,
-            name: `Új státusz ${num}`,
+            name: `New Status ${num}`,
             isTerminal: false,
             category: index === 0 ? "TODO" : "INPROGRESS",
             position,
@@ -496,13 +377,12 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
         if (exists) {
             return;
         }
-        console.log(connection)
 
         const newTransition: WorkflowTransitionDTO = {
             id: createId(),
             fromStatusId: connection.source,
             toStatusId: connection.target,
-            name: "Új átmenet",
+            name: "New Transition",
         };
         setTransitions((prev) => [...prev, newTransition]);
         setSelectedTransitionId(newTransition.id);
@@ -532,10 +412,21 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
         }
     };
 
+    const handleSave = () => {
+        api.patch<Workflow>(`/workflow/${workflowId}`, {
+            id: workflowId,
+            statuses,
+            transitions,
+            name,
+            description
+        }).then((r) => {
+            console.log("Workflow saved:", r.data);
+        });
+    }
+
 
     return (
         <Box sx={{display: "flex", flexDirection: "column", height}}>
-            {/* Felső toolbar */}
             <Box
                 sx={{
                     mb: 1,
@@ -545,27 +436,29 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                 }}
             >
                 <Box>
-                    <Typography variant="h6">Workflow editor</Typography>
+                    <Typography variant="h6">{!view ? "Edit" : "View"} <strong>{name}</strong></Typography>
                     <Typography variant="body2" color="text.secondary">
-                        Húzd a státuszokat, rajzolj éleket köztük, majd szerkeszd a jobb oldali
-                        panelen.
+                        Drag the statuses, draw edges between them, then edit them in the right-hand
+                        panel.
                     </Typography>
                 </Box>
-                <Stack direction="row" spacing={1}>
-                    <Button variant="contained" onClick={handleAddStatus}>
-                        Új státusz
-                    </Button>
-                </Stack>
+                {!view ?
+                    <Stack direction="row" spacing={1}>
+                        <Button variant="contained" onClick={handleAddStatus}>
+                            New Status
+                        </Button>
+                        <Button variant="contained" color="success" onClick={() => handleSave()}>
+                            Save Workflow
+                        </Button>
+                    </Stack> : null}
             </Box>
 
-            {/* Fő tartalom */}
             <Box
                 sx={{
                     flex: 1,
                     display: "flex",
                 }}
             >
-                {/* Bal: graf */}
                 <Paper
                     sx={{
                         flex: 1,
@@ -577,6 +470,8 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                         edges={edges}
                         nodeTypes={nodeTypes}
                         edgeTypes={edgeTypes}
+                        nodesDraggable={!view}
+                        nodesConnectable={!view}
                         onNodeClick={(_, v) => {
                             setSelectedTransitionId(null);
                             setSelectedStatusId(v.id)
@@ -591,6 +486,10 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                         }}
                         onNodesChange={onNodesChange}
                         onEdgesChange={onEdgesChange}
+                        onDragEnd={(props) => {
+                            console.log(props)
+                        }}
+                        onNodeDragStop={(_, node) => updateStatus(node.id, {position: node.position})}
                         onDelete={handleOnDelete}
                         onConnect={handleConnect}
                         fitView
@@ -602,8 +501,7 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                     </ReactFlow>
                 </Paper>
 
-                {/* Jobb: details panel */}
-                <Box sx={{width: 360, ml: 2, flexShrink: 0}}>
+                {!view ? <Box sx={{width: 340, ml: 2, flexShrink: 0}}>
                     <Paper
                         variant="outlined"
                         sx={{
@@ -621,46 +519,59 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                     justifyContent="space-between"
                                     mb={1}
                                 >
-                                    <Typography variant="subtitle1">Státusz</Typography>
-                                    <Chip
-                                        label={selectedStatus.category || "N/A"}
-                                        size="small"
-                                        color={
-                                            selectedStatus.category === "DONE"
-                                                ? "success"
-                                                : selectedStatus.category === "INPROGRESS"
-                                                    ? "warning"
-                                                    : "default"
-                                        }
-                                    />
+                                    <Typography variant="subtitle1">Status</Typography>
+                                    <Paper sx={{
+                                        p: 1,
+                                        backgroundColor: getColorForCategory(selectedStatus.category),
+                                        color: "#fff",
+                                        fontWeight: "bold",
+                                        borderRadius: 1,
+                                    }}>
+                                        <Typography>
+
+                                            {selectedStatus.category}
+                                        </Typography>
+                                    </Paper>
                                 </Stack>
                                 <TextField
                                     margin="dense"
-                                    label="Név"
+                                    label="Name"
                                     fullWidth
                                     value={selectedStatus.name}
                                     onChange={(e) =>
-                                        updateStatus(selectedStatus.id, {name: e.target.value})
+                                        updateStatus(selectedStatus.id, {
+                                            name: e.target.value,
+                                            key: e.target.value.split(" ").join("_").toUpperCase()
+                                        })
                                     }
                                 />
                                 <TextField
                                     margin="dense"
-                                    label="Kulcs"
+                                    label="Key"
                                     fullWidth
                                     value={selectedStatus.key}
-                                    onChange={(e) =>
-                                        updateStatus(selectedStatus.id, {key: e.target.value})
-                                    }
+                                    disabled
                                 />
-                                <TextField
-                                    margin="dense"
-                                    label="Kategória (TODO / INPROGRESS / DONE / ...)"
-                                    fullWidth
-                                    value={selectedStatus.category ?? ""}
-                                    onChange={(e) =>
-                                        updateStatus(selectedStatus.id, {category: e.target.value})
-                                    }
-                                />
+                                <FormControl fullWidth sx={{mt: 1}}>
+                                    <InputLabel id="data-input-label">Category</InputLabel>
+                                    <Select
+                                        label="Category"
+                                        value={selectedStatus.category || ""}
+                                        onChange={(e) =>
+                                            updateStatus(selectedStatus.id, {
+                                                category: e.target.value || undefined,
+                                            })
+                                        }
+                                    >
+                                        <MenuItem>
+                                            Select category
+                                        </MenuItem>
+                                        <MenuItem value="TODO">TODO</MenuItem>
+                                        <MenuItem value="INPROGRESS">INPROGRESS</MenuItem>
+                                        <MenuItem value="DONE">DONE</MenuItem>
+                                    </Select>
+
+                                </FormControl>
                                 <FormControlLabel
                                     sx={{mt: 1}}
                                     control={
@@ -673,7 +584,7 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                             }
                                         />
                                     }
-                                    label="Terminális státusz"
+                                    label="Terminal state"
                                 />
                                 <Box
                                     sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
@@ -698,7 +609,7 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                     justifyContent="space-between"
                                     mb={1}
                                 >
-                                    <Typography variant="subtitle1">Átmenet</Typography>
+                                    <Typography variant="subtitle1">Transition</Typography>
                                     <IconButton
                                         size="small"
                                         color="error"
@@ -709,7 +620,7 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                 </Stack>
                                 <TextField
                                     margin="dense"
-                                    label="Név"
+                                    label="Name"
                                     fullWidth
                                     value={selectedTransition.name}
                                     onChange={(e) =>
@@ -720,21 +631,21 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                 />
                                 <Divider sx={{my: 2}}/>
                                 <Typography variant="subtitle2" gutterBottom>
-                                    Forrás / Cél státusz
+                                    Source / Destination status
                                 </Typography>
                                 <TextField
                                     margin="dense"
                                     label="From"
                                     fullWidth
                                     value={getStatusById(selectedTransition.fromStatusId)?.name ?? ""}
-                                    InputProps={{readOnly: true}}
+                                    slotProps={{input: {readOnly: true}}}
                                 />
                                 <TextField
                                     margin="dense"
                                     label="To"
                                     fullWidth
                                     value={getStatusById(selectedTransition.toStatusId)?.name ?? ""}
-                                    InputProps={{readOnly: true}}
+                                    slotProps={{input: {readOnly: true}}}
                                 />
                                 <Box sx={{mt: 2}}>
                                     <Typography variant="caption" color="text.secondary">
@@ -755,16 +666,16 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                 }}
                             >
                                 <Typography variant="subtitle1" gutterBottom>
-                                    Nincs kiválasztott elem
+                                    No selected element
                                 </Typography>
                                 <Typography variant="body2">
-                                    Kattints egy státuszra vagy átmenetre a grafon, vagy hozz létre egy új
-                                    státuszt.
+                                    Click on a status, or draw edges in between them to edit
+                                    transitions.
                                 </Typography>
                             </Box>
                         )}
                     </Paper>
-                </Box>
+                </Box> : null}
             </Box>
         </Box>
     );

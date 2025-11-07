@@ -1,4 +1,21 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateWorkflowDto } from './create-workflow.dto';
+import {
+  WorkflowStatus,
+  WorkflowTransition,
+} from '../entities/workflow.entity';
 
-export class UpdateWorkflowDto extends PartialType(CreateWorkflowDto) {}
+export class UpdateWorkflowDto {
+  name: string;
+  description?: string;
+  statuses: Array<
+    Pick<
+      WorkflowStatus,
+      'id' | 'key' | 'name' | 'isTerminal' | 'category' | 'position'
+    >
+  >;
+  transitions: Array<
+    Pick<WorkflowTransition, 'id' | 'name'> & {
+      fromStatusId: string;
+      toStatusId: string;
+    }
+  >;
+}
