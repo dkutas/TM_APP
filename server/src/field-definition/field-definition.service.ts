@@ -42,20 +42,6 @@ export class FieldDefinitionService {
     });
   }
 
-  async findOptionsByFieldDefId(fieldDefId: string) {
-    const ctx = await this.fieldsRepository.findOne({
-      where: { id: fieldDefId },
-      relations: { options: true },
-    });
-    if (ctx) {
-      return ctx.options;
-    }
-    throw new HttpException(
-      `No FieldDefinition exist with ID: ${fieldDefId}`,
-      HttpStatus.NOT_ACCEPTABLE,
-    );
-  }
-
   async update(id: string, updateFieldDefinitionDto: UpdateFieldDefinitionDto) {
     const existingField = await this.fieldsRepository.findOne({
       where: { id },

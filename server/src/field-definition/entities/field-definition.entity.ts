@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DataType } from '../../common/enums';
-import { FieldOption } from '../../field-option/entities/field-option.entity';
 import { FieldContext } from '../../field-context/entities/field-context.entity';
 
 @Entity('field_definitions')
@@ -22,6 +21,5 @@ export class FieldDefinition {
   @Column({ type: 'text', nullable: true }) description?: string;
   @Column({ type: 'timestamptz', default: () => 'now()' }) createdAt: Date;
 
-  @OneToMany(() => FieldOption, (o) => o.fieldDef) options: FieldOption[];
   @OneToMany(() => FieldContext, (c) => c.fieldDef) contexts: FieldContext[];
 }

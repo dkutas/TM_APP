@@ -30,6 +30,11 @@ export class FieldContextController {
     return this.fieldContextService.findOne(id);
   }
 
+  @Get(':fieldCtxId/options')
+  findOptionsByFieldCtxId(@Param('fieldCtxId') fieldCtxId: string) {
+    return this.fieldContextService.findOptionsByFieldCtxId(fieldCtxId);
+  }
+
   @Get(':projectId/:issueTypeId')
   findByProjectAndIssueType(
     @Param('projectId') projectId: string,

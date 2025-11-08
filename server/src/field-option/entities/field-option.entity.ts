@@ -6,14 +6,14 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { FieldDefinition } from '../../field-definition/entities/field-definition.entity';
+import { FieldContext } from '../../field-context/entities/field-context.entity';
 
 @Entity('field_options')
-@Index(['fieldDef', 'key'], { unique: true })
+@Index(['fieldCtx', 'key'], { unique: true })
 export class FieldOption {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @ManyToOne(() => FieldDefinition, (fd) => fd.options, { onDelete: 'CASCADE' })
-  fieldDef: FieldDefinition;
+  @ManyToOne(() => FieldContext, (fc) => fc.options, { onDelete: 'CASCADE' })
+  fieldCtx: FieldContext;
   @Column({ length: 50 }) key: string;
   @Column({ length: 200 }) value: string;
 }

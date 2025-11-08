@@ -157,14 +157,13 @@ export const EditCustomFieldContextModal = ({open, id, closeDialog, onSave}: Edi
 
     useEffect(() => {
         if (!id) return;
-        console.log(id)
         api.get<PitCustomFieldContext>(`field-context/${id}`).then((response) => {
                 setCurrentContext(response.data)
                 return response.data
             }
         ).then((ctx) => {
                 if (ctx.fieldDef.dataType === 'OPTION' || ctx.fieldDef.dataType === 'MULTI_OPTION') {
-                    api.get<CustomFieldOption[]>(`field-definition/${ctx.fieldDef?.id}/options`)
+                    api.get<CustomFieldOption[]>(`field-context/${ctx.id}/options`)
                         .then((response) => setOptions(response.data));
                 }
             }

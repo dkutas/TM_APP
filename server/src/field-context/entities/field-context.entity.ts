@@ -3,6 +3,7 @@ import {
   Entity,
   Index,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { FieldDefinition } from '../../field-definition/entities/field-definition.entity';
@@ -25,6 +26,8 @@ export class FieldContext {
   issueType?: IssueType | null;
 
   @Column({ default: false }) required: boolean;
+
+  @OneToMany(() => FieldOption, (o) => o.fieldCtx) options: FieldOption[];
 
   @ManyToOne(() => FieldOption, { onDelete: 'SET NULL', nullable: true })
   defaultOption?: FieldOption;

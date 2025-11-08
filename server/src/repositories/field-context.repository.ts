@@ -12,10 +12,9 @@ export class FieldContextRepository extends Repository<FieldContext> {
   async findApplicable(projectId: string, issueTypeId: string) {
     // visible = true, és (project null|=) & (issueType null|=)
 
-    console.log('repo', projectId, issueTypeId);
     return this.createQueryBuilder('fc')
       .innerJoinAndSelect('fc.fieldDef', 'fd')
-      .leftJoinAndSelect('fd.options', 'opt')
+      .leftJoinAndSelect('fc.options', 'opt')
       .leftJoinAndSelect('fc.defaultOption', 'defopt')
       .andWhere('(fc.project_id IS NULL OR fc.project_id = :p)', {
         p: projectId,

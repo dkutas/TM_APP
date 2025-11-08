@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateFieldContextDto } from './dto/create-field-context.dto';
 import { UpdateFieldContextDto } from './dto/update-field-context.dto';
 import { FieldContext } from './entities/field-context.entity';
@@ -54,6 +54,19 @@ export class FieldContextService {
 
   update(id: string, updateFieldContextDto: UpdateFieldContextDto) {
     return this.fieldContextRepository.update(id, updateFieldContextDto);
+  }
+
+  async findOptionsByFieldCtxId(fieldCtxId: string) {
+    const ctx = await this.fieldContextRepository.findOne({
+      where: { id: fieldCtxId },
+      relations: { options: true },
+    });
+    if (!ctx) {
+      throw new BadRequestException(
+        `Field Context with ID ${fieldCtxId} not found`,
+      );
+    }
+    return ctx.options;
   }
 
   async remove(id: string) {

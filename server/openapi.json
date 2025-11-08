@@ -1876,29 +1876,6 @@
         ]
       }
     },
-    "/field-definition/{fieldDefId}/options": {
-      "get": {
-        "operationId": "FieldDefinitionController_findOptionsByFieldDefId",
-        "parameters": [
-          {
-            "name": "fieldDefId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "FieldDefinition"
-        ]
-      }
-    },
     "/field-option": {
       "post": {
         "operationId": "FieldOptionController_create",
@@ -2104,6 +2081,29 @@
         "parameters": [
           {
             "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "FieldContext"
+        ]
+      }
+    },
+    "/field-context/{fieldCtxId}/options": {
+      "get": {
+        "operationId": "FieldContextController_findOptionsByFieldCtxId",
+        "parameters": [
+          {
+            "name": "fieldCtxId",
             "required": true,
             "in": "path",
             "schema": {

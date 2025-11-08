@@ -217,8 +217,8 @@ export class IssueService {
       const dataType = fd.dataType;
       const v = valueByFd.get(fd.id);
 
-      const options = fd.options?.length
-        ? fd.options.slice().map((o) => ({
+      const options = ctx.options?.length
+        ? ctx.options.slice().map((o) => ({
             id: o.id,
             key: o.key,
             value: o.value,
@@ -890,8 +890,8 @@ export class IssueService {
 
     return contexts.map((ctx) => {
       const fd = ctx.fieldDef;
-      const options = fd.options?.length
-        ? fd.options.slice().map((o) => ({
+      const options = ctx.options?.length
+        ? ctx.options.slice().map((o) => ({
             id: o.id,
             key: o.key,
             value: o.value,
