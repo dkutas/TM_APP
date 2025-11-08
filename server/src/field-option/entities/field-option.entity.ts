@@ -16,4 +16,5 @@ export class FieldOption {
   fieldCtx: FieldContext;
   @Column({ length: 50 }) key: string;
   @Column({ length: 200 }) value: string;
+  @Column({ type: 'int' }) order: number;
 }

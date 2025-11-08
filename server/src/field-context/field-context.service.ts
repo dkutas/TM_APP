@@ -41,7 +41,12 @@ export class FieldContextService {
   findOne(id: string) {
     return this.fieldContextRepository.findOne({
       where: { id },
-      relations: { fieldDef: true, defaultOption: true },
+      relations: {
+        fieldDef: true,
+        defaultOption: true,
+        options: true,
+      },
+      order: { options: { order: 'ASC' } },
     });
   }
 
@@ -60,6 +65,7 @@ export class FieldContextService {
     const ctx = await this.fieldContextRepository.findOne({
       where: { id: fieldCtxId },
       relations: { options: true },
+      order: { options: { order: 'ASC' } },
     });
     if (!ctx) {
       throw new BadRequestException(

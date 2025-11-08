@@ -97,6 +97,7 @@ export type PitCustomFieldContext = {
     order?: number;
     regex?: string;
     required?: boolean;
+    options?: (CustomFieldOption & { inputValue?: string, title?: string }) [] | null;
     defaultOption?: CustomFieldOption | null;
     defaultValue?: string | number | boolean | null | string[]
 }
