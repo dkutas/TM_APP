@@ -10,12 +10,12 @@ import {
     Select,
     Stack
 } from "@mui/material";
-import type {CreateCrudModalProps} from "../../settings/types.ts";
+import type {ModalProps} from "../../settings/types.ts";
 import {useEffect, useState} from "react";
 import {type IssueType} from "../../../lib/types.ts";
 import {api} from "../../../lib/apiClient.ts";
 
-export const AddIssueTypeModal = ({open, closeDialog, onSave, projectId}: CreateCrudModalProps & {
+export const AddIssueTypeModal = ({open, closeDialog, onSave, projectId}: ModalProps & {
     projectId: string
 }) => {
     const [issueTypes, setIssueTypes] = useState<IssueType[]>([]);
@@ -36,14 +36,14 @@ export const AddIssueTypeModal = ({open, closeDialog, onSave, projectId}: Create
 
     return (
         <Dialog open={open}>
-            <DialogTitle>Create Project</DialogTitle>
+            <DialogTitle>Add Issutype</DialogTitle>
             <DialogContent>
                 <Stack sx={{gap: 3, width: "400px", py: 2}}>
                     <FormControl fullWidth>
                         <InputLabel>Issue type</InputLabel>
                         <Select
                             value={selectedIssueType?.id || ''}
-                            label={selectedIssueType?.name || ''}
+                            label="Issue type"
                             onChange={(e) => {
                                 const issueType = issueTypes.find(it => it.id === e.target.value);
                                 setSelectedIssueType(issueType || null);

@@ -1,5 +1,5 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField} from "@mui/material";
-import type {CreateCrudModalProps} from "../../settings/types.ts";
+import type {ModalProps} from "../../settings/types.ts";
 import {useState} from "react";
 import {api} from "../../../lib/apiClient.ts";
 
@@ -9,7 +9,7 @@ type CreateProjectDTO = {
     key: string;
 }
 
-export const CreateProjectModal = ({open, closeDialog, onSave}: CreateCrudModalProps) => {
+export const CreateProjectModal = ({open, closeDialog, onSave}: ModalProps) => {
 
     const [formValues, setFormValues] = useState<CreateProjectDTO | null>(null);
 

@@ -23,8 +23,33 @@ export class WorkflowService {
     private readonly projectIssueTypeRepository: Repository<ProjectIssueType>,
   ) {}
 
-  create(createWorkflowDto: CreateWorkflowDto) {
-    return this.workflowRepository.save(createWorkflowDto);
+  async create(createWorkflowDto: CreateWorkflowDto) {
+    const workflow = await this.workflowRepository.save({
+      name: createWorkflowDto.name,
+      description: createWorkflowDto.description,
+    });
+
+    const { statuses, transitions } = createWorkflowDto;
+
+    for (const status of statuses || []) {
+      await this.workflowStatusRepository.save({
+        ...status,
+        position: { ...status.position },
+        workflow: { id: workflow.id },
+      });
+    }
+
+    for (const transition of transitions || []) {
+      await this.workflowTransitionRepository.save({
+        id: transition.id,
+        name: transition.name,
+        fromStatus: { id: transition.fromStatusId },
+        toStatus: { id: transition.toStatusId },
+        workflow: { id: workflow.id },
+      });
+    }
+
+    return workflow;
   }
 
   findAll() {

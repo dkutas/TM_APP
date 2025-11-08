@@ -98,6 +98,19 @@ export class ProjectController {
     return this.projectService.assignIssueTypeToProject(projectId, issueTypeId);
   }
 
+  @Patch(':projectId/issue-type/:issueTypeId')
+  assignWorkflowToProjectIssueType(
+    @Param('projectId') projectId: string,
+    @Param('issueTypeId') issueTypeId: string,
+    @Body('workflowId') workflowId: string,
+  ) {
+    return this.projectService.assignWorkflowToProjectIssueType(
+      projectId,
+      issueTypeId,
+      workflowId,
+    );
+  }
+
   @Get(':projectId/issue-type/:issueTypeId/fields')
   findFieldsByIssueType(
     @Param('issueTypeId') issueTypeId: string,

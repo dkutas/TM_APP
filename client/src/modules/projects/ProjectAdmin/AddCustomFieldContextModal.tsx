@@ -11,12 +11,12 @@ import {
     Stack,
     TextField
 } from "@mui/material";
-import type {CreateCrudModalProps} from "../../settings/types.ts";
+import type {ModalProps} from "../../settings/types.ts";
 import {useEffect, useState} from "react";
 import type {CreateCustomFieldContextDto, CustomFieldDefinitionBase, CustomFieldOption} from "../../../lib/types.ts";
 import {api} from "../../../lib/apiClient.ts";
 
-interface AddCustomFieldContext extends CreateCrudModalProps {
+interface AddCustomFieldContext extends ModalProps {
     issueTypeId: string;
     projectId: string;
 }

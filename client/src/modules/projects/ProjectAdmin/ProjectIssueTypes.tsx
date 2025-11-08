@@ -9,10 +9,12 @@ import type {
 import {useCallback, useEffect, useState} from "react";
 import {api} from "../../../lib/apiClient.ts";
 import {AddIssueTypeModal} from "./AddIssueTypeModal.tsx";
-import {Delete, Edit} from "@mui/icons-material";
+import {Delete, Edit, Visibility} from "@mui/icons-material";
 import {useConfirm} from "../../../app/Confirm/useConfirm.ts";
 import {AddCustomFieldContextModal} from "./AddCustomFieldContextModal.tsx";
 import {EditCustomFieldContextModal} from "./EditCustomFieldContextModal.tsx";
+import {AssignWorkflowModal} from "./AssignWorkflowModal.tsx";
+import {useNavigate} from "react-router-dom";
 
 interface ProjectIssueTypeProps {
     projectId: string;
@@ -27,8 +29,10 @@ export const ProjectIssueTypes = ({projectId}: ProjectIssueTypeProps) => {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [selectedContextId, setSelectedContextId] = useState<string>("");
     const [isAddCFOpen, setIsAddCFOpen] = useState(false);
+    const [isAssignWfOpen, setIsAssignWfOpen] = useState(false);
 
     const {openConfirm} = useConfirm("Are you sure you want to unassign this custom field?");
+    const navigate = useNavigate();
 
 
     const fetchIssueTypes = useCallback(() => {
@@ -40,6 +44,12 @@ export const ProjectIssueTypes = ({projectId}: ProjectIssueTypeProps) => {
     const refetchContexts = useCallback(() => {
         if (selectedIssueType) {
             api.get<Array<PitCustomFieldContext>>(`/field-context/${projectId}/${selectedIssueType.issueType.id}`).then((r) => setPitCustomFields(r.data));
+        }
+    }, [projectId, selectedIssueType])
+
+    const refetchPitWorkflow = useCallback(() => {
+        if (selectedIssueType) {
+            api.get<PitWorkflow>(`/workflow/project/${projectId}/issueType/${selectedIssueType.issueType.id}`).then((r) => setPitWorkflow(r.data));
         }
     }, [projectId, selectedIssueType])
 
@@ -110,13 +120,45 @@ export const ProjectIssueTypes = ({projectId}: ProjectIssueTypeProps) => {
                             <Box sx={{p: 3, display: 'flex', flexDirection: 'column', gap: 3}}>
                                 <Typography variant="h4">{selectedIssueType.issueType.name}</Typography>
                                 <Typography variant="h6">Workflow</Typography>
-                                {pitWorkflow ? (
-                                    <Box sx={{border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2}}>
-                                        <Typography>Name: {pitWorkflow.name}</Typography>
-                                        <Typography>Description: {pitWorkflow.description || '—'}</Typography>
-                                    </Box>
+                                {pitWorkflow && pitWorkflow?.name !== "Default Workflow" ? (
+                                    <Paper sx={{
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        borderRadius: 2,
+                                        p: 2,
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center"
+                                    }}>
+                                        <Box>
+                                            <Typography>Name: {pitWorkflow.name}</Typography>
+                                            <Typography>Description: {pitWorkflow.description || '—'}</Typography>
+                                        </Box>
+                                        <Box>
+                                            <IconButton
+                                                onClick={() => navigate(`/settings/workflows/${pitWorkflow.id}/view`)}
+                                            >
+                                                <Visibility/>
+                                            </IconButton>
+                                            <IconButton
+                                                onClick={() => navigate(`/settings/workflows/${pitWorkflow.id}`)}
+                                            >
+                                                <Edit/>
+                                            </IconButton>
+                                        </Box>
+                                    </Paper>
                                 ) : (
-                                    <Typography>No workflow assigned.</Typography>
+                                    <Paper sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        gap: 1,
+                                        p: 2
+                                    }}>
+                                        <Typography>No workflow assigned.</Typography>
+                                        <Button variant="contained" onClick={() => setIsAssignWfOpen(true)}>+ Assign a
+                                            workflow</Button>
+                                    </Paper>
                                 )}
                                 <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                                     <Typography variant="h6">Custom Fields</Typography>
@@ -176,6 +218,12 @@ export const ProjectIssueTypes = ({projectId}: ProjectIssueTypeProps) => {
                     <AddCustomFieldContextModal open={isAddCFOpen} closeDialog={() => setIsAddCFOpen(false)}
                                                 onSave={refetchContexts} projectId={projectId}
                                                 issueTypeId={selectedIssueType.issueType.id}/>) : null
+            }
+            {selectedIssueType?.id ?
+                (
+                    <AssignWorkflowModal open={isAssignWfOpen} closeDialog={() => setIsAssignWfOpen(false)}
+                                         onSave={refetchPitWorkflow} projectId={projectId}
+                                         issueTypeId={selectedIssueType.issueType.id}/>) : null
             }
         </Grid>
     );

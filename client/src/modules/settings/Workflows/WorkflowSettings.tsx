@@ -18,6 +18,7 @@ export const WorkflowSettings = () => {
 
 
     const onAdd = () => {/* open create modal */
+        navigate("new")
     };
     const onView = (id: string) => {
         navigate(`${id}/view`);

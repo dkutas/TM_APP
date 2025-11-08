@@ -11,12 +11,12 @@ import {
     Stack,
     TextField
 } from "@mui/material";
-import type {CreateCrudModalProps} from "../types.ts";
+import type {ModalProps} from "../types.ts";
 import {useState} from "react";
 import {type CustomFieldDefinitionBase, DataType} from "../../../lib/types.ts";
 import {api} from "../../../lib/apiClient.ts";
 
-export const CreateCustomFieldModal = ({open, closeDialog, onSave}: CreateCrudModalProps) => {
+export const CreateCustomFieldModal = ({open, closeDialog, onSave}: ModalProps) => {
     const [formValues, setFormValues] = useState<CustomFieldDefinitionBase | null>(null);
     const handleSave = () => {
         if (formValues) {

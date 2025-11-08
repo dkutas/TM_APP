@@ -9,7 +9,7 @@ export default function SettingsPage() {
 
     return (
         <Grid container gap={2} spacing={2}>
-            <Grid size={{xs: 12, md: 3}}>
+            <Grid size={{xs: 12, md: 2}}>
                 <Paper sx={{
                     borderRadius: 3,
                     flexGrow: 1,
@@ -56,7 +56,7 @@ export default function SettingsPage() {
                 </Paper>
             </Grid>
 
-            <Grid size={{xs: 12, md: 9}}>
+            <Grid size={{xs: 12, md: 10}}>
                 <Outlet/>
             </Grid>
         </Grid>

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +11,8 @@ import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class ProjectService {
+  private readonly logger = new Logger(ProjectService.name);
+
   constructor(
     @InjectRepository(Project) private projectRepo: Repository<Project>,
     @InjectRepository(User) private userRepo: Repository<User>,
@@ -81,6 +83,22 @@ export class ProjectService {
 
   findFieldsByIssueType(issueTypeId: string, projectId: string) {
     return this.fieldContextRepo.findApplicable(projectId, issueTypeId);
+  }
+
+  async assignWorkflowToProjectIssueType(
+    projectId: string,
+    issueTypeId: string,
+    workflowId: string,
+  ) {
+    return this.projectIssueTypeRepo.update(
+      {
+        project: { id: projectId },
+        issueType: { id: issueTypeId },
+      },
+      {
+        workflow: { id: workflowId },
+      },
+    );
   }
 
   async assignIssueTypeToProject(projectId: string, issueTypeId: string) {

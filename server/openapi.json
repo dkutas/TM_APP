@@ -507,6 +507,35 @@
         "tags": [
           "Project"
         ]
+      },
+      "patch": {
+        "operationId": "ProjectController_assignWorkflowToProjectIssueType",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "issueTypeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Project"
+        ]
       }
     },
     "/project/{projectId}/issue-type/{issueTypeId}/fields": {

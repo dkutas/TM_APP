@@ -14,8 +14,8 @@ export class CreateWorkflowDto {
   >;
   transitions: Array<
     Pick<WorkflowTransition, 'id' | 'name'> & {
-      fromStatusKey: string;
-      toStatusKey: string;
+      fromStatusId: string;
+      toStatusId: string;
     }
   >;
 }

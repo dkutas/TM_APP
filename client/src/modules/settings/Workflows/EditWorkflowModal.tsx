@@ -157,22 +157,16 @@ const fitViewOptions = {padding: 4};
 // ===== Fő komponens =====
 
 const EditWorkflowModal: FC<WorkflowEditorProps> = ({
-                                                        initialStatuses,
-                                                        initialTransitions,
+
                                                         height = "80vh",
                                                     }) => {
 
     const {workflowId, view} = useParams();
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
-    const [statuses, setStatuses] = useState<WorkflowStatusDTO[]>(() =>
-        addDefaultPositions(initialStatuses ?? [])
-    );
-    const [transitions, setTransitions] = useState<WorkflowTransitionDTO[]>(
-        initialTransitions ?? []
-    );
+    const [statuses, setStatuses] = useState<WorkflowStatusDTO[]>([]);
+    const [transitions, setTransitions] = useState<WorkflowTransitionDTO[]>([]);
 
-    console.log(view)
     const [selectedStatusId, setSelectedStatusId] = useState<string | null>(null);
     const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(
         null
@@ -272,36 +266,45 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
     useEffect(() => {
         if (!workflowId) return;
 
-        api.get<Workflow>(`workflow/${workflowId}`).then((r) => {
-            const wf = r.data;
+        if (workflowId === "new") {
+            setName("New Workflow");
+            setStatuses([]);
+            setTransitions([]);
+            setDescription("This is a new workflow.");
+        } else {
 
-            // státuszok
-            const loadedStatuses: WorkflowStatusDTO[] = (wf.statuses ?? []).map((s, idx) => ({
-                id: s.id,
-                key: s.key,
-                name: s.name,
-                isTerminal: s.isTerminal,
-                category: s.category,
-                position: s.position ?? defaultPositionForIndex(idx),
-            }));
 
-            setStatuses(addDefaultPositions(loadedStatuses));
+            api.get<Workflow>(`workflow/${workflowId}`).then((r) => {
+                const wf = r.data;
 
-            // tranzíciók (csak ID-kat tárolunk)
-            const loadedTransitions: WorkflowTransitionDTO[] = (wf.transitions ?? []).map(
-                (t) => ({
-                    id: t.id,
-                    name: t.name,
-                    fromStatusId: t.fromStatus.id,
-                    toStatusId: t.toStatus.id,
-                })
-            );
-            setTransitions(loadedTransitions);
-            setEdges(transitionsToEdges(loadedTransitions));
+                // státuszok
+                const loadedStatuses: WorkflowStatusDTO[] = (wf.statuses ?? []).map((s, idx) => ({
+                    id: s.id,
+                    key: s.key,
+                    name: s.name,
+                    isTerminal: s.isTerminal,
+                    category: s.category,
+                    position: s.position ?? defaultPositionForIndex(idx),
+                }));
 
-            setName(wf.name);
-            setDescription(wf.description || "");
-        })
+                setStatuses(addDefaultPositions(loadedStatuses));
+
+                // tranzíciók (csak ID-kat tárolunk)
+                const loadedTransitions: WorkflowTransitionDTO[] = (wf.transitions ?? []).map(
+                    (t) => ({
+                        id: t.id,
+                        name: t.name,
+                        fromStatusId: t.fromStatus.id,
+                        toStatusId: t.toStatus.id,
+                    })
+                );
+                setTransitions(loadedTransitions);
+                setEdges(transitionsToEdges(loadedTransitions));
+
+                setName(wf.name);
+                setDescription(wf.description || "");
+            })
+        }
     }, [workflowId, transitionsToEdges]);
 
     useEffect(() => {
@@ -413,15 +416,27 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
     };
 
     const handleSave = () => {
-        api.patch<Workflow>(`/workflow/${workflowId}`, {
-            id: workflowId,
-            statuses,
-            transitions,
-            name,
-            description
-        }).then((r) => {
-            console.log("Workflow saved:", r.data);
-        });
+        if (workflowId === "new") {
+            api.post<Workflow>(`/workflow`, {
+                id: workflowId,
+                statuses,
+                transitions,
+                name,
+                description
+            }).then((r) => {
+                console.log("Workflow saved:", r.data);
+            });
+        } else {
+            api.patch<Workflow>(`/workflow/${workflowId}`, {
+                id: workflowId,
+                statuses,
+                transitions,
+                name,
+                description
+            }).then((r) => {
+                console.log("Workflow saved:", r.data);
+            });
+        }
     }
 
 
@@ -511,6 +526,24 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                             flexDirection: "column",
                         }}
                     >
+                        <TextField
+                            fullWidth
+                            label="Workflow Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            sx={{mt: 1}}
+
+                        />
+                        <TextField
+                            fullWidth
+                            label="Description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            multiline
+                            minRows={2}
+                            sx={{mt: 1, mb: 2}}
+                        />
+                        <Divider sx={{mb: 2}}/>
                         {selectedStatus ? (
                             <>
                                 <Stack
@@ -520,18 +553,12 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                     mb={1}
                                 >
                                     <Typography variant="subtitle1">Status</Typography>
-                                    <Paper sx={{
-                                        p: 1,
-                                        backgroundColor: getColorForCategory(selectedStatus.category),
-                                        color: "#fff",
-                                        fontWeight: "bold",
-                                        borderRadius: 1,
-                                    }}>
-                                        <Typography>
-
-                                            {selectedStatus.category}
-                                        </Typography>
-                                    </Paper>
+                                    <IconButton
+                                        color="error"
+                                        onClick={() => deleteStatus(selectedStatus.id)}
+                                    >
+                                        <DeleteIcon/>
+                                    </IconButton>
                                 </Stack>
                                 <TextField
                                     margin="dense"
@@ -555,6 +582,10 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                 <FormControl fullWidth sx={{mt: 1}}>
                                     <InputLabel id="data-input-label">Category</InputLabel>
                                     <Select
+                                        sx={{
+                                            backgroundColor: getColorForCategory(selectedStatus.category),
+                                            color: "#fff"
+                                        }}
                                         label="Category"
                                         value={selectedStatus.category || ""}
                                         onChange={(e) =>
@@ -587,18 +618,12 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                     label="Terminal state"
                                 />
                                 <Box
-                                    sx={{mt: 2, display: "flex", justifyContent: "space-between"}}
+                                    sx={{mt: 2, display: "flex", justifyContent: "space-between", alignItems: "center"}}
                                 >
                                     <Typography variant="caption" color="text.secondary">
                                         ID: {selectedStatus.id}
                                     </Typography>
-                                    <IconButton
-                                        size="small"
-                                        color="error"
-                                        onClick={() => deleteStatus(selectedStatus.id)}
-                                    >
-                                        <DeleteIcon fontSize="small"/>
-                                    </IconButton>
+
                                 </Box>
                             </>
                         ) : selectedTransition ? (
@@ -611,11 +636,10 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                 >
                                     <Typography variant="subtitle1">Transition</Typography>
                                     <IconButton
-                                        size="small"
                                         color="error"
                                         onClick={() => deleteTransition(selectedTransition.id)}
                                     >
-                                        <DeleteIcon fontSize="small"/>
+                                        <DeleteIcon/>
                                     </IconButton>
                                 </Stack>
                                 <TextField

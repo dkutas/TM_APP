@@ -1,8 +1,8 @@
-export interface EditCrudModalProps extends CreateCrudModalProps {
+export interface EditCrudModalProps extends ModalProps {
     id: string
 }
 
-export interface CreateCrudModalProps {
+export interface ModalProps {
     open: boolean
     closeDialog: () => void
     onSave: () => void
