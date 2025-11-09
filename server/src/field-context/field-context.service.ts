@@ -22,7 +22,9 @@ export class FieldContextService {
   async create(createFieldContextDto: CreateFieldContextDto) {
     const fieldContext = this.fieldContextRepository.create({
       id: randomUUID(),
-      ...createFieldContextDto,
+      fieldDef: { id: createFieldContextDto.fieldDefId },
+      project: { id: createFieldContextDto.projectId },
+      issueType: { id: createFieldContextDto.issueTypeId },
     });
     const context = await this.fieldContextRepository.save(fieldContext);
     for (const option of fieldContext.options || []) {

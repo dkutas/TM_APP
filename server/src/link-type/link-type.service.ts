@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LinkType } from './entities/link-type.entity';
 import { IssueLink } from './entities/issue-link.entity';
-import { ChangeLogRepository } from '../repositories/change-log.repository';
+import { ChangeLogRepository } from '../change-log/change-log.repository';
 import { Issue } from '../issue/entities/issue.entity';
 
 @Injectable()

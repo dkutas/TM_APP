@@ -419,6 +419,32 @@ export const AddCustomFieldContextModal = ({
         return renderContainer ? <Stack sx={{gap: 3, width: "400px", py: 2}}>{renderContent()}</Stack> : null;
     };
 
+    const fetchFieldOptions = () => {
+        api.get<CustomFieldOption[]>("field-option").then((res) => {
+            setOptions(res.data);
+        });
+    };
+    const fetchDefinitions = () => {
+        api.get<CustomFieldDefWithContexts[]>("/field-definition/with-contexts").then((res) => {
+
+            const assignedFieldDefIds = res.data
+                .filter((fd) =>
+                    fd.contexts.some(
+                        (ctx) =>
+                            ctx.project.id === projectId &&
+                            ctx.issueType.id === issueTypeId
+                    )
+                )
+                .map((fd) => fd.id);
+
+            const unassignedFieldDefs = res.data.filter(
+                (fd) => !assignedFieldDefIds.includes(fd.id)
+            );
+
+            setFieldDefinitions(unassignedFieldDefs);
+        });
+    }
+
     useEffect(() => {
         api.get<CustomFieldOption[]>("field-option").then((res) => {
             setOptions(res.data);
@@ -457,6 +483,9 @@ export const AddCustomFieldContextModal = ({
             }).then(() => {
                 onSave();
                 closeDialog();
+                fetchFieldOptions()
+                fetchDefinitions()
+                setSelectedFieldDefinition(null)
             });
         }
     };

@@ -1,5 +1,5 @@
 import { DataSource, Repository } from 'typeorm';
-import { IssueFieldValue } from '../issue-field-value/entities/issue-field-value.entity';
+import { IssueFieldValue } from './entities/issue-field-value.entity';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

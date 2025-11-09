@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 
-import { WorkflowTransition } from '../workflow/entities/workflow-transition.entity';
+import { WorkflowTransition } from './entities/workflow-transition.entity';
 
 @Injectable()
 export class WorkflowTransitionRepository extends Repository<WorkflowTransition> {

@@ -1,7 +1,7 @@
 import { DataSource, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 
-import { IssueLink } from '../link-type/entities/issue-link.entity';
+import { IssueLink } from './entities/issue-link.entity';
 
 @Injectable()
 export class IssueLinkRepository extends Repository<IssueLink> {

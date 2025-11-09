@@ -1,13 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { Repository } from 'typeorm';
-import { ProjectMembership } from '../role/entities/role.entity';
-import { FieldContextRepository } from '../repositories/field-context.repository';
+import { Role } from '../role/entities/role.entity';
+import { FieldContextRepository } from '../field-context/field-context.repository';
 import { ProjectIssueType } from './entities/projectIssueType.entity';
 import { User } from '../user/entities/user.entity';
+import { randomUUID } from 'crypto';
+import { RoleEnum } from '../common/enums';
+import { ProjectMembership } from '../membership/entity/project-membership.entity';
 
 @Injectable()
 export class ProjectService {
@@ -21,15 +24,26 @@ export class ProjectService {
     @InjectRepository(ProjectMembership)
     private memberShipRepo: Repository<ProjectMembership>,
     private fieldContextRepo: FieldContextRepository,
+    @InjectRepository(Role) private roleRepo: Repository<Role>,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userId?: string) {
     const project = await this.projectRepo.save(createProjectDto);
+    const projectRole = await this.roleRepo.findOne({
+      where: { name: RoleEnum.ADMIN, scope: 'project' },
+    });
+    if (!userId) {
+      return project;
+    }
+    if (!projectRole) {
+      throw new BadRequestException('Project role not found');
+    }
     await this.memberShipRepo.save(
       this.memberShipRepo.create({
+        id: randomUUID(),
         project: { id: project.id },
-        user: { id: userId! },
-        role: { id: '1' },
+        user: { id: userId },
+        role: { id: projectRole?.id },
       }),
     );
     return project;

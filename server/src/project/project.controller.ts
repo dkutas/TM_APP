@@ -7,12 +7,14 @@ import {
   Patch,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../auth/auth.controller';
+import { JwtAuthGuard } from '../auth/jwt.guard';
 
 @Controller('project')
 export class ProjectController {
@@ -20,12 +22,13 @@ export class ProjectController {
 
   @ApiBody({ type: CreateProjectDto })
   @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(
     @Req() req: AuthenticatedRequest,
     @Body() createProjectDto: CreateProjectDto,
   ) {
-    return this.projectService.create(createProjectDto);
+    return this.projectService.create(createProjectDto, req.user?.id);
   }
 
   @Get()

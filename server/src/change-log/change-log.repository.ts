@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { ChangeLog } from '../change-log/entities/change-log.entity';
-import { ChangeItem } from '../change-log/entities/change-item.entity';
+import { ChangeLog } from './entities/change-log.entity';
+import { ChangeItem } from './entities/change-item.entity';
 
 @Injectable()
 export class ChangeLogRepository extends Repository<ChangeLog> {

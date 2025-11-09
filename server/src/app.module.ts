@@ -25,10 +25,7 @@ import { ProjectIssueType } from './project/entities/projectIssueType.entity';
 import { Priority } from './priority/entities/priority.entity';
 import { LinkType } from './link-type/entities/link-type.entity';
 import { IssueType } from './issue-type/entities/issue-type.entity';
-import {
-  IssueFieldValue,
-  IssueFieldValueOption,
-} from './issue-field-value/entities/issue-field-value.entity';
+import { IssueFieldValue } from './issue-field-value/entities/issue-field-value.entity';
 import { Issue } from './issue/entities/issue.entity';
 import { FieldOption } from './field-option/entities/field-option.entity';
 import { FieldDefinition } from './field-definition/entities/field-definition.entity';
@@ -37,13 +34,15 @@ import { Attachment } from './attachment/entities/attachment.entity';
 import { Comment } from './comment/entities/comment.entity';
 import { ChangeLogModule } from './change-log/change-log.module';
 import { RoleModule } from './role/role.module';
-import { ProjectMembership, Role } from './role/entities/role.entity';
+import { Role } from './role/entities/role.entity';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { ChangeLog } from './change-log/entities/change-log.entity';
 import { IssueLink } from './link-type/entities/issue-link.entity';
 import { ChangeItem } from './change-log/entities/change-item.entity';
 import { WorkflowStatus } from './workflow/entities/workflow-status.entity';
 import { WorkflowTransition } from './workflow/entities/workflow-transition.entity';
+import { ProjectMembership } from './membership/entity/project-membership.entity';
+import { IssueFieldValueOption } from './issue-field-value/entities/issue-field-value-option.entity';
 
 @Module({
   imports: [

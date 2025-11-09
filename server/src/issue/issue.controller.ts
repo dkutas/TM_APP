@@ -34,7 +34,7 @@ import { join } from 'path';
 import { AttachmentService } from '../attachment/attachment.service';
 import { AttachFileDto } from '../attachment/dto/attach-file.dto';
 import { diskStorage } from 'multer';
-import { ChangeLogRepository } from '../repositories/change-log.repository';
+import { ChangeLogRepository } from '../change-log/change-log.repository';
 
 @Controller('issue')
 export class IssueController {

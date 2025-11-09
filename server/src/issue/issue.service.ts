@@ -9,9 +9,9 @@ import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { Issue } from './entities/issue.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserIssueRole, UserIssuesQueryDto } from './dto/user-issues-query.dto';
-import { IssueRepository } from '../repositories/issue.repository';
-import { FieldContextRepository } from '../repositories/field-context.repository';
-import { IssueFieldValueRepository } from '../repositories/issue-field-value.repository';
+import { IssueRepository } from './issue.repository';
+import { FieldContextRepository } from '../field-context/field-context.repository';
+import { IssueFieldValueRepository } from '../issue-field-value/issue-field-value.repository';
 import { FieldDefinition } from '../field-definition/entities/field-definition.entity';
 import {
   FieldDefsDTO,
@@ -23,22 +23,20 @@ import {
   IssueTransitionDto,
   IssueWithFieldsDto,
 } from './dto/field.dto';
-import {
-  IssueFieldValue,
-  IssueFieldValueOption,
-} from '../issue-field-value/entities/issue-field-value.entity';
+import { IssueFieldValue } from '../issue-field-value/entities/issue-field-value.entity';
 import { DataType } from '../common/enums';
-import { AttachmentRepository } from '../repositories/attachment.repository';
-import { IssueLinkRepository } from '../repositories/issue-link.repository';
-import { CommentRepository } from '../repositories/comment.repository';
-import { ChangeLogRepository } from '../repositories/change-log.repository';
-import { ProjectIssueTypeRepository } from '../repositories/project-issue-type.repository';
-import { WorkflowTransitionRepository } from '../repositories/workflow-transition.repository';
+import { AttachmentRepository } from '../attachment/attachment.repository';
+import { IssueLinkRepository } from '../link-type/issue-link.repository';
+import { CommentRepository } from '../comment/comment.repository';
+import { ChangeLogRepository } from '../change-log/change-log.repository';
+import { ProjectIssueTypeRepository } from '../project/project-issue-type.repository';
+import { WorkflowTransitionRepository } from '../workflow/workflow-transition.repository';
 import { User } from '../user/entities/user.entity';
 import { ProjectIssueType } from '../project/entities/projectIssueType.entity';
 import { Priority } from '../priority/entities/priority.entity';
 import { isObject } from 'class-validator';
 import { WorkflowStatus } from '../workflow/entities/workflow-status.entity';
+import { IssueFieldValueOption } from '../issue-field-value/entities/issue-field-value-option.entity';
 
 type OptionJson = { optionId: string };
 type UserJson = { userId: string };

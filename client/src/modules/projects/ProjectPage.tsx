@@ -111,16 +111,16 @@ export default function ProjectPage() {
                         </TableHead>
                         <TableBody>
                             {latest.map((i) => (
-                                <TableRow key={i.id} hover onClick={() => navigate(`/issues/${i.id}`)}
+                                <TableRow key={"user" + i?.id} hover onClick={() => navigate(`/issues/${i.id}`)}
                                           sx={{cursor: "pointer"}}>
                                     <TableCell>{i.key}</TableCell>
-                                    <TableCell>{i.issueType.name || "—"}</TableCell>
+                                    <TableCell>{i.issueType?.name || "—"}</TableCell>
                                     <TableCell>{i.summary}</TableCell>
                                     <TableCell>{i.assignee?.name || i.assignee?.email || "Unassigned"}</TableCell>
                                     <TableCell align="right">
                                         <IconButton size="small" onClick={(e) => {
                                             e.stopPropagation();
-                                            navigate(`/issues/${i.id}`);
+                                            navigate(`/issues/${i?.id}`);
                                         }}>
                                             <OpenInNewIcon fontSize="small"/>
                                         </IconButton>
@@ -145,16 +145,16 @@ export default function ProjectPage() {
                 </Typography>
                 <List sx={{display: "flex", flexDirection: "column", gap: 1}}>
                     {members.map((m) => (
-                        <Card key={m.id} variant="outlined" sx={{borderRadius: 3}}>
+                        <Card key={"user" + m?.id} variant="outlined" sx={{borderRadius: 3}}>
                             <CardContent sx={{display: "flex", alignItems: "center", gap: 2}}>
-                                <Avatar sx={{width: 48, height: 48}}>{initials(m.name, m.email)}</Avatar>
+                                <Avatar sx={{width: 48, height: 48}}>{initials(m?.name, m?.email)}</Avatar>
                                 <Box sx={{flex: 1}}>
-                                    <Typography fontWeight={600}>{m.name || m.email}</Typography>
+                                    <Typography fontWeight={600}>{m?.name || m?.email}</Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        {m.email || "—"}
+                                        {m?.email || "—"}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        joined: {fmtDate(m.createdAt)}
+                                        joined: {fmtDate(m?.createdAt)}
                                     </Typography>
                                 </Box>
                             </CardContent>

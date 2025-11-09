@@ -11,7 +11,7 @@ import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { ApiBody } from '@nestjs/swagger';
-import { MembershipService } from './membership/membership.service';
+import { MembershipService } from '../membership/membership.service';
 
 @Controller('user')
 export class UserController {

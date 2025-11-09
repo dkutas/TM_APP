@@ -161,7 +161,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{ baseURL: string }>
             if (data.user) setUser(data.user);
             navigate("/profile");
         },
-        []
+        [baseURL, navigate, setTokens]
     );
     const register = useCallback(
         async (userDate: CreateUserDto) => {
@@ -170,7 +170,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{ baseURL: string }>
             if (data.user) setUser(data.user);
             navigate("/profile");
         },
-        []
+        [baseURL, navigate, setTokens]
     );
 
     const logout = useCallback(async () => {
@@ -217,7 +217,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{ baseURL: string }>
                 setIsAuthReady(true);
             }
         })();
-    }, []);
+    }, [api, clearTokens]);
 
     const getAccessToken = useCallback(() => accessRef.current, []);
 

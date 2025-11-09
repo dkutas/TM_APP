@@ -31,10 +31,10 @@ export const CreateProjectModal = ({open = false, closeDialog, onSave}: ModalPro
                         value={formValues?.name || ""}
                         onChange={(e) => setFormValues({
                             ...formValues!,
-                            key: e.target.value.split(" ").join("_").toUpperCase().substring(0, 10),
+                            key: e.target.value.split(" ").join("_").toUpperCase().substring(0, 9),
                             name: e.target.value
                         })}
-                    />
+                    />x
                     <TextField
                         label="Project's key"
                         value={formValues?.key || ""}

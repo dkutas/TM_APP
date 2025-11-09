@@ -1,6 +1,6 @@
 import { DataSource, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { FieldContext } from '../field-context/entities/field-context.entity';
+import { FieldContext } from './entities/field-context.entity';
 
 @Injectable()
 export class FieldContextRepository extends Repository<FieldContext> {

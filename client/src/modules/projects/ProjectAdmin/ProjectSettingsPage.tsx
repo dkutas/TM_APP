@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import type {MembershipWithRole, Project} from "../../../lib/types.ts";
 import {
     Avatar,
@@ -41,6 +41,7 @@ export function ProjectSettingsPage() {
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
     const {openConfirm} = useConfirm();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (assignableUsers.length === 0 && isAssigning && projectId) {
@@ -127,12 +128,15 @@ export function ProjectSettingsPage() {
                 <Typography variant="h4">{project.key} — {project.name}</Typography>
                 <Typography variant="body1" color="text.secondary">{project.description}</Typography>
             </Grid>
-            <Grid size={12}>
+            <Grid size={12} sx={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                 <Tabs value={tab} onChange={(_, v) => setTab(v)}>
                     <Tab label="Overview"/>
                     <Tab label="Users"/>
                     <Tab label="Issue types"/>
                 </Tabs>
+                <Button variant="outlined" onClick={() => navigate(`/projects/${projectId}`)} sx={{mt: 1}}>
+                    Back to project
+                </Button>
             </Grid>
             <Grid size={12}>
                 {tab === 0 && (

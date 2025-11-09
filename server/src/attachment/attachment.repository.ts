@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { Attachment } from '../attachment/entities/attachment.entity';
+import { Attachment } from './entities/attachment.entity';
 
 @Injectable()
 export class AttachmentRepository extends Repository<Attachment> {

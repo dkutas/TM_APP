@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Issue } from '../../issue/entities/issue.entity';
 import { FieldDefinition } from '../../field-definition/entities/field-definition.entity';
-import { FieldOption } from '../../field-option/entities/field-option.entity';
+import { IssueFieldValueOption } from './issue-field-value-option.entity';
 
 @Entity('issue_field_values')
 @Index(['issue', 'fieldDef'], { unique: true })
@@ -33,17 +33,4 @@ export class IssueFieldValue {
     cascade: true,
   })
   options: IssueFieldValueOption[];
-}
-
-@Entity('issue_field_value_options')
-@Index(['issueFieldValue', 'option'], { unique: true })
-export class IssueFieldValueOption {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @ManyToOne(() => IssueFieldValue, (v) => v.options, {
-    onDelete: 'CASCADE',
-  })
-  issueFieldValue: IssueFieldValue;
-
-  @ManyToOne(() => FieldOption, { onDelete: 'CASCADE' })
-  option: FieldOption;
 }

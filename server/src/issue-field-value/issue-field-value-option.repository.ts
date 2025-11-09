@@ -1,9 +1,7 @@
-import {
-  IssueFieldValue,
-  IssueFieldValueOption,
-} from '../issue-field-value/entities/issue-field-value.entity';
+import { IssueFieldValue } from './entities/issue-field-value.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
+import { IssueFieldValueOption } from './entities/issue-field-value-option.entity';
 
 @Injectable()
 export class IssueFieldValueOptionRepository extends Repository<IssueFieldValueOption> {
