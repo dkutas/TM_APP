@@ -1,14 +1,7 @@
 // src/workflows/workflow.entity.ts
-import {
-  Column,
-  Entity,
-  Index,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-
-const StatusCategory = ['DONE', 'INPROGRESS', 'TODO'];
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { WorkflowStatus } from './workflow-status.entity';
+import { WorkflowTransition } from './workflow-transition.entity';
 
 @Entity('workflows')
 export class Workflow {
@@ -24,33 +17,4 @@ export class Workflow {
     cascade: ['insert'],
   })
   transitions: WorkflowTransition[];
-}
-
-@Entity('workflow_statuses')
-@Index(['workflow', 'key'], { unique: true })
-export class WorkflowStatus {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @ManyToOne(() => Workflow, (w) => w.statuses, { onDelete: 'CASCADE' })
-  workflow: Workflow;
-
-  @Column({ length: 40 }) key: string;
-  @Column({ length: 80 }) name: string;
-  @Column({ default: false }) isTerminal: boolean;
-  @Column({ length: 40, nullable: true }) category: string; // TODO/INPROGRESS/DONE
-  @Column({ type: 'jsonb', nullable: true }) position: { x: number; y: number };
-}
-
-@Entity('workflow_transitions')
-@Index(['workflow', 'fromStatus', 'toStatus'], { unique: true })
-export class WorkflowTransition {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @ManyToOne(() => Workflow, (w) => w.transitions, { onDelete: 'CASCADE' })
-  workflow: Workflow;
-
-  @ManyToOne(() => WorkflowStatus, { onDelete: 'CASCADE' })
-  fromStatus: WorkflowStatus;
-  @ManyToOne(() => WorkflowStatus, { onDelete: 'CASCADE' })
-  toStatus: WorkflowStatus;
-
-  @Column({ length: 100 }) name: string;
 }

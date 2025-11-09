@@ -11,7 +11,7 @@ export class AttachmentRepository extends Repository<Attachment> {
 
   findByIssue(issueId: string) {
     return this.createQueryBuilder('a')
-      .leftJoin('a.issue', 'i')
+      .leftJoinAndSelect('a.issue', 'i')
       .leftJoinAndSelect('a.uploader', 'u')
       .where('i.id = :issueId', { issueId })
       .orderBy('a.createdAt', 'ASC')

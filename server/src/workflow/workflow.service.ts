@@ -2,13 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Workflow,
-  WorkflowStatus,
-  WorkflowTransition,
-} from './entities/workflow.entity';
+import { Workflow } from './entities/workflow.entity';
 import { Repository } from 'typeorm';
 import { ProjectIssueType } from '../project/entities/projectIssueType.entity';
+import { WorkflowStatus } from './entities/workflow-status.entity';
+import { WorkflowTransition } from './entities/workflow-transition.entity';
 
 @Injectable()
 export class WorkflowService {

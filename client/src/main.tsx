@@ -9,7 +9,7 @@ import {createTheme, ThemeProvider} from "@mui/material";
 const theme = createTheme({
     palette: {
         warning: {
-            main: '#4b4b4b'
+            main: '#9e9e9e'
         }
     },
     components: {

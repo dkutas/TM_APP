@@ -3,7 +3,8 @@
 import { User } from '../../user/entities/user.entity';
 import { Issue } from '../entities/issue.entity';
 import { DataType } from '../../common/enums';
-import { WorkflowStatus } from '../../workflow/entities/workflow.entity';
+
+import { WorkflowStatus } from '../../workflow/entities/workflow-status.entity';
 
 export class FieldOptionDto {
   id: string;

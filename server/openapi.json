@@ -2335,6 +2335,29 @@
         ]
       }
     },
+    "/change-log/issue/{issueId}": {
+      "get": {
+        "operationId": "ChangeLogController_getChangeLogsForIssue",
+        "parameters": [
+          {
+            "name": "issueId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ChangeLog"
+        ]
+      }
+    },
     "/change-log/{id}": {
       "get": {
         "operationId": "ChangeLogController_findOne",

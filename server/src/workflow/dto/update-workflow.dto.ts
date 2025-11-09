@@ -1,7 +1,5 @@
-import {
-  WorkflowStatus,
-  WorkflowTransition,
-} from '../entities/workflow.entity';
+import { WorkflowStatus } from '../entities/workflow-status.entity';
+import { WorkflowTransition } from '../entities/workflow-transition.entity';
 
 export class UpdateWorkflowDto {
   name: string;

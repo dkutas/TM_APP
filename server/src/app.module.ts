@@ -20,11 +20,7 @@ import { FieldContextModule } from './field-context/field-context.module';
 import { User } from './user/entities/user.entity';
 import { Project } from './project/entities/project.entity';
 import { RefreshToken } from './auth/entities/refresh-token.entity';
-import {
-  Workflow,
-  WorkflowStatus,
-  WorkflowTransition,
-} from './workflow/entities/workflow.entity';
+import { Workflow } from './workflow/entities/workflow.entity';
 import { ProjectIssueType } from './project/entities/projectIssueType.entity';
 import { Priority } from './priority/entities/priority.entity';
 import { LinkType } from './link-type/entities/link-type.entity';
@@ -43,8 +39,11 @@ import { ChangeLogModule } from './change-log/change-log.module';
 import { RoleModule } from './role/role.module';
 import { ProjectMembership, Role } from './role/entities/role.entity';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { ChangeItem, ChangeLog } from './change-log/entities/change-log.entity';
+import { ChangeLog } from './change-log/entities/change-log.entity';
 import { IssueLink } from './link-type/entities/issue-link.entity';
+import { ChangeItem } from './change-log/entities/change-item.entity';
+import { WorkflowStatus } from './workflow/entities/workflow-status.entity';
+import { WorkflowTransition } from './workflow/entities/workflow-transition.entity';
 
 @Module({
   imports: [

@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Issue } from '../../issue/entities/issue.entity';
 import { User } from '../../user/entities/user.entity';
+import { ChangeItem } from './change-item.entity';
 
 @Entity('change_logs')
 @Index(['issue', 'createdAt'])
@@ -20,16 +21,4 @@ export class ChangeLog {
 
   @OneToMany(() => ChangeItem, (i) => i.changeLog, { cascade: ['insert'] })
   items: ChangeItem[];
-}
-
-@Entity('change_items')
-export class ChangeItem {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @ManyToOne(() => ChangeLog, (l) => l.items, { onDelete: 'CASCADE' })
-  changeLog: ChangeLog;
-  @Column({ length: 120 }) fieldKey: string;
-  @Column({ type: 'text', nullable: true }) fromDisplay?: string;
-  @Column({ type: 'text', nullable: true }) toDisplay?: string;
-  @Column({ type: 'uuid', nullable: true }) fromId?: string;
-  @Column({ type: 'uuid', nullable: true }) toId?: string;
 }

@@ -20,15 +20,13 @@ import { IssueLinkRepository } from '../repositories/issue-link.repository';
 import { CommentRepository } from '../repositories/comment.repository';
 import { Attachment } from '../attachment/entities/attachment.entity';
 import { Comment } from '../comment/entities/comment.entity';
-import {
-  ChangeItem,
-  ChangeLog,
-} from '../change-log/entities/change-log.entity';
+import { ChangeLog } from '../change-log/entities/change-log.entity';
 import { ProjectIssueTypeRepository } from '../repositories/project-issue-type.repository';
 import { WorkflowTransitionRepository } from '../repositories/workflow-transition.repository';
 import { User } from '../user/entities/user.entity';
 import { IssueLink } from '../link-type/entities/issue-link.entity';
 import { AttachmentService } from '../attachment/attachment.service';
+import { ChangeItem } from '../change-log/entities/change-item.entity';
 
 @Module({
   imports: [

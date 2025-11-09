@@ -31,6 +31,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {useUIStore} from "../../app/store.ts";
 import IssueCreateModal from "./IssueCreateModal.tsx";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const BASE_COLUMNS = ["Key", "Type", "Summary", "Assignee", "Status", "Estimate"] as const;
 
 type BaseCol = typeof BASE_COLUMNS[number];

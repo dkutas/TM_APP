@@ -1,27 +1,15 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import {NavLink, useParams} from "react-router-dom";
-import type {
-    Issue,
-    IssueCustomField,
-    IssueLink,
-    IssuePriority,
-    IssueTransition,
-    NormalizedFieldValue,
-    NormalizedHistoryRecord,
-    User
-} from "../../lib/types";
+import type {Issue, IssueCustomField, IssueLink, IssueTransition, NormalizedFieldValue, User} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import Link from '@mui/material/Link';
 import {
     Box,
     Breadcrumbs,
     Button,
-    type ButtonOwnProps,
     Card,
     CardActions,
     CardContent,
-    Chip,
-    type ChipOwnProps,
     Divider,
     IconButton,
     Paper,
@@ -36,17 +24,13 @@ import IssueEditModal from "./IssueEditModal.tsx";
 import {LinkIssueModal} from "./LinkIssueModal.tsx";
 import {CloudUpload, Delete} from "@mui/icons-material";
 import {useConfirm} from "../../app/Confirm/useConfirm.ts";
-
-
-const StatusCategoryColorMap: { [key: string]: ButtonOwnProps['color'] & ChipOwnProps['color'] } = {
-    "INPROGRESS": "info",
-    "TODO": "warning",
-    "DONE": "success"
-}
-
-function capitalizeFirstLetter(string: string) {
-    return string.replace(/^./, string[0].toUpperCase())
-}
+import {
+    capitalizeFirstLetter,
+    getBackgroundColorForCategory,
+    getBorderColorForCategory,
+    getTextColorForCategory
+} from "../../common/utils.ts";
+import {IssueHistory} from "./IssueHistory.tsx";
 
 
 export default function IssueFullPage() {
@@ -54,7 +38,6 @@ export default function IssueFullPage() {
     const [issueFields, setIssueFields] = useState<IssueCustomField[]>([]);
     const [tab, setTab] = useState(0);
     const [customFieldEntries, setCustomFieldEntries] = useState<NormalizedFieldValue[]>([]);
-    const [historyEntries, setHistoryEntries] = useState<NormalizedHistoryRecord[]>([]);
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [transitions, setTransitions] = useState<IssueTransition[]>([]);
     const [commentFieldOpen, setCommentFieldOpen] = useState(false);
@@ -64,7 +47,6 @@ export default function IssueFullPage() {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [showThreeComments, setShowThreeComments] = useState(true);
-    const [showThreeHistory, setShowThreeHistory] = useState(true);
     const {openConfirm} = useConfirm("Are you sure you want to delete this issue link?");
 
     const {issueId} = useParams();
@@ -171,9 +153,8 @@ export default function IssueFullPage() {
     }, [issueId]);
 
     useEffect(() => {
-        (async (): Promise<{ entries: NormalizedFieldValue[], history: NormalizedHistoryRecord[] }> => {
+        (async (): Promise<NormalizedFieldValue[]> => {
             const entries: NormalizedFieldValue[] = [];
-            const historyEntries: NormalizedHistoryRecord[] = [];
             // Array model: fieldValues: [{ fieldDef: { name|key }, valueXxx... }]
             if (!!issue && Array.isArray(issue?.fields)) {
                 for (const fv of issue.fields) {
@@ -190,102 +171,10 @@ export default function IssueFullPage() {
                     }
                     entries.push({label, value});
                 }
-
-                for (const hLog of issue.history) {
-                    const user = await api.get<User>(`/user/${hLog.authorId}`).then((res) => res.data.name).catch(() => hLog.authorId);
-                    const createdAt = hLog.createdAt;
-                    const items: NormalizedHistoryRecord["items"] = []
-                    for (const item of hLog.items) {
-                        if (item.fieldKey.toLowerCase().startsWith("custom.")) {
-                            const fieldDef = issue.fields.find((field) => field.key === item.fieldKey)
-                            if (fieldDef) {
-                                const label = fieldDef.name || fieldDef.key || "Custom field";
-                                let fromValue: NormalizedFieldValue['value'] = item.fromDisplay;
-                                let toValue: NormalizedFieldValue['value'] = item.toDisplay;
-
-                                if (fieldDef.dataType === "OPTION" && fieldDef.options) {
-                                    fromValue = fieldDef.options.find(op => op.id === JSON.parse(item.fromDisplay as string)?.optionId)?.value || item.fromDisplay;
-                                    toValue = fieldDef.options.find(op => op.id === JSON.parse(item.toDisplay as string)?.optionId)?.value || item.toDisplay;
-                                } else if (fieldDef.dataType === "MULTI_OPTION" && fieldDef.options) {
-                                    const parsedFrom = JSON.parse(item.fromDisplay as string);
-                                    const parsedTo = JSON.parse(item.toDisplay as string);
-                                    fromValue = fieldDef.options.filter(op => parsedFrom?.optionIds.includes(op.id)).map(op => op.value).join(", ") || "Empty";
-                                    toValue = fieldDef.options.filter(op => parsedTo?.optionIds.includes(op.id)).map(op => op.value).join(", ") || "Empty";
-                                } else if (fieldDef.dataType === "USER") {
-                                    if (item.fromDisplay) {
-                                        const userId = JSON.parse(item.fromDisplay as string)?.userId;
-                                        if (userId) {
-                                            fromValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => "Unassigned");
-                                        } else {
-                                            fromValue = "Unassigned"
-                                        }
-
-                                    }
-                                    if (item.toDisplay) {
-                                        const userId = JSON.parse(item.toDisplay as string)?.userId;
-                                        if (userId) {
-                                            toValue = await api.get<User>(`/user/${userId}`).then((res) => res.data.name).catch(() => "Unassigned");
-                                        } else {
-                                            fromValue = "Unassigned"
-                                        }
-                                    }
-                                }
-                                items.push({fieldLabel: label, value: `${fromValue} -> ${toValue}`});
-                            }
-                        } else {
-                            if (item.fieldKey === "assignee" || item.fieldKey === "reporter") {
-                                let fromUser = item.fromDisplay;
-                                let toUser = item.toDisplay;
-                                if (item.fromDisplay) {
-                                    const fromUserId = item.fromDisplay;
-                                    if (fromUserId && fromUserId !== "null") {
-                                        fromUser = await api.get<User>(`/user/${fromUserId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
-                                    } else {
-                                        fromUser = "Unassigned"
-                                    }
-                                }
-                                if (item.toDisplay) {
-                                    const toUserId = item.toDisplay;
-                                    if (toUserId && toUserId !== "null") {
-                                        toUser = await api.get<User>(`/user/${toUserId}`).then((res) => res.data.name).catch(() => item.toDisplay);
-                                    } else {
-                                        toUser = "Unassigned"
-                                    }
-                                }
-                                items.push({
-                                    fieldLabel: capitalizeFirstLetter(item.fieldKey),
-                                    value: `${fromUser || "Unassigned"} -> ${toUser || "Unassigned"}`
-                                });
-                            } else if (item.fieldKey === "priority") {
-                                let fromPriority = item.fromDisplay;
-                                let toPriority = item.toDisplay;
-                                if (item.fromDisplay) {
-                                    const fromPriorityId = item.fromDisplay;
-                                    fromPriority = await api.get<IssuePriority>(`/priority/${fromPriorityId}`).then((res) => res.data.name).catch(() => item.fromDisplay);
-                                }
-                                if (item.toDisplay) {
-                                    const toPriorityId = item.toDisplay;
-                                    toPriority = await api.get<IssuePriority>(`/priority/${toPriorityId}`).then((res) => res.data.name).catch(() => item.toDisplay);
-                                }
-                                items.push({
-                                    fieldLabel: capitalizeFirstLetter(item.fieldKey),
-                                    value: `${fromPriority || "—"} -> ${toPriority || "—"}`
-                                });
-                            } else {
-                                items.push({
-                                    fieldLabel: item.fieldKey,
-                                    value: `${item.fromDisplay || "—"} -> ${item.toDisplay || "—"}`
-                                });
-                            }
-                        }
-                    }
-                    historyEntries.push({id: hLog.id, actorName: user, createdAt, items})
-                }
             }
-            return {entries, history: historyEntries};
-        })().then(({history, entries}) => {
+            return entries;
+        })().then((entries) => {
             setCustomFieldEntries(entries)
-            setHistoryEntries(history)
         });
     }, [issue, issue?.fields]);
 
@@ -301,7 +190,8 @@ export default function IssueFullPage() {
 
     const renderTransitionButton = (transition: IssueTransition) => {
         return (<Button key={transition.id} onClick={() => transitionIssue(transition)} variant="contained"
-                        color={StatusCategoryColorMap[transition.to.category]}>
+                        sx={{backgroundColor: getBackgroundColorForCategory(transition.to.category)}}
+        >
             {transition.name}
         </Button>)
     }
@@ -334,10 +224,19 @@ export default function IssueFullPage() {
             </Stack>
 
             <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" mb={2}>
-                <Button variant="contained" sx={{cursor: "default"}}
-                        color={StatusCategoryColorMap[issue.status.category]}>
-                    {issue.status?.name}
-                </Button>
+                <Paper sx={{
+                    px: 2,
+                    py: 1,
+                    fontWeight: 600,
+                    backgroundColor: getBackgroundColorForCategory(issue.status.category),
+                    borderColor: getBorderColorForCategory(issue.status.category),
+                    color: getTextColorForCategory(issue.status.category),
+                }}>
+                    <Typography>
+                        {issue.status?.name}
+                    </Typography>
+                </Paper>
+
                 <Box display="flex" justifyContent="space-between" gap={2} alignItems="center" mb={2}>
                     {transitions.map(transition => renderTransitionButton(transition))}
                 </Box>
@@ -375,10 +274,19 @@ export default function IssueFullPage() {
                                                             {link.otherIssue?.key} {getLinkName(link)} {link.otherIssue?.summary}
                                                         </Typography>
                                                         <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
-
-                                                            <Chip label={link.otherIssue?.status?.name}
-                                                                  color={StatusCategoryColorMap[link.otherIssue?.status.category]}
-                                                                  variant="filled"/>
+                                                            <Paper sx={{
+                                                                px: 2,
+                                                                py: 1,
+                                                                borderRadius: 7,
+                                                                fontWeight: 600,
+                                                                backgroundColor: getBackgroundColorForCategory(link.otherIssue?.status?.category),
+                                                                borderColor: getBorderColorForCategory(link.otherIssue?.status?.category),
+                                                                color: getTextColorForCategory(link.otherIssue?.status?.category),
+                                                            }}>
+                                                                <Typography>
+                                                                    {link.otherIssue?.status?.name}
+                                                                </Typography>
+                                                            </Paper>
                                                             <Button startIcon={<Delete/>} color="error"
                                                                     onClick={() => openConfirm(() => {
                                                                         handleDeleteLink(link.id)
@@ -399,7 +307,6 @@ export default function IssueFullPage() {
 
                     <Typography variant="h6" mb={1}>Attachments</Typography>
                     <Paper sx={{p: 2, borderRadius: 3, mb: 3}}>
-                        {/* Drop/Browse layer */}
                         <Box
                             onDragOver={(e) => {
                                 e.preventDefault();
@@ -536,45 +443,7 @@ export default function IssueFullPage() {
                         </Paper>
                     )}
                     {tab === 1 && <Paper sx={{p: 2, borderRadius: 3}}>
-                        {
-                            historyEntries.length > 0 ?
-                                historyEntries.filter((_, i) => {
-                                    if (showThreeHistory) {
-                                        return i < 3
-                                    } else return true
-                                }).map(log => (
-                                    <Stack key={`stack-${log.id}`}>
-                                        <Card key={`card-${log.id}`} variant="outlined" sx={{mb: 1}}>
-                                            <CardContent key={`content-${log.id}`}>
-                                                <Typography variant="subtitle1"
-                                                            fontWeight={600}>{log.actorName}</Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {new Date(log.createdAt).toLocaleString()}
-                                                </Typography>
-                                                {log.items.map(item => {
-                                                    return (
-                                                        <Box key={`field-${item.fieldLabel}`} sx={{my: 0.5}}>
-                                                            <Typography
-
-                                                                variant="subtitle2"
-                                                                fontWeight={600}>{capitalizeFirstLetter(item.fieldLabel)}</Typography>
-                                                            <Typography variant="body1">
-                                                                {item.value}
-                                                            </Typography>
-                                                        </Box>
-
-                                                    )
-                                                })}
-                                            </CardContent>
-                                        </Card>
-                                    </Stack>))
-                                : <Typography>No history records found.</Typography>
-                        }
-
-                        {historyEntries.length > 3 ?
-                            <Button
-                                fullWidth
-                                onClick={() => setShowThreeHistory((curr) => !curr)}>{showThreeHistory ? "Show all History" : "Hide all History"}</Button> : null}
+                        <IssueHistory fields={issueFields}/>
                     </Paper>
                     }
                 </Grid>

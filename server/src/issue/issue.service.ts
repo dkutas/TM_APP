@@ -38,9 +38,9 @@ import { ProjectIssueTypeRepository } from '../repositories/project-issue-type.r
 import { WorkflowTransitionRepository } from '../repositories/workflow-transition.repository';
 import { User } from '../user/entities/user.entity';
 import { ProjectIssueType } from '../project/entities/projectIssueType.entity';
-import { WorkflowStatus } from '../workflow/entities/workflow.entity';
 import { Priority } from '../priority/entities/priority.entity';
 import { isObject } from 'class-validator';
+import { WorkflowStatus } from '../workflow/entities/workflow-status.entity';
 
 type OptionJson = { optionId: string };
 type UserJson = { userId: string };

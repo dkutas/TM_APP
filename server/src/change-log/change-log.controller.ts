@@ -38,6 +38,11 @@ export class ChangeLogController {
     return this.changeLogService.getLastTenEntriesForUser(user.id);
   }
 
+  @Get('issue/:issueId')
+  getChangeLogsForIssue(@Param('issueId') issueId: string) {
+    return this.changeLogService.getChangeLogsForIssue(issueId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.changeLogService.findOne(+id);

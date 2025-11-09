@@ -10,9 +10,9 @@ import {
 } from 'typeorm';
 
 import { IssueType } from '../../issue-type/entities/issue-type.entity';
-import { WorkflowStatus } from '../../workflow/entities/workflow.entity';
 import { Priority } from '../../priority/entities/priority.entity';
 import { User } from '../../user/entities/user.entity';
+import { WorkflowStatus } from '../../workflow/entities/workflow-status.entity';
 
 @Entity('issues')
 @Index(['key'], { unique: true })

@@ -36,6 +36,11 @@ import type {Workflow} from "../../../lib/types.ts";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CustomNode from "./CustomNode.tsx";
 import SimpleFloatingEdge from "./SimpleFloatingEdge.tsx";
+import {
+    getBackgroundColorForCategory,
+    getBorderColorForCategory,
+    getTextColorForCategory
+} from "../../../common/utils.ts";
 
 // ===== DTO-k =====
 
@@ -63,19 +68,6 @@ const createId = () => {
     }
     return `id-${Math.random().toString(36).slice(2, 11)}`;
 };
-
-const getColorForCategory = (category: string | undefined) => {
-    switch (category) {
-        case "DONE":
-            return "#4caf50";
-        case "INPROGRESS":
-            return "#2196f3";
-        case "TODO":
-            return "#9e9e9e";
-        default:
-            return "#9e9e9e";
-    }
-}
 
 // ===== Helper a default pozíciókhoz =====
 
@@ -124,7 +116,9 @@ const buildNodesFromStatuses = (
                 padding: 8,
                 borderRadius: 8,
                 border: `2px solid ${s.id === selectedId ? "#1976d2" : "#90a4ae"}`,
-                backgroundColor: getColorForCategory(s.category),
+                backgroundColor: getBackgroundColorForCategory(s.category),
+                color: getTextColorForCategory(s.category),
+                borderColor: getBorderColorForCategory(s.category),
                 minWidth: 140,
                 fontSize: 13,
             },
@@ -582,7 +576,7 @@ const EditWorkflow: FC<WorkflowEditorProps> = ({
                                 <FormControl fullWidth sx={{mt: 1}}>
                                     <Select
                                         sx={{
-                                            backgroundColor: getColorForCategory(selectedStatus.category),
+                                            backgroundColor: getBackgroundColorForCategory(selectedStatus.category),
                                             color: "#fff"
                                         }}
                                         value={selectedStatus.category || ""}

@@ -15,7 +15,8 @@ export const ProjectsPanel = ({projects, isLoading}: { projects: UserProject[], 
         <Box display="flex" flexDirection="column" sx={{flexGrow: 1}}>
 
             {projects.length > 0 ? projects.map(project => (
-                    <Typography sx={{textDecoration: "none", color: "black", pb: 1}} component={Link}
+                    <Typography key={project.projectId} sx={{textDecoration: "none", color: "black", pb: 1}}
+                                component={Link}
                                 to={`/projects/${project.projectId}`} variant="body1">
                         {project.projectName}({project.projectKey}) (Role: {project.role.name})
                     </Typography>)) :

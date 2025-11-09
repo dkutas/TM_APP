@@ -30,6 +30,15 @@ export class ChangeLogService {
     return `This action updates a #${id} changeLog`;
   }
 
+  getChangeLogsForIssue(issueId: string) {
+    this.logger.log(`Getting change logs for issue ${issueId}`);
+    return this.changeLogRepository.find({
+      where: { issue: { id: issueId } },
+      relations: { actor: true, items: true },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   getLastTenEntriesForUser(userId: string) {
     this.logger.log(`Getting last ten entries for user ${userId}`);
     return this.changeLogRepository.find({
