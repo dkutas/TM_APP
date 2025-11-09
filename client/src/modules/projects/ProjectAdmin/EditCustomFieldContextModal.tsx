@@ -106,6 +106,7 @@ export const EditCustomFieldContextModal = ({open, id, closeDialog, onSave}: Edi
             ({
                 id: crypto.randomUUID(), // temp ID, backend majd normalizálja
                 value: trimmed,
+                key: `${currentContext.fieldDef.name.slice(0, 3).toLowerCase()}_${trimmed.toLowerCase().replace(/\s+/g, "_")}`,
             } as CustomFieldOption);
 
         const updatedOptions = [...currentOptions, optionToAdd].map((opt, idx) => ({
@@ -160,164 +161,227 @@ export const EditCustomFieldContextModal = ({open, id, closeDialog, onSave}: Edi
 
     const renderContextInvariants = () => {
         if (!currentContext) return null;
-        switch (currentContext.fieldDef?.dataType) {
-            case "TEXT":
-                return (
-                    <>
-                        {renderRequiredCheckbox()}
-                        {renderDefaultValueField()}
-                        <TextField
-                            label="Regex"
-                            value={currentContext.regex}
-                            onChange={(e) => {
-                                setCurrentContext({...currentContext, regex: e.target.value});
-                            }}
-                            fullWidth
-                        />
-                    </>
-                );
-            case "NUMBER":
-                return (
-                    <>
-                        {renderRequiredCheckbox()}
-                        {renderDefaultValueField()}
-                        <TextField
-                            label="Min"
-                            value={currentContext.min || ""}
-                            onChange={(e) => {
-                                setCurrentContext({...currentContext, min: Number(e.target.value)});
-                            }}
-                            fullWidth
-                        />
-                        <TextField
-                            label="Max"
-                            value={currentContext.max || ""}
-                            onChange={(e) => {
-                                setCurrentContext({...currentContext, max: Number(e.target.value)});
-                            }}
-                            fullWidth
-                        />
-                    </>
-                );
-            case "OPTION":
-                return (
-                    <>
-                        {renderRequiredCheckbox()}
+        let renderContainer = true;
+        const renderContent = () => {
+            switch (currentContext.fieldDef?.dataType) {
+                case "TEXT":
+                    return (
+                        <>
+                            {renderRequiredCheckbox()}
+                            {renderDefaultValueField()}
+                            <TextField
+                                label="Regex"
+                                value={currentContext.regex}
+                                onChange={(e) => {
+                                    setCurrentContext({...currentContext, regex: e.target.value});
+                                }}
+                                fullWidth
+                            />
+                        </>
+                    );
+                case "NUMBER":
+                    return (
+                        <>
+                            {renderRequiredCheckbox()}
+                            {renderDefaultValueField()}
+                            <TextField
+                                label="Min"
+                                value={currentContext.min || ""}
+                                onChange={(e) => {
+                                    setCurrentContext({...currentContext, min: Number(e.target.value)});
+                                }}
+                                fullWidth
+                            />
+                            <TextField
+                                label="Max"
+                                value={currentContext.max || ""}
+                                onChange={(e) => {
+                                    setCurrentContext({...currentContext, max: Number(e.target.value)});
+                                }}
+                                fullWidth
+                            />
+                        </>
+                    );
+                case "OPTION":
+                    return (
+                        <>
+                            {renderRequiredCheckbox()}
 
-                        {/* Új opció hozzáadása (freeSolo + suggestion a backend options-ből) */}
-                        <Stack direction="row" spacing={1} alignItems="center">
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Autocomplete
+                                    freeSolo
+                                    options={options.map((o) => o.value)}
+                                    inputValue={optionInput}
+                                    onInputChange={(_, newInput) => setOptionInput(newInput)}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="New option"
+                                            placeholder="Type option and press Add"
+                                            fullWidth
+                                        />
+                                    )}
+                                    sx={{flex: 1}}
+                                />
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleAddOption}
+                                >
+                                    Add
+                                </Button>
+                            </Stack>
+
+                            <Stack spacing={1} sx={{mt: 2}}>
+                                {(currentContext.options || []).map((opt, index, arr) => (
+                                    <Stack
+                                        key={opt.id}
+                                        direction="row"
+                                        spacing={1}
+                                        alignItems="center"
+                                    >
+                                        <TextField
+                                            value={opt.value}
+                                            size="small"
+                                            fullWidth
+                                            disabled
+                                        />
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleMoveOption(index, "up")}
+                                            disabled={index === 0}
+                                        >
+                                            <ArrowUpwardIcon fontSize="small"/>
+                                        </IconButton>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleMoveOption(index, "down")}
+                                            disabled={index === arr.length - 1}
+                                        >
+                                            <ArrowDownwardIcon fontSize="small"/>
+                                        </IconButton>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleRemoveOption(opt.id)}
+                                        >
+                                            <DeleteIcon fontSize="small"/>
+                                        </IconButton>
+                                    </Stack>
+                                ))}
+                            </Stack>
+
                             <Autocomplete
-                                freeSolo
-                                options={options.map((o) => o.value)}
-                                inputValue={optionInput}
-                                onInputChange={(_, newInput) => setOptionInput(newInput)}
+                                sx={{mt: 2}}
+                                options={currentContext.options || []}
+                                getOptionLabel={(option) => option.value}
+                                isOptionEqualToValue={(option, value) => option.id === value.id}
+                                value={currentContext.defaultOption || null}
+                                onChange={(_, v) => {
+                                    setCurrentContext({
+                                        ...currentContext,
+                                        defaultOption: v as CustomFieldOption | null,
+                                    });
+                                }}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        label="New option"
-                                        placeholder="Type option and press Add"
+                                        label="Default option"
                                         fullWidth
                                     />
                                 )}
-                                sx={{flex: 1}}
                             />
-                            <Button
-                                variant="outlined"
-                                onClick={handleAddOption}
-                            >
-                                Add
-                            </Button>
-                        </Stack>
-
-                        {/* Rendezhető lista: currentContext.options sorrendje = order */}
-                        <Stack spacing={1} sx={{mt: 2}}>
-                            {(currentContext.options || []).map((opt, index, arr) => (
-                                <Stack
-                                    key={opt.id}
-                                    direction="row"
-                                    spacing={1}
-                                    alignItems="center"
+                        </>
+                    );
+                case "MULTI_OPTION":
+                    return (
+                        <>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Autocomplete
+                                    freeSolo
+                                    options={options.map((o) => o.value)}
+                                    inputValue={optionInput}
+                                    onInputChange={(_, newInput) => setOptionInput(newInput)}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="New option"
+                                            placeholder="Type option and press Add"
+                                            fullWidth
+                                        />
+                                    )}
+                                    sx={{flex: 1}}
+                                />
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleAddOption}
                                 >
+                                    Add
+                                </Button>
+                            </Stack>
+                            {renderRequiredCheckbox()}
+                            <Stack spacing={1} sx={{mt: 2}}>
+                                {(currentContext.options || []).map((opt, index, arr) => (
+                                    <Stack
+                                        key={opt.id}
+                                        direction="row"
+                                        spacing={1}
+                                        alignItems="center"
+                                    >
+                                        <TextField
+                                            value={opt.value}
+                                            size="small"
+                                            fullWidth
+                                            disabled
+                                        />
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleMoveOption(index, "up")}
+                                            disabled={index === 0}
+                                        >
+                                            <ArrowUpwardIcon fontSize="small"/>
+                                        </IconButton>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleMoveOption(index, "down")}
+                                            disabled={index === arr.length - 1}
+                                        >
+                                            <ArrowDownwardIcon fontSize="small"/>
+                                        </IconButton>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleRemoveOption(opt.id)}
+                                        >
+                                            <DeleteIcon fontSize="small"/>
+                                        </IconButton>
+                                    </Stack>
+                                ))}
+                            </Stack>
+                            <Autocomplete
+                                options={options}
+                                getOptionLabel={(option) => option.value}
+                                value={currentContext.defaultOption}
+                                onChange={(_, v) => {
+                                    setCurrentContext({
+                                        ...currentContext,
+                                        defaultOption: v as CustomFieldOption | null,
+                                    });
+                                }}
+                                renderInput={(params) => (
                                     <TextField
-                                        value={opt.value}
-                                        size="small"
+                                        {...params}
+                                        label="Default Option"
                                         fullWidth
-                                        disabled
                                     />
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => handleMoveOption(index, "up")}
-                                        disabled={index === 0}
-                                    >
-                                        <ArrowUpwardIcon fontSize="small"/>
-                                    </IconButton>
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => handleMoveOption(index, "down")}
-                                        disabled={index === arr.length - 1}
-                                    >
-                                        <ArrowDownwardIcon fontSize="small"/>
-                                    </IconButton>
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => handleRemoveOption(opt.id)}
-                                    >
-                                        <DeleteIcon fontSize="small"/>
-                                    </IconButton>
-                                </Stack>
-                            ))}
-                        </Stack>
-
-                        {/* Default option: mindig a rendezett context options-ből választunk */}
-                        <Autocomplete
-                            sx={{mt: 2}}
-                            options={currentContext.options || []}
-                            getOptionLabel={(option) => option.value}
-                            isOptionEqualToValue={(option, value) => option.id === value.id}
-                            value={currentContext.defaultOption || null}
-                            onChange={(_, v) => {
-                                setCurrentContext({
-                                    ...currentContext,
-                                    defaultOption: v as CustomFieldOption | null,
-                                });
-                            }}
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    label="Default option"
-                                    fullWidth
-                                />
-                            )}
-                        />
-                    </>
-                );
-            case "MULTI_OPTION":
-                return (
-                    <>
-                        {renderRequiredCheckbox()}
-                        <Autocomplete
-                            options={options}
-                            getOptionLabel={(option) => option.value}
-                            value={currentContext.defaultOption}
-                            onChange={(_, v) => {
-                                setCurrentContext({
-                                    ...currentContext,
-                                    defaultOption: v as CustomFieldOption | null,
-                                });
-                            }}
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    label="Default Option"
-                                    fullWidth
-                                />
-                            )}
-                        />
-                    </>
-                );
-            default:
-                return null;
+                                )}
+                            />
+                        </>
+                    );
+                default: {
+                    renderContainer = false
+                    return null;
+                }
+            }
         }
+        return renderContainer ? <Stack sx={{gap: 3, width: "400px", py: 2}}>{renderContent()}</Stack> : null;
     };
 
     useEffect(() => {
@@ -349,9 +413,7 @@ export const EditCustomFieldContextModal = ({open, id, closeDialog, onSave}: Edi
         <Dialog open={open}>
             <DialogTitle>Edit {currentContext?.fieldDef.name} field's Invariants</DialogTitle>
             <DialogContent>
-                <Stack sx={{gap: 3, width: "400px", py: 2}}>
-                    {renderContextInvariants()}
-                </Stack>
+                {renderContextInvariants()}
             </DialogContent>
             <DialogActions sx={{display: "flex", justifyContent: "space-between", px: 3, pb: 2}}>
                 <Button variant="outlined" onClick={closeDialog}>

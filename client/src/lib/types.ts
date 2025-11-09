@@ -234,6 +234,7 @@ export type CreateCustomFieldContextDto = {
     regex?: string
     required: boolean,
     defaultOption?: CustomFieldOption | null;
+    options?: CustomFieldOption[] | null;
     defaultValue?: string | number | boolean | null | string[]
 }
 

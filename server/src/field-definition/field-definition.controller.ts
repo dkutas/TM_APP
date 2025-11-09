@@ -24,7 +24,7 @@ export class FieldDefinitionController {
     return this.fieldDefinitionService.findAllWithContexts();
   }
 
-  @Get(':id/with-contexts/')
+  @Get(':id/with-contexts')
   findOneWithContexts(@Param('id') id: string) {
     return this.fieldDefinitionService.findOneWithContexts(id);
   }
