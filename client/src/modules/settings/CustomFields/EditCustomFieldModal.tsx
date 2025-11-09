@@ -14,7 +14,7 @@ import {type CustomFieldDefinitionBase} from "../../../lib/types.ts";
 import {api} from "../../../lib/apiClient.ts";
 
 
-export const EditCustomFieldModal = ({open, id, closeDialog, onSave}: EditCrudModalProps) => {
+export const EditCustomFieldModal = ({open = false, id, closeDialog, onSave}: EditCrudModalProps) => {
     const [selectedField, setSelectedField] = useState<CustomFieldDefinitionBase | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 

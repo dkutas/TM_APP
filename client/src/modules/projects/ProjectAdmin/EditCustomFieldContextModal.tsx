@@ -20,7 +20,7 @@ import {useEffect, useState} from "react";
 import type {CustomFieldOption, PitCustomFieldContext} from "../../../lib/types.ts";
 import {api} from "../../../lib/apiClient.ts";
 
-export const EditCustomFieldContextModal = ({open, id, closeDialog, onSave}: EditCrudModalProps) => {
+export const EditCustomFieldContextModal = ({open = false, id, closeDialog, onSave}: EditCrudModalProps) => {
     const [currentContext, setCurrentContext] = useState<PitCustomFieldContext | null>(null);
 
     // Globálisan elérhető opciók az adott field-hez (backendről)
@@ -402,11 +402,10 @@ export const EditCustomFieldContextModal = ({open, id, closeDialog, onSave}: Edi
     }, [id]);
 
     const handleSave = () => {
-        console.log("Saving context:", currentContext);
-        // api.patch(`field-context/${id}`, currentContext).then(() => {
-        //   onSave();
-        //   closeDialog();
-        // });
+        api.patch(`field-context/${id}`, currentContext).then(() => {
+            onSave();
+            closeDialog();
+        });
     };
 
     return (

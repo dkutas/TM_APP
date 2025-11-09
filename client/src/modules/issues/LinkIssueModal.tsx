@@ -25,7 +25,7 @@ interface LinkIssueModalProps {
 const DEBOUNCE_DELAY = 400; // ms
 
 
-export const LinkIssueModal = ({open, onClose, issueId}: LinkIssueModalProps) => {
+export const LinkIssueModal = ({open = false, onClose, issueId}: LinkIssueModalProps) => {
     const [selectedLinkType, setSelectedLinkType] = useState<IssueLinkType | null>(null);
     const [selectedIssue, setSelectedIssue] = useState<UserIssue | null>(null);
     const [linkTypes, setLinkTypes] = useState<Array<IssueLinkType>>([])

@@ -27,7 +27,8 @@ export class FieldContext {
 
   @Column({ default: false }) required: boolean;
 
-  @OneToMany(() => FieldOption, (o) => o.fieldCtx) options: FieldOption[];
+  @OneToMany(() => FieldOption, (o) => o.fieldCtx, { onDelete: 'CASCADE' })
+  options: FieldOption[];
 
   @ManyToOne(() => FieldOption, { onDelete: 'SET NULL', nullable: true })
   defaultOption?: FieldOption;

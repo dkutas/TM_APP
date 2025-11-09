@@ -20,7 +20,13 @@ interface AssingWfModalProps extends ModalProps {
     projectId: string;
 }
 
-export const AssignWorkflowModal = ({open, issueTypeId, projectId, closeDialog, onSave}: AssingWfModalProps) => {
+export const AssignWorkflowModal = ({
+                                        open = false,
+                                        issueTypeId,
+                                        projectId,
+                                        closeDialog,
+                                        onSave
+                                    }: AssingWfModalProps) => {
 
     const [workflows, setWorkflows] = useState<Workflow[]>([]);
     const [selectedWorkflow, setSelectedWorkflow] = useState<string>("");

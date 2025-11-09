@@ -9,6 +9,7 @@ export type User = {
 };
 
 
+// @ts-expect-error enum error
 export enum DataType {
     TEXT = 'TEXT',
     NUMBER = 'NUMBER',
@@ -54,12 +55,12 @@ export type FieldError = {
 
 export type AxiosErrorResponse<T> = {
     response: {
-        headers: any;
+        headers: never;
         status: number;
         message: string;
         data?: T;
     },
-    request?: any;
+    request?: never;
 }
 export type ProjectIssueTypeResponse = Project & {
     projectIssueTypes: ProjectIssueType[];

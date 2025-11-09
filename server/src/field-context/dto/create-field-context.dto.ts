@@ -8,6 +8,7 @@ export class CreateFieldContextDto {
   max: string;
   regex: string;
   required: boolean;
+  options?: FieldOption[];
   defaultOption?: FieldOption;
   defaultValue?: string;
 }

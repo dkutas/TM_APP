@@ -50,7 +50,6 @@ export const IssueTypeSettings = () => {
     };
     const onDelete = (id: string) => {
         const deleteCB = () => api.delete(`/issue-type/${id}`).then((r) => {
-            console.log(r.data)
             refreshIssueTypes();
         });
         openConfirm(deleteCB);

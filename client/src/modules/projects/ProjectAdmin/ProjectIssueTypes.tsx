@@ -101,7 +101,6 @@ export const ProjectIssueTypes = ({projectId}: ProjectIssueTypeProps) => {
                     }}>
                         {projectIssueTypes.map((it) => (
                             <ListItemButton onClick={() => {
-                                console.log(it.id)
                                 setSelectedIssueType(it)
                             }} key={it.id}
                                             selected={selectedIssueType?.id === it.id}>

@@ -26,6 +26,7 @@ import {api} from "../../../lib/apiClient.ts";
 import {ProjectIssueTypes} from "./ProjectIssueTypes.tsx";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {useConfirm} from "../../../app/Confirm/useConfirm.ts";
+import {Clear} from "@mui/icons-material";
 
 
 export function ProjectSettingsPage() {
@@ -104,7 +105,6 @@ export function ProjectSettingsPage() {
                         label="User"
                         onChange={(e) => {
                             setSelectedUserId(e.target.value)
-                            console.log(e.target.value);
                         }}
                         sx={{minWidth: 200}}
                     >
@@ -115,6 +115,9 @@ export function ProjectSettingsPage() {
                     </Select>
                 </FormControl>
                 <Button variant="contained" onClick={assignUser}>Assign</Button>
+                <IconButton onClick={() => setIsAssigning(false)}>
+                    <Clear/>
+                </IconButton>
             </Box>
         }
         return <Button variant="contained" onClick={() => setIsAssigning(true)}>Assign user</Button>;

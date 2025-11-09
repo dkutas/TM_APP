@@ -14,7 +14,7 @@ import {api} from "../../../lib/apiClient.ts";
 import type {EditCrudModalProps} from "../types.ts";
 
 
-export const EditIssueTypeModal = ({open, id, closeDialog, onSave}: EditCrudModalProps) => {
+export const EditIssueTypeModal = ({open = false, id, closeDialog, onSave}: EditCrudModalProps) => {
     const [isLoading, setIsLoading] = useState(false)
     const [formValue, setFormValue] = useState<IssueType | null>(null)
 

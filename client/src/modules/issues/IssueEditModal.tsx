@@ -79,7 +79,7 @@ function MultiValue({values}: { values: string[] }) {
 }
 
 export default function IssueEditModal({
-                                           open,
+                                           open = false,
                                            issueId,
                                            issue,
                                            onClose,
@@ -268,7 +268,6 @@ export default function IssueEditModal({
                         label="Due Date"
                         value={issue?.dueDate ? dayjs(new Date(issue.dueDate)) : null}
                         onChange={(e) => setSystemFields((v) => {
-                            console.log(e)
                             return {
                                 ...(v as IssueSystemFields),
                                 dueDate: e?.toISOString() || ""

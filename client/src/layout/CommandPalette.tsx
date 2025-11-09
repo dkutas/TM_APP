@@ -9,7 +9,7 @@ const staticItems: Item[] = [
     {label: 'Go to Issues (PROJ)', to: '/projects/1'},
     {label: 'Open Board (PROJ)', to: '/projects/1/board'}
 ]
-export default function CommandPalette({open, onClose}: { open: boolean; onClose: () => void }) {
+export default function CommandPalette({open = false, onClose}: { open: boolean; onClose: () => void }) {
     const [q, setQ] = useState('')
     const navigate = useNavigate()
     const items = useMemo(() => staticItems.filter(i => i.label.toLowerCase().includes(q.toLowerCase())), [q])

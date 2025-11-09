@@ -4,7 +4,7 @@ import {api} from "../../../lib/apiClient.ts";
 import type {ModalProps} from "../types.ts";
 
 
-export const CreateIssueTypeModal = ({open, closeDialog, onSave}: ModalProps) => {
+export const CreateIssueTypeModal = ({open = false, closeDialog, onSave}: ModalProps) => {
     const [name, setName] = useState<string | null>("")
     const [key, setKey] = useState<string | null>("")
     const [description, setDescription] = useState<string | null>("")

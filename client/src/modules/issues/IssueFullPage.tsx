@@ -252,7 +252,6 @@ export default function IssueFullPage() {
                                         toUser = "Unassigned"
                                     }
                                 }
-                                console.log({fromUser, toUser})
                                 items.push({
                                     fieldLabel: capitalizeFirstLetter(item.fieldKey),
                                     value: `${fromUser || "Unassigned"} -> ${toUser || "Unassigned"}`

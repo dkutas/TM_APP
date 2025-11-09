@@ -22,7 +22,7 @@ export const IssuesPanel = ({issues, isLoading}: { issues: UserIssue[], isLoadin
 
             <Box display="flex" flexDirection="column" sx={{flexGrow: 1}}>
                 {issues.map(issue => (
-                    <Typography sx={{textDecoration: "none", pb: 1, color: "black"}} component={Link}
+                    <Typography key={issue.key} sx={{textDecoration: "none", pb: 1, color: "black"}} component={Link}
                                 to={`/issues/${issue.id}`} variant="body1">
                         {issue.summary} - [{issue.key}]
                     </Typography>)

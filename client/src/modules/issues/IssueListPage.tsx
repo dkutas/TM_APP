@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {type ChangeEvent, useEffect, useMemo, useState} from "react";
 import type {Issue} from "../../lib/types";
 import Grid from "@mui/material/Grid2";
 import {
@@ -14,6 +14,7 @@ import {
     TableCell,
     TableContainer,
     TableHead,
+    TablePagination,
     TableRow,
     TextField,
     ToggleButton,
@@ -42,8 +43,16 @@ type Filters = {
     Status: string;
 };
 
+type IssueListResponse = {
+    items: Issue[];
+    total: number;
+};
+
 export default function IssueListPage() {
     const [issues, setIssues] = useState<Issue[]>([]);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
+    const [total, setTotal] = useState(0);
     const [filters, setFilters] = useState<Filters>({Key: "", Type: "", Summary: "", Assignee: "", Status: ""});
     const {isDetailsOpen, selectedIssueId, selectIssue, setDetailsOpen} = useUIStore();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -51,10 +60,21 @@ export default function IssueListPage() {
 
     useEffect(() => {
         api
-            .get<Issue[]>("/issue")
-            .then((res) => setIssues(res.data))
-            .catch(() => setIssues([]));
-    }, []);
+            .get<IssueListResponse>("/issue", {
+                params: {
+                    page: page + 1,          // backend: 1-based page index
+                    limit: rowsPerPage,      // backend: page size
+                },
+            })
+            .then((res) => {
+                setIssues(res.data.items);
+                setTotal(res.data.total);
+            })
+            .catch(() => {
+                setIssues([]);
+                setTotal(0);
+            });
+    }, [page, rowsPerPage]);
 
     // infer up to 3 custom field keys
     const customKeys = useMemo(() => {
@@ -84,6 +104,16 @@ export default function IssueListPage() {
         return filtered.find((i) => i.id === selectedIssueId) || filtered[0] || null;
     }, [filtered, selectedIssueId]);
 
+    const handleChangePage = (_: unknown, newPage: number) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event: ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(event.target.value, 10);
+        setRowsPerPage(Number.isNaN(value) ? 20 : value);
+        setPage(0);
+    };
+
     const onRowClick = (id: string) => {
         if (isDetailsOpen) selectIssue(id);
         else navigate(`/issues/${id}`);
@@ -103,9 +133,7 @@ export default function IssueListPage() {
                         {customKeys.map((ck) => (
                             <TableCell key={ck}>{ck}</TableCell>
                         ))}
-                        {isDetailsOpen ?
-                            <TableCell>Actions</TableCell>
-                            : null}
+                        {isDetailsOpen ? <TableCell>Actions</TableCell> : null}
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -129,16 +157,19 @@ export default function IssueListPage() {
                                 {customKeys.map((ck) => (
                                     <TableCell key={ck}>{bag?.[ck] ?? "—"}</TableCell>
                                 ))}
-                                {isDetailsOpen ?
+                                {isDetailsOpen ? (
                                     <TableCell align="right">
-                                        <IconButton size="small" onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/issues/${i.id}`);
-                                        }}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/issues/${i.id}`);
+                                            }}
+                                        >
                                             <OpenInNewIcon fontSize="small"/>
                                         </IconButton>
                                     </TableCell>
-                                    : null}
+                                ) : null}
                             </TableRow>
                         );
                     })}
@@ -153,6 +184,15 @@ export default function IssueListPage() {
                     )}
                 </TableBody>
             </Table>
+            <TablePagination
+                component="div"
+                count={total}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[10, 20, 50]}
+            />
         </TableContainer>
     );
 

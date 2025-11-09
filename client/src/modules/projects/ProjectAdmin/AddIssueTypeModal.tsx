@@ -15,7 +15,7 @@ import {useEffect, useState} from "react";
 import {type IssueType} from "../../../lib/types.ts";
 import {api} from "../../../lib/apiClient.ts";
 
-export const AddIssueTypeModal = ({open, closeDialog, onSave, projectId}: ModalProps & {
+export const AddIssueTypeModal = ({open = false, closeDialog, onSave, projectId}: ModalProps & {
     projectId: string
 }) => {
     const [issueTypes, setIssueTypes] = useState<IssueType[]>([]);

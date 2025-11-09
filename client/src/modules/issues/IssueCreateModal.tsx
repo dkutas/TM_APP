@@ -83,7 +83,7 @@ function MultiValue({values}: { values: string[] }) {
 }
 
 export default function IssueCreateModal({
-                                             open,
+                                             open = false,
                                              onClose,
                                              onSave,
                                          }: IssueModalProps) {
@@ -278,7 +278,6 @@ export default function IssueCreateModal({
                         label="Due Date"
                         value={null}
                         onChange={(e) => setSystemFields((v) => {
-                            console.log(e)
                             return {
                                 ...(v as IssueSystemFields),
                                 dueDate: e?.toISOString() || ""
@@ -292,7 +291,6 @@ export default function IssueCreateModal({
     }
 
     const renderCustomFields = (f: IssueCustomFieldDefs) => {
-        console.log(f)
         const v = values[f.id];
         switch (f.dataType) {
             case DataType.TEXT:

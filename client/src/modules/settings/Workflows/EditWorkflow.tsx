@@ -7,7 +7,6 @@ import {
     FormControl,
     FormControlLabel,
     IconButton,
-    InputLabel,
     MenuItem,
     Paper,
     Select,
@@ -31,7 +30,7 @@ import {
     Position,
     ReactFlow
 } from "@xyflow/react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {api} from "../../../lib/apiClient.ts";
 import type {Workflow} from "../../../lib/types.ts";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -156,10 +155,10 @@ const fitViewOptions = {padding: 4};
 
 // ===== Fő komponens =====
 
-const EditWorkflowModal: FC<WorkflowEditorProps> = ({
+const EditWorkflow: FC<WorkflowEditorProps> = ({
 
-                                                        height = "80vh",
-                                                    }) => {
+                                                   height = "80vh",
+                                               }) => {
 
     const {workflowId, view} = useParams();
     const [name, setName] = useState<string>("");
@@ -206,6 +205,8 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                 : null,
         [transitions, selectedTransitionId]
     );
+
+    const navigate = useNavigate()
 
 
     const [edges, setEdges] = useState<Edge[]>([]);
@@ -423,9 +424,7 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                 transitions,
                 name,
                 description
-            }).then((r) => {
-                console.log("Workflow saved:", r.data);
-            });
+            })
         } else {
             api.patch<Workflow>(`/workflow/${workflowId}`, {
                 id: workflowId,
@@ -433,9 +432,7 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                 transitions,
                 name,
                 description
-            }).then((r) => {
-                console.log("Workflow saved:", r.data);
-            });
+            })
         }
     }
 
@@ -465,7 +462,12 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                         <Button variant="contained" color="success" onClick={() => handleSave()}>
                             Save Workflow
                         </Button>
-                    </Stack> : null}
+                    </Stack> :
+                    <Stack direction="row" spacing={1}>
+                        <Button variant="contained" onClick={() => navigate(`/settings/workflows/${workflowId}`)}>
+                            Edit Workflow
+                        </Button>
+                    </Stack>}
             </Box>
 
             <Box
@@ -501,9 +503,6 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                         }}
                         onNodesChange={onNodesChange}
                         onEdgesChange={onEdgesChange}
-                        onDragEnd={(props) => {
-                            console.log(props)
-                        }}
                         onNodeDragStop={(_, node) => updateStatus(node.id, {position: node.position})}
                         onDelete={handleOnDelete}
                         onConnect={handleConnect}
@@ -579,14 +578,13 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
                                     value={selectedStatus.key}
                                     disabled
                                 />
+                                <Typography variant="subtitle2" sx={{mt: 1}}>Status Category</Typography>
                                 <FormControl fullWidth sx={{mt: 1}}>
-                                    <InputLabel id="data-input-label">Category</InputLabel>
                                     <Select
                                         sx={{
                                             backgroundColor: getColorForCategory(selectedStatus.category),
                                             color: "#fff"
                                         }}
-                                        label="Category"
                                         value={selectedStatus.category || ""}
                                         onChange={(e) =>
                                             updateStatus(selectedStatus.id, {
@@ -705,4 +703,4 @@ const EditWorkflowModal: FC<WorkflowEditorProps> = ({
     );
 };
 
-export default EditWorkflowModal;
+export default EditWorkflow;

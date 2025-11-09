@@ -98,8 +98,11 @@ export class IssueService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  findAll() {
-    return this.issueRepository.find({
+  async findAll(page = 1, limit = 20) {
+    const take = limit;
+    const skip = (page - 1) * take;
+
+    const [items, total] = await this.issueRepository.findAndCount({
       relations: [
         'status',
         'assignee',
@@ -108,7 +111,15 @@ export class IssueService {
         'priority',
         'issueType',
       ],
+      skip,
+      take,
+      order: { createdAt: 'DESC' }, // vagy ami neked kell
     });
+
+    return {
+      items,
+      total,
+    };
   }
 
   findOne(id: string) {

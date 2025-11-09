@@ -9,7 +9,7 @@ type CreateProjectDTO = {
     key: string;
 }
 
-export const CreateProjectModal = ({open, closeDialog, onSave}: ModalProps) => {
+export const CreateProjectModal = ({open = false, closeDialog, onSave}: ModalProps) => {
 
     const [formValues, setFormValues] = useState<CreateProjectDTO | null>(null);
 
