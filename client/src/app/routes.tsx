@@ -2,7 +2,6 @@ import type {RouteObject} from 'react-router-dom'
 import ProjectListPage from './../modules/projects/ProjectListPage'
 import {ProjectSettingsPage} from '../modules/projects/ProjectAdmin/ProjectSettingsPage.tsx'
 import IssueListPage from './../modules/issues/IssueListPage'
-// import IssueBoardPage from './../modules/issues/IssueBoardPage'
 import IssueFullPage from './../modules/issues/IssueFullPage'
 import ProfilePage from "../modules/profile/ProfilePage.tsx";
 import LoginPage from "../auth/LoginPage.tsx";
@@ -32,7 +31,6 @@ export const routes: RouteObject[] = [
             {path: '/projects/:projectId', element: <ProjectPage/>},
             {path: '/projects/:projectId/issues', element: <ProjectIssuesListPage/>},
             {path: '/projects/:projectId/settings/*', element: <ProjectSettingsPage/>},
-            // {path: '/projects/:projectId/board', element: <IssueBoardPage/>},
             {path: '/issues/:issueId', element: <IssueFullPage/>},
             {
                 path: '/settings', element: <SettingsPage/>, children: [

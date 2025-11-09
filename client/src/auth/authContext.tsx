@@ -1,11 +1,9 @@
-// src/auth/AuthContext.tsx
 import React, {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import axios, {AxiosError, type AxiosInstance, type AxiosRequestConfig} from "axios";
 import type {User} from "./authTypes.ts";
 import {useNavigate} from "react-router-dom";
 import {setAccessTokenGetter} from "../lib/apiClient.ts";
 import type {CreateUserDto} from "../lib/types.ts";
-// AuthProvider-ben
 
 type Tokens = { accessToken: string; refreshToken: string };
 
@@ -35,7 +33,8 @@ function setStoredRefresh(token: string | null) {
     try {
         if (token) localStorage.setItem(REFRESH_KEY, token);
         else localStorage.removeItem(REFRESH_KEY);
-    } catch { /* ignore */
+    } catch {
+        /* ignore */
     }
 }
 
@@ -130,7 +129,8 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{ baseURL: string }>
                             headers: {Authorization: `Bearer ${refreshData.accessToken}`},
                         });
                         setUser(me);
-                    } catch { /* ha ez itt 401 lenne, az már nagyobb gond – de ne indíts új refresh-t */
+                    } catch {
+                        /* ha ez itt 401 lenne, az már nagyobb gond – de ne indíts új refresh-t */
                     }
 
                     refreshQueueRef.current.forEach((cb) => cb(refreshData.accessToken));
@@ -190,28 +190,24 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{ baseURL: string }>
                 if (!rt) {
                     return;
                 }
-                // prevent parallel refresh while bootstrapping
                 isRefreshingRef.current = true;
 
                 const tokens = await doRefresh(api, rt);
                 if (tokens) {
-                    // set tokens immediately into refs and state
                     accessRef.current = tokens.accessToken;
                     refreshRef.current = tokens.refreshToken;
                     setAccessToken(tokens.accessToken);
                     setStoredRefresh(tokens.refreshToken);
 
-                    // now we can safely load the user with the new token
                     try {
                         const {data: me} = await api.get("/auth/me", {
                             headers: {Authorization: `Bearer ${tokens.accessToken}`},
                         });
                         setUser(me);
                     } catch {
-                        // ignore profile load errors at boot
+                        //Todo handle catch
                     }
                 } else {
-                    // no tokens -> clear any leftovers
                     clearTokens();
                 }
             } catch {

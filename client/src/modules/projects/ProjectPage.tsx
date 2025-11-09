@@ -21,7 +21,6 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {api} from "../../lib/apiClient.ts";
 import {NavLink, useNavigate, useParams} from "react-router-dom";
 
-// Lightweight types to avoid breaking existing ones
 type Project = {
     id: string;
     name: string;
@@ -33,7 +32,7 @@ type Member = {
     id: string;
     name: string;
     email?: string;
-    createdAt?: string; // membership createdAt if available
+    createdAt?: string;
 };
 
 type MemberShip = {
@@ -50,14 +49,11 @@ export default function ProjectPage() {
 
     useEffect(() => {
         if (!projectId) return;
-        // Project details
         api.get<Project>(`/project/${projectId}`).then((res) => setProject(res.data)).catch(() => {
         });
-        // Issues of project
         api.get<Issue[]>(`/issue/project/${projectId}`).then((res) =>
             setIssues(res.data)).catch(() => {
         });
-        // Collaborators (fallback to empty on 404)
         api
             .get<MemberShip[]>(`/project/${projectId}/members`)
             .then((res) => setMembers(res.data.map((ms) => ms.user)))
@@ -99,7 +95,6 @@ export default function ProjectPage() {
                 </Box>
             </Grid>
 
-            {/* Left: Latest issues table */}
             <Grid size={{xs: 12, md: 7}}>
                 <Typography variant="h6" sx={{mb: 1}}>
                     Latest issues in {project?.name || "this project"}
@@ -144,7 +139,6 @@ export default function ProjectPage() {
                 </Paper>
             </Grid>
 
-            {/* Right: Collaborators list */}
             <Grid size={{xs: 12, md: 5}}>
                 <Typography variant="h6" sx={{mb: 1}}>
                     Your collaborators

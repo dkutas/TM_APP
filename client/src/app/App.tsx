@@ -71,7 +71,6 @@ function App() {
                     </Stack>
                 </Toolbar>
             </AppBar>
-            {/* Fixed sidebar */}
             <Box sx={{
                 position: 'fixed',
                 top: 0,

@@ -61,13 +61,10 @@ export type IssueEditModalProps = {
     onClose: (b: boolean) => void;
     onSave: () => void;
     issue: Issue | null;
-    /**
-     * Optional preloaded fields (if not provided, the modal will fetch them).
-     */
+
     fields?: IssueCustomField[];
 };
 
-// Helper to render multi-select chips
 function MultiValue({values}: { values: string[] }) {
     return (
         <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
@@ -93,7 +90,6 @@ export default function IssueEditModal({
     const [priorities, setPriorities] = useState<IssuePriority[]>([]);
 
 
-    // local state of values keyed by field id
     const [values, setValues] = useState<Record<string, NormalizedFieldValue["value"]>>({});
 
     const saveValues = async (): Promise<void> => {
@@ -114,7 +110,6 @@ export default function IssueEditModal({
         onClose(false)
     }
 
-    // Fetch available fields and users when opened
     useEffect(() => {
         if (!open) return;
 
@@ -147,7 +142,7 @@ export default function IssueEditModal({
                 }
 
             } catch {
-                // swallow for now
+                // Todo handle catch
             } finally {
                 if (!cancelled) setLoading(false);
             }

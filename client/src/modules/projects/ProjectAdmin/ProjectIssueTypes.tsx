@@ -68,7 +68,6 @@ export const ProjectIssueTypes = ({projectId}: ProjectIssueTypeProps) => {
         if (!selectedIssueType) return;
         api.delete(`/field-context/${cfCtxId}`)
             .then(() => {
-                // Refresh the custom fields list
                 api.get<Array<PitCustomFieldContext>>(`/field-context/${projectId}/${selectedIssueType.issueType.id}`).then((r) => setPitCustomFields(r.data));
             });
     }

@@ -23,10 +23,8 @@ import {api} from "../../../lib/apiClient.ts";
 export const EditCustomFieldContextModal = ({open = false, id, closeDialog, onSave}: EditCrudModalProps) => {
     const [currentContext, setCurrentContext] = useState<PitCustomFieldContext | null>(null);
 
-    // Globálisan elérhető opciók az adott field-hez (backendről)
     const [options, setOptions] = useState<CustomFieldOption[]>([]);
 
-    // Új opció beviteléhez (freesolo, de ajánl a backend options alapján)
     const [optionInput, setOptionInput] = useState("");
 
     const renderRequiredCheckbox = () => {
@@ -78,7 +76,6 @@ export const EditCustomFieldContextModal = ({open = false, id, closeDialog, onSa
         }
     };
 
-    // ----- OPTION helpers: add / move / remove -----
 
     const handleAddOption = () => {
         if (!currentContext) return;
@@ -87,7 +84,6 @@ export const EditCustomFieldContextModal = ({open = false, id, closeDialog, onSa
 
         const currentOptions = currentContext.options || [];
 
-        // már benne van context szinten?
         const alreadyInContext = currentOptions.some(
             (o) => o.value.toLowerCase() === trimmed.toLowerCase()
         );
@@ -96,7 +92,6 @@ export const EditCustomFieldContextModal = ({open = false, id, closeDialog, onSa
             return;
         }
 
-        // ha létezik backend options-ben, azt használjuk
         const existingGlobal = options.find(
             (o) => o.value.toLowerCase() === trimmed.toLowerCase()
         );
@@ -104,7 +99,7 @@ export const EditCustomFieldContextModal = ({open = false, id, closeDialog, onSa
         const optionToAdd: CustomFieldOption =
             existingGlobal ??
             ({
-                id: crypto.randomUUID(), // temp ID, backend majd normalizálja
+                id: crypto.randomUUID(),
                 value: trimmed,
                 key: `${currentContext.fieldDef.name.slice(0, 3).toLowerCase()}_${trimmed.toLowerCase().replace(/\s+/g, "_")}`,
             } as CustomFieldOption);

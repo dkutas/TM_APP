@@ -22,7 +22,7 @@ interface LinkIssueModalProps {
     issueId: string
 }
 
-const DEBOUNCE_DELAY = 400; // ms
+const DEBOUNCE_DELAY = 400;
 
 
 export const LinkIssueModal = ({open = false, onClose, issueId}: LinkIssueModalProps) => {

@@ -54,7 +54,6 @@ export function ProjectSettingsPage() {
         if (projectId && selectedUserId) {
             api.post(`/project/${projectId}/members`, {userId: selectedUserId}).then(() => {
                 setAssignableUsers([])
-                // Refresh members list
                 api.get(`project/${projectId}/members-with-roles`).then(res => {
                     setProjectMembers(res.data);
                     setIsAssigning(false);
@@ -67,7 +66,6 @@ export function ProjectSettingsPage() {
     const handleDeleteMember = (memberId: string) => {
         if (projectId) {
             api.delete(`/project/${projectId}/members/${memberId}`).then(() => {
-                // Refresh members list
                 api.get(`project/${projectId}/members-with-roles`).then(res => {
                     setProjectMembers(res.data);
                 });

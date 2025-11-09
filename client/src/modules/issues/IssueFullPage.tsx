@@ -121,7 +121,6 @@ export default function IssueFullPage() {
     const transitionIssue = useCallback((transition: IssueTransition) => {
         if (transitions.length > 0 && issueId) {
             api.post(`issue/${issueId}/transition`, {transitionId: transition.id}).then(() => {
-                // Refresh issue data
                 api.get<Issue>(`issue/${issueId}/fields`).then((res) => setIssue(res.data));
                 api.get<IssueTransition[]>(`issue/${issueId}/transitions`).then((res) => {
                     setTransitions(res.data);
@@ -155,7 +154,6 @@ export default function IssueFullPage() {
     useEffect(() => {
         (async (): Promise<NormalizedFieldValue[]> => {
             const entries: NormalizedFieldValue[] = [];
-            // Array model: fieldValues: [{ fieldDef: { name|key }, valueXxx... }]
             if (!!issue && Array.isArray(issue?.fields)) {
                 for (const fv of issue.fields) {
                     const label = fv.name || fv.key || "Custom field";
@@ -344,7 +342,6 @@ export default function IssueFullPage() {
                             </Stack>
                         </Box>
 
-                        {/* Existing list */}
                         {issue.attachments && issue.attachments.length > 0 ? (
                             <Stack spacing={1}>
                                 {issue.attachments.map((a) => (

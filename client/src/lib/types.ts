@@ -134,15 +134,15 @@ export type Attachment = {
     mimeType: string;
     size: string;
     uploadedBy: string;
-    createdAt: string; // ISO
-    url: string; // signed/relative
+    createdAt: string;
+    url: string;
 }
 
 export type Comment = {
     id: string;
     author: User;
     body: string;
-    createdAt: string; // ISO
+    createdAt: string;
     updatedAt?: string | null;
 }
 
@@ -269,7 +269,7 @@ export type NormalizedFieldValue = { label: string, value: string | number | boo
 export type NormalizedHistoryRecord = {
     id: ID,
     actorName: string,
-    createdAt: string, // ISO
+    createdAt: string,
     items: { fieldLabel: string, value: string }[]
 }
 
@@ -289,7 +289,7 @@ export type IssueTransition = {
 export type HistoryLog = {
     id: ID;
     authorId: ID;
-    createdAt: string; // ISO
+    createdAt: string;
     items: Array<{
         fieldKey: string;
         fromId: string | null;
@@ -328,7 +328,7 @@ export type QueryParams = {
     total: number
 }
 
-export type ModDates = { createdAt: Date, updatedAt: Date } // ISO 8601 format
+export type ModDates = { createdAt: Date, updatedAt: Date }
 
 export type UserIssue = ModDates & {
     id: ID,

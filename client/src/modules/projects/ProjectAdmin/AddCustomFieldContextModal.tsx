@@ -45,7 +45,6 @@ export const AddCustomFieldContextModal = ({
     const [fieldDefinitions, setFieldDefinitions] = useState<CustomFieldDefinitionBase[]>([]);
     const [selectedFieldDefinition, setSelectedFieldDefinition] = useState<CustomFieldDefinitionBase | null>(null);
 
-    // Új opció beviteléhez (freesolo, de ajánl a backend options alapján)
     const [optionInput, setOptionInput] = useState("");
 
     const renderRequiredCheckbox = () => {
@@ -97,7 +96,6 @@ export const AddCustomFieldContextModal = ({
         }
     };
 
-    // ----- OPTION / MULTI_OPTION helpers: add / move / remove -----
 
     const handleAddOption = () => {
         if (!currentContext) return;
@@ -106,7 +104,6 @@ export const AddCustomFieldContextModal = ({
 
         const currentOptions = currentContext.options || [];
 
-        // már benne van context szinten?
         const alreadyInContext = currentOptions.some(
             (o) => o.value.toLowerCase() === trimmed.toLowerCase()
         );
@@ -115,7 +112,6 @@ export const AddCustomFieldContextModal = ({
             return;
         }
 
-        // ha létezik backend options-ben, azt használjuk
         const existingGlobal = options.find(
             (o) => o.value.toLowerCase() === trimmed.toLowerCase()
         );
@@ -123,7 +119,7 @@ export const AddCustomFieldContextModal = ({
         const optionToAdd: CustomFieldOption =
             existingGlobal ??
             ({
-                id: crypto.randomUUID(), // temp ID, backend normalizálja
+                id: crypto.randomUUID(),
                 value: trimmed,
             } as CustomFieldOption);
 
@@ -445,7 +441,6 @@ export const AddCustomFieldContextModal = ({
 
             setFieldDefinitions(unassignedFieldDefs);
         });
-        // reset state when issueTypeId or projectId changes
         setSelectedFieldDefinition(null);
         setCurrentContext({
             required: false,

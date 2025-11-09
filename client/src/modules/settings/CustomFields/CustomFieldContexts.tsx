@@ -31,14 +31,14 @@ export const CustomFieldContexts = () => {
     }
 
     const colors = [
-        "#CDEBC1", // soft green
-        "#FAD3D7", // soft pink
-        "#FCE8A8", // pale yellow
-        "#BBD6FF", // light blue
-        "#E6D4C9", // warm gray
-        "#F7E1AF", // sand
-        "#C7EBD5", // mint
-        "#D7C4F2", // lavender
+        "#CDEBC1",
+        "#FAD3D7",
+        "#FCE8A8",
+        "#BBD6FF",
+        "#E6D4C9",
+        "#F7E1AF",
+        "#C7EBD5",
+        "#D7C4F2",
     ];
 
 

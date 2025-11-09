@@ -66,12 +66,9 @@ export type IssueModalProps = {
     open: boolean;
     onClose: (b: boolean) => void;
     onSave: () => void;
-    /**
-     * Optional preloaded fields (if not provided, the modal will fetch them).
-     */
+
 };
 
-// Helper to render multi-select chips
 function MultiValue({values}: { values: string[] }) {
     return (
         <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>

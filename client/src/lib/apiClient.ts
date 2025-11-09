@@ -1,4 +1,3 @@
-// src/api/apiClient.ts
 import axios from "axios";
 
 let accessGetter: (() => string | null) | null = null;

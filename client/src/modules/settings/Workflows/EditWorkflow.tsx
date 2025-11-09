@@ -42,14 +42,13 @@ import {
     getTextColorForCategory
 } from "../../../common/utils.ts";
 
-// ===== DTO-k =====
 
 export interface WorkflowStatusDTO {
     id: string;
     key: string;
     name: string;
     isTerminal: boolean;
-    category?: string; // TODO / INPROGRESS / DONE / stb.
+    category?: string;
     position?: { x: number; y: number };
 }
 
@@ -60,7 +59,6 @@ export interface WorkflowTransitionDTO {
     name: string;
 }
 
-// ===== Helper az ID generáláshoz =====
 
 const createId = () => {
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -69,10 +67,9 @@ const createId = () => {
     return `id-${Math.random().toString(36).slice(2, 11)}`;
 };
 
-// ===== Helper a default pozíciókhoz =====
 
 const defaultPositionForIndex = (index: number) => {
-    // Stair-step layout: each next node is shifted right and down to form a diagonal "lépcsőzetes" layout
+    // Lépcsős layout
     const stepX = 180 + index * 220;
     const stepY = 80 + index * 120;
     return {
@@ -147,7 +144,6 @@ const edgeTypes = {
 
 const fitViewOptions = {padding: 4};
 
-// ===== Fő komponens =====
 
 const EditWorkflow: FC<WorkflowEditorProps> = ({
 
@@ -215,7 +211,6 @@ const EditWorkflow: FC<WorkflowEditorProps> = ({
 
     const transitionsToEdges: (items: WorkflowTransitionDTO[]) => Edge[] = useCallback(
         (items) => {
-            // Gruppoljuk a tranzíciókat node-párok szerint (iránytól függetlenül)
             const groups = items.reduce<Record<string, WorkflowTransitionDTO[]>>((acc, t) => {
                 const key = [t.fromStatusId, t.toStatusId].sort().join('__');
                 if (!acc[key]) acc[key] = [];
@@ -223,7 +218,7 @@ const EditWorkflow: FC<WorkflowEditorProps> = ({
                 return acc;
             }, {});
 
-            const baseOffset = 40; // px – ennyire távolodjanak egymástól a párhuzamos élek
+            const baseOffset = 40;
 
             return items.map((t) => {
                 const key = [t.fromStatusId, t.toStatusId].sort().join('__');
@@ -233,7 +228,6 @@ const EditWorkflow: FC<WorkflowEditorProps> = ({
 
                 let curveOffset = 0;
                 if (count > 1 && index !== -1) {
-                    // index: 0..count-1 → ..., -1, 0, 1, ...
                     const middle = (count - 1) / 2;
                     const offsetIndex = index - middle;
                     curveOffset = offsetIndex * baseOffset;
@@ -244,8 +238,8 @@ const EditWorkflow: FC<WorkflowEditorProps> = ({
                     source: t.fromStatusId,
                     target: t.toStatusId,
                     label: t.name,
-                    type: 'floating',          // ez a te SimpleFloatingEdge-ed typja
-                    data: {curveOffset},     // <-- ezt használja majd a SimpleFloatingEdge
+                    type: 'floating',
+                    data: {curveOffset},
                     markerEnd: {type: MarkerType.ArrowClosed, strokeWidth: 3, color: '#000000'},
                     style: {
                         strokeWidth: 3,
@@ -272,7 +266,6 @@ const EditWorkflow: FC<WorkflowEditorProps> = ({
             api.get<Workflow>(`workflow/${workflowId}`).then((r) => {
                 const wf = r.data;
 
-                // státuszok
                 const loadedStatuses: WorkflowStatusDTO[] = (wf.statuses ?? []).map((s, idx) => ({
                     id: s.id,
                     key: s.key,
@@ -284,7 +277,6 @@ const EditWorkflow: FC<WorkflowEditorProps> = ({
 
                 setStatuses(addDefaultPositions(loadedStatuses));
 
-                // tranzíciók (csak ID-kat tárolunk)
                 const loadedTransitions: WorkflowTransitionDTO[] = (wf.transitions ?? []).map(
                     (t) => ({
                         id: t.id,

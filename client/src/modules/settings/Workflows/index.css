@@ -1,14 +1,11 @@
-/* xyflow theme files. Delete these to start from our base */
 
 .react-flow {
     --xy-background-color: #f7f9fb;
-    /* Custom Variables */
     --xy-theme-selected: #f57dbd;
     --xy-theme-hover: #c5c5c5;
     --xy-theme-edge-hover: black;
     --xy-theme-color-focus: #e8e8e8;
 
-    /* Built-in Variables see https://reactflow.dev/learn/customization/theming */
     --xy-node-border-default: 1px solid #ededed;
 
     --xy-node-boxshadow-default: 0px 3.54px 4.55px 0px #00000005, 0px 3.54px 4.55px 0px #0000000d,
@@ -24,12 +21,11 @@
 
 .react-flow.dark {
     --xy-node-boxshadow-default: 0px 3.54px 4.55px 0px rgba(255, 255, 255, 0.05),
-        /* light shadow */ 0px 3.54px 4.55px 0px rgba(255, 255, 255, 0.13),
-        /* medium shadow */ 0px 0.51px 1.01px 0px rgba(255, 255, 255, 0.2); /* smallest shadow */
+    0px 3.54px 4.55px 0px rgba(255, 255, 255, 0.13),
+    0px 0.51px 1.01px 0px rgba(255, 255, 255, 0.2);
     --xy-theme-color-focus: #535353;
 }
 
-/* Customizing Default Theming */
 
 .react-flow__node {
     box-shadow: var(--xy-node-boxshadow-default);
@@ -104,20 +100,6 @@
     height: 5px;
 }
 
-/*
-  Custom Example CSS  - This CSS is to improve the example experience.
-  You can remove it if you want to use the default styles.
-
-  New Theme Classes:
-    .xy-theme__button   - Styles for buttons.
-    .xy-theme__input    - Styles for text inputs.
-    .xy-theme__checkbox - Styles for checkboxes.
-    .xy-theme__select   - Styles for dropdown selects.
-    .xy-theme__label    - Styles for labels.
-
-  Use these classes to apply consistent theming across your components.
-*/
-
 :root {
     --color-primary: #ff0073;
     --color-background: #fefefe;
@@ -139,7 +121,6 @@
     }
 }
 
-/* Custom Button Styling */
 .xy-theme__button {
     display: inline-flex;
     align-items: center;
@@ -187,12 +168,10 @@
     margin-right: 0.2rem;
 }
 
-/* Add gap between adjacent buttons */
 .xy-theme__button + .xy-theme__button {
     margin-left: 0.3rem;
 }
 
-/* Example Input Styling */
 .xy-theme__input {
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--color-primary);
@@ -210,7 +189,6 @@
     box-shadow: 0 0 0 2px rgba(255, 0, 115, 0.3);
 }
 
-/* Specific Checkbox Styling */
 .xy-theme__checkbox {
     appearance: none;
     -webkit-appearance: none;
@@ -237,7 +215,6 @@
     box-shadow: 0 0 0 2px rgba(255, 0, 115, 0.3);
 }
 
-/* Dropdown Styling */
 .xy-theme__select {
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--color-primary);

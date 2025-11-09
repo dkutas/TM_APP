@@ -63,8 +63,8 @@ export default function IssueListPage() {
         api
             .get<IssueListResponse>("/issue", {
                 params: {
-                    page: page + 1,          // backend: 1-based page index
-                    limit: rowsPerPage,      // backend: page size
+                    page: page + 1,
+                    limit: rowsPerPage,
                 },
             })
             .then((res) => {
@@ -77,7 +77,6 @@ export default function IssueListPage() {
             });
     }, [page, rowsPerPage]);
 
-    // infer up to 3 custom field keys
     const customKeys = useMemo(() => {
         const keys = new Set<string>();
         for (const it of issues) {
@@ -224,7 +223,6 @@ export default function IssueListPage() {
                     </Box>
                 </Grid>
 
-                {/* Filter header */}
                 <Grid size={12}>
                     <Paper sx={{p: 1.5, borderRadius: 4}}>
                         <Stack direction="row" spacing={1.5} flexWrap="wrap">

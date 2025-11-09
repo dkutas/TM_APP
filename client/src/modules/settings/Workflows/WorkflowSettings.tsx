@@ -17,13 +17,13 @@ export const WorkflowSettings = () => {
     const navigate = useNavigate();
 
 
-    const onAdd = () => {/* open create modal */
+    const onAdd = () => {
         navigate("new")
     };
     const onView = (id: string) => {
         navigate(`${id}/view`);
     };
-    const onEdit = (id: string) => {/* confirm + call api.delete(`/issue-type/${id}`) */
+    const onEdit = (id: string) => {
         navigate(`${id}`);
     };
     return (
