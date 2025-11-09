@@ -1,4 +1,3 @@
-// repositories/attachment.repository.ts
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Attachment } from '../attachment/entities/attachment.entity';

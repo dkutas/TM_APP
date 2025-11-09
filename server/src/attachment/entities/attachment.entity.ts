@@ -1,4 +1,3 @@
-// src/collab/attachment.entity.ts
 import {
   Column,
   Entity,

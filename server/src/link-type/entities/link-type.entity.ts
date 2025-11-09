@@ -1,4 +1,3 @@
-// src/links/link-type.entity.ts
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { LinkCategory } from '../../common/enums';
 

@@ -1,4 +1,3 @@
-// src/issues/dto/user-issues-query.dto.ts
 import { IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
@@ -27,5 +26,5 @@ export class UserIssuesQueryDto extends PaginationDto {
 
   @IsOptional()
   @IsString()
-  q?: string; // summary/description text search
+  q?: string;
 }

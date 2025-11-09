@@ -1,4 +1,3 @@
-// src/issues/issue.entity.ts
 import { Project } from '../../project/entities/project.entity';
 import { ProjectIssueType } from '../../project/entities/projectIssueType.entity';
 import {
@@ -26,7 +25,7 @@ export class Issue {
   projectIssueType: ProjectIssueType;
   @ManyToOne(() => IssueType, { onDelete: 'RESTRICT' }) issueType: IssueType;
 
-  @Column({ length: 30 }) key: string; // PROJ-123
+  @Column({ length: 30 }) key: string;
   @Column({ length: 255 }) summary: string;
   @Column({ type: 'text', nullable: true }) description: string;
 

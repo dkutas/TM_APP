@@ -1,4 +1,3 @@
-// src/auth/auth.service.ts
 import {
   ForbiddenException,
   Injectable,
@@ -140,9 +139,9 @@ export class AuthService {
   }
 
   private async issueRefreshToken(user: User) {
-    const token = crypto.randomBytes(48).toString('hex'); // kliens ezt kapja
+    const token = crypto.randomBytes(48).toString('hex');
     const tokenHash = sha256(token);
-    const expires = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 nap
+    const expires = new Date(Date.now() + 7 * 24 * 3600 * 1000);
 
     const rt = this.refreshTokens.create({
       user,

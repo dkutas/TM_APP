@@ -1,4 +1,3 @@
-// repositories/issue-link.repository.ts
 import { DataSource, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 
@@ -10,7 +9,6 @@ export class IssueLinkRepository extends Repository<IssueLink> {
     super(IssueLink, ds.createEntityManager());
   }
 
-  // mindkét irány, join-olva a linkType-ot és a másik issue core adatait
   async findByIssue(issueId: string) {
     const out = await this.createQueryBuilder('l')
       .leftJoinAndSelect('l.linkType', 'lt')

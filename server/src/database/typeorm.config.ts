@@ -13,5 +13,5 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: false,
   namingStrategy: new SnakeNamingStrategy(),
-  uuidExtension: 'pgcrypto', // ha használsz gen_random_uuid()-t
+  uuidExtension: 'pgcrypto',
 });

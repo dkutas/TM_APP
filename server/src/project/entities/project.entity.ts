@@ -1,4 +1,3 @@
-// src/projects/project.entity.ts
 import {
   Column,
   Entity,

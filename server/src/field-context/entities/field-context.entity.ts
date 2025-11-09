@@ -11,7 +11,6 @@ import { Project } from '../../project/entities/project.entity';
 import { IssueType } from '../../issue-type/entities/issue-type.entity';
 import { FieldOption } from '../../field-option/entities/field-option.entity';
 
-// src/fields/field-context.entity.ts
 @Entity('field_contexts')
 @Index(['fieldDef', 'project', 'issueType'], { unique: true })
 export class FieldContext {

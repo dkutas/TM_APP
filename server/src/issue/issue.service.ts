@@ -1,4 +1,3 @@
-// issue.service.ts
 import {
   BadRequestException,
   Injectable,
@@ -14,7 +13,6 @@ import { IssueRepository } from '../repositories/issue.repository';
 import { FieldContextRepository } from '../repositories/field-context.repository';
 import { IssueFieldValueRepository } from '../repositories/issue-field-value.repository';
 import { FieldDefinition } from '../field-definition/entities/field-definition.entity';
-// ... other imports
 import {
   FieldDefsDTO,
   FieldDto,
@@ -113,7 +111,7 @@ export class IssueService {
       ],
       skip,
       take,
-      order: { createdAt: 'DESC' }, // vagy ami neked kell
+      order: { createdAt: 'DESC' },
     });
 
     return {
@@ -195,7 +193,6 @@ export class IssueService {
       issueTypeId,
     );
 
-    // ---- load extras in parallel ----
     const [links, comments, attachments, historyLogs, basic] =
       await Promise.all([
         this.getIssueLinks(issueId),
@@ -205,7 +202,6 @@ export class IssueService {
         this.findOne(issueId),
       ]);
 
-    // flatten change-log items to IssueHistoryItemDto[]
     const history: IssueHistoryItemDto[] = historyLogs.map((h) => ({
       id: h.id,
       authorId: h.actor.id,
@@ -219,7 +215,6 @@ export class IssueService {
       })),
     }));
 
-    // meglévő értékek az issue-hoz (fieldDef + options + option)
     const values = await this.valueRepo.findByIssueWithJoins(issueId);
     const valueByFd = new Map(values.map((v) => [v.fieldDef.id, v]));
 
@@ -311,8 +306,6 @@ export class IssueService {
     };
   }
 
-  // ---------- UPSERT ------------------------------------------------------
-
   async getUserExists(userId: string): Promise<boolean> {
     return this.userRepository
       .findOne({ where: { id: userId } })
@@ -350,7 +343,6 @@ export class IssueService {
 
       if (!issue) throw new NotFoundException('Issue not found');
 
-      // rendszermezők frissítése
       for (const [key, values] of Object.entries(systemUpdates)) {
         historyItems.push({
           fieldKey: key,
@@ -376,7 +368,6 @@ export class IssueService {
           .leftJoinAndSelect('vopt.option', 'opt')
           .getOne();
 
-        // nullázó
         const reset: Partial<IssueFieldValue> = {
           valueText: null,
           valueNumber: null,
@@ -386,13 +377,11 @@ export class IssueService {
           valueJson: null,
         };
 
-        // MULTI_OPTION: biztosíts value rekordot, majd cseréld a kapcsolótáblát
         if (fd.dataType === DataType.MULTI_OPTION) {
           if (!v)
             v = await valueRepo.save(
               valueRepo.create({ issue, fieldDef: fd, ...reset }),
             );
-          // törlés & beszúrás
           await valueOptRepo
             .createQueryBuilder()
             .delete()
@@ -423,12 +412,10 @@ export class IssueService {
               });
             }
           }
-          // frissített updatedAt
           await valueRepo.update(v.id, { updatedAt: new Date() });
           continue;
         }
 
-        // Single-value mezők
         const patch: Partial<IssueFieldValue> = { ...reset };
         const dataType = fd.dataType as DataType;
         switch (dataType) {
@@ -683,7 +670,6 @@ export class IssueService {
           continue;
         }
 
-        // single-value mezők
         const patch: Partial<IssueFieldValue> = { ...reset };
         switch (fd.dataType as DataType) {
           case DataType.TEXT:
@@ -724,7 +710,6 @@ export class IssueService {
         });
       }
 
-      // 7) Visszatérés
       return { ok: true, issueId: saved.id, key: saved.key };
     });
   }
@@ -743,15 +728,13 @@ export class IssueService {
     this.applyUserRoleFilter(qb, userId, role);
     this.applyFilters(qb, query);
 
-    // rendezés
     const sortSpec = this.parseSort(sort);
     for (const [col, dir] of Object.entries(sortSpec)) {
       const column = col === 'priorityRank' ? 'pr.rank' : `i.${col}`;
       qb.addOrderBy(column, dir);
     }
-    qb.addOrderBy('i.id', 'DESC'); // tie-breaker
+    qb.addOrderBy('i.id', 'DESC');
 
-    // lapozás
     const [items, total] = await qb
       .skip((page - 1) * limit)
       .take(limit)
@@ -862,8 +845,6 @@ export class IssueService {
     return { ok: true };
   }
 
-  // ---- COMMENTS ----------------------------------------------------------
-
   async deleteIssueComment(commentId: string, authorId: string) {
     const issueId = await this.findIssueIdByComment(commentId);
     await this.commentRepo.removeComment(commentId);
@@ -919,8 +900,6 @@ export class IssueService {
     });
   }
 
-  // ---- ATTACHMENTS -------------------------------------------------------
-
   async getAvailableTransitions(
     issueId: string,
   ): Promise<IssueTransitionDto[]> {
@@ -931,17 +910,13 @@ export class IssueService {
     const issueTypeId = issue.issueType.id;
     const fromStatusId = issue.status.id;
 
-    // 1) projekt + issueType → workflow
     const mapping = await this.pitRepo.findWorkflow(projectId, issueTypeId);
-    if (!mapping?.workflow) return []; // nincs workflow map-elve
+    if (!mapping?.workflow) return [];
 
-    // 2) ebből a workflow-ból a current státuszból induló transition-ök
     const list = await this.transRepo.findForWorkflowAndFromStatus(
       mapping.workflow.id,
       fromStatusId,
     );
-
-    // (Ha vannak szabályaid, itt tudsz szűrni: roles, conditions stb.)
 
     return list.map((t) => ({
       id: t.id,
@@ -988,7 +963,7 @@ export class IssueService {
 
   private parseSort(sort?: string): SortSpec {
     if (!sort) return { createdAt: 'DESC' };
-    const safeCols = new Set(['createdAt', 'updatedAt', 'key', 'priorityRank']); // whitelist
+    const safeCols = new Set(['createdAt', 'updatedAt', 'key', 'priorityRank']);
     const spec: SortSpec = {};
     for (const part of sort.split(',')) {
       const [rawCol, rawDir] = part.split(':');

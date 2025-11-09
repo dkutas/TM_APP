@@ -1,4 +1,3 @@
-// src/projects/project-issue-type.entity.ts
 import { Project } from './project.entity';
 import {
   Column,

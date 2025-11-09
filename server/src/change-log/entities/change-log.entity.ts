@@ -1,4 +1,3 @@
-// src/audit/changelog.entity.ts
 import {
   Column,
   Entity,

@@ -65,7 +65,6 @@ export class IssueController {
     @Param('id') id: string,
     @Body('transitionId') transitionId: string,
   ) {
-    // Implement the logic to transition the issue to a new status
     return this.issueService.transition(id, transitionId, req.user.id);
   }
 

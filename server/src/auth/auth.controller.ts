@@ -1,11 +1,10 @@
-// src/auth/auth.controller.ts
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService, JwtPayload } from './auth.service';
 import { JwtAuthGuard } from './jwt.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 export interface AuthenticatedRequest extends Request {
-  user: JwtPayload; // Adjust the type according to your user object structure
+  user: JwtPayload;
 }
 
 @Controller('auth')

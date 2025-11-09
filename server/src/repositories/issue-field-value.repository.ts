@@ -1,4 +1,3 @@
-// repositories/issue-field-value.repository.ts
 import { DataSource, Repository } from 'typeorm';
 import { IssueFieldValue } from '../issue-field-value/entities/issue-field-value.entity';
 import { Injectable } from '@nestjs/common';
@@ -9,10 +8,7 @@ export class IssueFieldValueRepository extends Repository<IssueFieldValue> {
     super(IssueFieldValue, ds.createEntityManager());
   }
 
-  // Minden érték + fieldDef + multi opciók (és bennük a FieldOption) egyben
   async findByIssueWithJoins(issueId: string) {
-    // Betölti az összes IssueFieldValue-t az adott issue-hoz, a kapcsolt fieldDef-et,
-    // valamint minden option típusú értékhez a kapcsolt FieldOption entitást is.
     return this.createQueryBuilder('v')
       .leftJoinAndSelect('v.fieldDef', 'fd')
       .leftJoinAndSelect('v.options', 'vopt')
@@ -24,7 +20,6 @@ export class IssueFieldValueRepository extends Repository<IssueFieldValue> {
       .getMany();
   }
 
-  // Egy konkrét fieldhez az érték (ha van)
   findOneByIssueAndFieldDef(issueId: string, fieldDefId: string) {
     return this.createQueryBuilder('v')
       .leftJoin('v.issue', 'iss')

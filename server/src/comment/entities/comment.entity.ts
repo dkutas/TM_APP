@@ -1,4 +1,3 @@
-// src/collab/comment.entity.ts
 import {
   Column,
   Entity,

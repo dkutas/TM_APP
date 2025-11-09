@@ -1,6 +1,6 @@
-import {Position} from '@xyflow/react';
+import {type InternalNode, type Node, Position} from '@xyflow/react';
 
-function getParams(nodeA, nodeB) {
+function getParams(nodeA: InternalNode<Node>, nodeB: InternalNode<Node>) {
     const centerA = getNodeCenter(nodeA);
     const centerB = getNodeCenter(nodeB);
 
@@ -19,43 +19,43 @@ function getParams(nodeA, nodeB) {
     return [x, y, position];
 }
 
-function getHandleCoordsByPosition(node, handlePosition) {
-    const handle = node.internals.handleBounds.source.find(
+function getHandleCoordsByPosition(node: InternalNode<Node>, handlePosition: Position) {
+    const handle = node.internals.handleBounds?.source?.find(
         (h) => h.position === handlePosition,
     );
 
-    let offsetX = handle.width / 2;
-    let offsetY = handle.height / 2;
+    let offsetX = (handle?.width || 0) / 2;
+    let offsetY = (handle?.height || 0) / 2;
 
     switch (handlePosition) {
         case Position.Left:
             offsetX = 0;
             break;
         case Position.Right:
-            offsetX = handle.width;
+            offsetX = (handle?.width || 0);
             break;
         case Position.Top:
             offsetY = 0;
             break;
         case Position.Bottom:
-            offsetY = handle.height;
+            offsetY = (handle?.height || 0);
             break;
     }
 
-    const x = node.internals.positionAbsolute.x + handle.x + offsetX;
-    const y = node.internals.positionAbsolute.y + handle.y + offsetY;
+    const x = node.internals.positionAbsolute.x + (handle?.x || 0) + offsetX;
+    const y = node.internals.positionAbsolute.y + (handle?.y || 0) + offsetY;
 
     return [x, y];
 }
 
-function getNodeCenter(node) {
+function getNodeCenter(node: InternalNode<Node>) {
     return {
-        x: node.internals.positionAbsolute.x + node.measured.width / 2,
-        y: node.internals.positionAbsolute.y + node.measured.height / 2,
+        x: node.internals.positionAbsolute.x + (node.measured.width || 0) / 2,
+        y: node.internals.positionAbsolute.y + (node.measured.height || 0) / 2,
     };
 }
 
-export function getEdgeParams(source, target) {
+export function getEdgeParams(source: InternalNode<Node>, target: InternalNode<Node>) {
     const [sx, sy, sourcePos] = getParams(source, target);
     const [tx, ty, targetPos] = getParams(target, source);
 

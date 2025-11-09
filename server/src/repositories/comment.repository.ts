@@ -1,4 +1,3 @@
-// repositories/comment.repository.ts
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Comment } from '../comment/entities/comment.entity';

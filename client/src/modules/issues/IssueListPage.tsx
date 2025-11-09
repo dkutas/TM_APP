@@ -30,6 +30,7 @@ import SplitscreenIcon from "@mui/icons-material/Splitscreen";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {useUIStore} from "../../app/store.ts";
 import IssueCreateModal from "./IssueCreateModal.tsx";
+import {getBackgroundColorForCategory, getBorderColorForCategory, getTextColorForCategory} from "../../common/utils.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const BASE_COLUMNS = ["Key", "Type", "Summary", "Assignee", "Status", "Estimate"] as const;
@@ -37,12 +38,12 @@ const BASE_COLUMNS = ["Key", "Type", "Summary", "Assignee", "Status", "Estimate"
 type BaseCol = typeof BASE_COLUMNS[number];
 
 type Filters = {
-    Key: string;
-    Type: string;
-    Summary: string;
-    Assignee: string;
-    Status: string;
-};
+    "Key": string;
+    "Type": string;
+    "Summary": string;
+    "Assignee": string;
+    "Status": string;
+} & { [key: string]: string };
 
 type IssueListResponse = {
     items: Issue[];
@@ -76,16 +77,6 @@ export default function IssueListPage() {
                 setTotal(0);
             });
     }, [page, rowsPerPage]);
-
-    const customKeys = useMemo(() => {
-        const keys = new Set<string>();
-        for (const it of issues) {
-            const bag: Record<string, unknown> = (it).custom || (it).customValues || {};
-            Object.keys(bag).forEach((k) => keys.add(k));
-            if (keys.size >= 3) break;
-        }
-        return Array.from(keys).slice(0, 3);
-    }, [issues]);
 
     const filtered = useMemo(() => {
         const match = (val: unknown, needle: string) =>
@@ -129,16 +120,11 @@ export default function IssueListPage() {
                         <TableCell>Summary</TableCell>
                         <TableCell>Assignee</TableCell>
                         <TableCell>Status</TableCell>
-                        <TableCell>Estimate</TableCell>
-                        {customKeys.map((ck) => (
-                            <TableCell key={ck}>{ck}</TableCell>
-                        ))}
                         {isDetailsOpen ? <TableCell>Actions</TableCell> : null}
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {rows.map((i) => {
-                        const bag: Record<string, any> = (i as any).custom || (i as any).customValues || {};
                         const active = isDetailsOpen && selected?.id === i.id;
                         return (
                             <TableRow
@@ -152,11 +138,17 @@ export default function IssueListPage() {
                                 <TableCell>{i.issueType?.name || "—"}</TableCell>
                                 <TableCell>{i.summary}</TableCell>
                                 <TableCell>{i.assignee?.name || i.assignee?.email || "—"}</TableCell>
-                                <TableCell>{i.status?.name || "—"}</TableCell>
-                                <TableCell>{(i).estimate ?? "-"}</TableCell>
-                                {customKeys.map((ck) => (
-                                    <TableCell key={ck}>{bag?.[ck] ?? "—"}</TableCell>
-                                ))}
+                                <TableCell>
+                                    <Paper sx={{
+                                        p: 0.5,
+                                        display: "inline-block",
+                                        backgroundColor: getBackgroundColorForCategory(i.status.category),
+                                        color: getTextColorForCategory(i.status.category),
+                                        borderColor: getBorderColorForCategory(i.status.category)
+                                    }}>
+                                        {i.status?.name || "—"}
+                                    </Paper>
+                                </TableCell>
                                 {isDetailsOpen ? (
                                     <TableCell align="right">
                                         <IconButton
@@ -173,15 +165,6 @@ export default function IssueListPage() {
                             </TableRow>
                         );
                     })}
-                    {rows.length === 0 && (
-                        <TableRow>
-                            <TableCell colSpan={6 + customKeys.length}>
-                                <Box py={6} textAlign="center">
-                                    <Typography color="text.secondary">No issues found.</Typography>
-                                </Box>
-                            </TableCell>
-                        </TableRow>
-                    )}
                 </TableBody>
             </Table>
             <TablePagination
@@ -229,7 +212,7 @@ export default function IssueListPage() {
                             {["Key", "Type", "Summary", "Assignee", "Status"].map((k) => (
                                 <TextField
                                     key={k}
-                                    label={k as BaseCol}
+                                    label={k}
                                     size="small"
                                     value={(filters)[k]}
                                     onChange={(e) => setFilters((f) => ({...f, [k]: e.target.value}))}
@@ -283,12 +266,6 @@ export default function IssueListPage() {
                                                         Assignee
                                                     </Typography>
                                                     <Typography>{selected.assignee?.name || selected.assignee?.email || "—"}</Typography>
-                                                </Box>
-                                                <Box>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Estimate
-                                                    </Typography>
-                                                    <Typography>{(selected).estimate ?? "—"}</Typography>
                                                 </Box>
                                             </Stack>
                                             <Box>

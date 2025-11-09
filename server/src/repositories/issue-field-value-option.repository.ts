@@ -1,4 +1,3 @@
-// repositories/issue-field-value-option.repository.ts
 import {
   IssueFieldValue,
   IssueFieldValueOption,

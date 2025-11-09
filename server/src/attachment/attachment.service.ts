@@ -36,7 +36,7 @@ export class AttachmentService {
       originalName: string;
       mimeType: string;
       size: number;
-      relativeUrl: string; // /files/issues/<issueId>/<storedFileName>
+      relativeUrl: string;
     }>;
   }) {
     const issue = await this.issueRepository.findOne({
@@ -69,9 +69,8 @@ export class AttachmentService {
     });
     if (!a) throw new NotFoundException('Attachment not found');
 
-    // lokális fájl törlése (best-effort)
     const absRoot = join(process.cwd(), 'uploads');
-    const fileRel = a.url.replace(/^\/files\//, ''); // issues/...
+    const fileRel = a.url.replace(/^\/files\//, '');
     const absPath = join(absRoot, fileRel);
     fs.rm(absPath, (err) => {
       if (err) {

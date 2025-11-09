@@ -1,4 +1,3 @@
-// repositories/field-context.repository.ts
 import { DataSource, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { FieldContext } from '../field-context/entities/field-context.entity';
@@ -10,8 +9,6 @@ export class FieldContextRepository extends Repository<FieldContext> {
   }
 
   async findApplicable(projectId: string, issueTypeId: string) {
-    // visible = true, és (project null|=) & (issueType null|=)
-
     return this.createQueryBuilder('fc')
       .innerJoinAndSelect('fc.fieldDef', 'fd')
       .leftJoinAndSelect('fc.options', 'opt')

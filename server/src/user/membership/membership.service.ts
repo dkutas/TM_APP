@@ -1,4 +1,3 @@
-// src/memberships/memberships.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectMembership } from '../../role/entities/role.entity';

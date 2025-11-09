@@ -1,4 +1,3 @@
-// src/issues/issue-type.entity.ts
 import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('issue_types')

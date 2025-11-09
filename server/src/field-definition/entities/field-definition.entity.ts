@@ -1,4 +1,3 @@
-// src/fields/field-definition.entity.ts
 import {
   Column,
   Entity,
@@ -10,7 +9,7 @@ import { DataType } from '../../common/enums';
 import { FieldContext } from '../../field-context/entities/field-context.entity';
 
 @Entity('field_definitions')
-@Index(['key'], { unique: true }) // pl. system.summary, custom.foo
+@Index(['key'], { unique: true })
 export class FieldDefinition {
   @PrimaryGeneratedColumn('uuid') id: string;
   @Column({ length: 120 }) key: string;

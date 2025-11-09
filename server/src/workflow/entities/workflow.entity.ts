@@ -1,4 +1,3 @@
-// src/workflows/workflow.entity.ts
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { WorkflowStatus } from './workflow-status.entity';
 import { WorkflowTransition } from './workflow-transition.entity';

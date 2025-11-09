@@ -1,4 +1,3 @@
-// repositories/workflow-transition.repository.ts
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 
@@ -10,9 +9,6 @@ export class WorkflowTransitionRepository extends Repository<WorkflowTransition>
     super(WorkflowTransition, ds.createEntityManager());
   }
 
-  /**
-   * Egy adott workflow-ban a megadott fromStatus-ból induló transition-ök.
-   */
   findForWorkflowAndFromStatus(workflowId: string, fromStatusId: string) {
     return this.createQueryBuilder('t')
       .innerJoinAndSelect('t.fromStatus', 'from')

@@ -6,7 +6,6 @@ import {
     Box,
     Button,
     Container,
-    InputBase,
     List,
     ListItemButton,
     ListItemIcon,
@@ -15,7 +14,6 @@ import {
     Toolbar,
     Typography
 } from "@mui/material";
-import SearchIcon from '@mui/icons-material/Search'
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -50,21 +48,9 @@ function App() {
     return (
         <Box sx={{display: 'flex'}}>
             <AppBar position="fixed" sx={{zIndex: (t) => t.zIndex.drawer + 1}}>
-                <Toolbar>
+                <Toolbar sx={{display: 'flex', justifyContent: 'space-between'}}>
                     <Typography variant="h6" component={Link} to="/profile"
                                 sx={{color: 'inherit', textDecoration: 'none', ml: 1, mr: 2}}>Ticketify</Typography>
-                    <Box sx={{
-                        flex: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        px: 1,
-                        bgcolor: 'background.default',
-                        borderRadius: 1
-                    }} onClick={() => setPalette(true)}>
-                        <SearchIcon fontSize="small" color="primary"/>
-                        <InputBase placeholder="Global search (⌘K)" sx={{flex: 1}}/>
-                    </Box>
                     <Stack direction="row" spacing={1} sx={{ml: 2, alignItems: 'center', justifyItems: 'center'}}>
                         <Button color="inherit" variant="outlined"
                                 onClick={handleClickAuth}>{user?.id ? "Logout" : "Login"}</Button>

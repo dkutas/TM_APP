@@ -1,5 +1,3 @@
-// dto/field-option.dto.ts
-
 import { User } from '../../user/entities/user.entity';
 import { Issue } from '../entities/issue.entity';
 import { DataType } from '../../common/enums';
@@ -20,7 +18,6 @@ export interface FieldDtoBase {
   options?: FieldOptionDto[] | null;
 }
 
-// Diszkriminált unió beágyazva
 export type FieldDto =
   | (FieldDtoBase & { dataType: DataType.TEXT; value: string | null })
   | (FieldDtoBase & { dataType: DataType.NUMBER; value: number | null })
@@ -41,7 +38,6 @@ export type FieldDefsDTO =
   | (FieldDtoBase & { dataType: DataType.OPTION })
   | (FieldDtoBase & { dataType: DataType.MULTI_OPTION });
 
-// dto/issue-with-fields.dto.ts
 export interface IssueWithFieldsDto extends Issue {
   id: string;
   key: string;
@@ -53,7 +49,6 @@ export interface IssueWithFieldsDto extends Issue {
   fields: FieldDto[];
 }
 
-// dto/issue-extras.dto.ts
 export interface IssueLinkDto {
   id: string;
   linkType: { id: string; name: string; inward: string; outward: string };
@@ -70,12 +65,12 @@ export interface IssueCommentDto {
   id: string;
   author: User;
   body: string;
-  createdAt: string; // ISO
+  createdAt: string;
   updatedAt?: string | null;
 }
 
 export interface IssueHistoryChangeItemDto {
-  fieldKey: string; // pl. "status", "assignee", "custom.severity"
+  fieldKey: string;
   fromId?: string | null;
   toId?: string | null;
   fromDisplay?: string | null;
@@ -85,7 +80,7 @@ export interface IssueHistoryChangeItemDto {
 export interface IssueHistoryItemDto {
   id: string;
   authorId: string;
-  createdAt: string; // ISO
+  createdAt: string;
   items: IssueHistoryChangeItemDto[];
 }
 
@@ -95,8 +90,8 @@ export interface IssueAttachmentDto {
   mimeType: string;
   size: string;
   uploadedBy: string;
-  createdAt: string; // ISO
-  url: string; // signed/relative
+  createdAt: string;
+  url: string;
   issueId: string;
 }
 

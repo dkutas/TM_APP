@@ -1,4 +1,3 @@
-// src/issues/priority.entity.ts
 import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('priorities')

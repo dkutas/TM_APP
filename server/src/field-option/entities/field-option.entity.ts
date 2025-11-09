@@ -1,4 +1,3 @@
-// src/fields/field-option.entity.ts
 import {
   Column,
   Entity,

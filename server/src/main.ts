@@ -12,7 +12,6 @@ async function bootstrap() {
     cors: true,
     logger: new ConsoleLogger({
       timestamp: true,
-      // json: true,
     }),
   });
 
@@ -21,7 +20,7 @@ async function bootstrap() {
     .setDescription('Szakdolgozat backend API dokumentáció')
     .setBasePath('localhost:' + process.env.API_PORT || '3000')
     .setVersion('1.0')
-    .addBearerAuth() // JWT support
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

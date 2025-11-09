@@ -1,4 +1,3 @@
-// repositories/project-issue-type.repository.ts
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { ProjectIssueType } from '../project/entities/projectIssueType.entity';
@@ -9,9 +8,6 @@ export class ProjectIssueTypeRepository extends Repository<ProjectIssueType> {
     super(ProjectIssueType, ds.createEntityManager());
   }
 
-  /**
-   * Visszaadja a workflow-t egy (projectId, issueTypeId) párhoz.
-   */
   async findWorkflow(projectId: string, issueTypeId: string) {
     return this.createQueryBuilder('pit')
       .innerJoinAndSelect('pit.workflow', 'wf')
@@ -19,6 +15,6 @@ export class ProjectIssueTypeRepository extends Repository<ProjectIssueType> {
       .innerJoin('pit.issueType', 'it')
       .where('p.id = :projectId', { projectId })
       .andWhere('it.id = :issueTypeId', { issueTypeId })
-      .getOne(); // -> .workflow használható lesz
+      .getOne();
   }
 }

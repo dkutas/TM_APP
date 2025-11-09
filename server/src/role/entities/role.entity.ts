@@ -1,4 +1,3 @@
-// src/auth/role.entity.ts
 import {
   Column,
   Entity,
